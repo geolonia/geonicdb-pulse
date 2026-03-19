@@ -504,6 +504,24 @@
     var TEMPORAL = params.get('temporal') === 'true';
     var _waitingRedirect = false;
 
+    // temporal パラメータ未指定 → SDK 経由で自動判定してリダイレクト
+    if (ENTITY_TYPE && !params.has('temporal')) {
+      _waitingRedirect = true;
+      // リダイレクト中はヘッダーとパネルを非表示
+      document.querySelector('.header').style.display = 'none';
+      document.querySelector('.side-panel').style.display = 'none';
+      var _dbCheck = new GeonicDB();
+      _dbCheck._request('GET', '/ngsi-ld/v1/temporal/entities?type=' + encodeURIComponent(ENTITY_TYPE) + '&limit=1')
+        .then(function(res) { return res.ok ? res.json() : []; })
+        .then(function(result) {
+          var hasTemporal = Array.isArray(result) && result.length > 0;
+          location.replace('?type=' + encodeURIComponent(ENTITY_TYPE) + '&temporal=' + hasTemporal);
+        })
+        .catch(function() {
+          location.replace('?type=' + encodeURIComponent(ENTITY_TYPE) + '&temporal=false');
+        });
+    }
+
     if (!ENTITY_TYPE) ENTITY_TYPE = '__none__';
 
     var titleSuffix = TEMPORAL ? ' (Temporal)' : '';
