@@ -462,13 +462,13 @@
   </div>
 
   <!-- Geolonia Maps -->
-  <script src="https://cdn.geolonia.com/v1/embed?geolonia-api-key=YOUR-API-KEY"></script>
+  <script src="https://cdn.geolonia.com/v1/embed?geolonia-api-key=__GEOLONIA_API_KEY__"></script>
 
   <!-- GeonicDB SDK -->
   <script
-    src="https://geonicdb.geolonia.com/sdk/v1/geonicdb.js"
-    data-api-key="gdb_d5b178ca8865c0f167b5df12a09aec539076b64b31edee3d154184b6257973a6"
-    data-tenant="miya"
+    src="__GEONICDB_URL__/sdk/v1/geonicdb.js"
+    data-api-key="__GEONICDB_API_KEY__"
+    data-tenant="__GEONICDB_TENANT__"
   ></script>
 
   <script>
@@ -485,8 +485,8 @@
       var _db = new GeonicDB();
       _db._dpopReady = (_db._dpopReady || Promise.resolve()).then(function() { _db._dpopKeyPair = null; });
       _db._ensureToken().then(function(token) {
-        return fetch('https://geonicdb.geolonia.com/ngsi-ld/v1/types', {
-          headers: { 'Authorization': 'Bearer ' + token, 'NGSILD-Tenant': 'miya', 'Accept': 'application/json' }
+        return fetch('__GEONICDB_URL__/ngsi-ld/v1/types', {
+          headers: { 'Authorization': 'Bearer ' + token, 'NGSILD-Tenant': '__GEONICDB_TENANT__', 'Accept': 'application/json' }
         }).then(function(r) { return r.json(); });
       }).then(function(types) {
         var list = document.getElementById('type-list');
@@ -513,8 +513,8 @@
             item.querySelector('.type-item-arrow').innerHTML = '&#8987;';
             // temporal データがあるか自動判定
             _db._ensureToken().then(function(token) {
-              return fetch('https://geonicdb.geolonia.com/ngsi-ld/v1/temporal/entities?type=' + encodeURIComponent(typeName) + '&limit=1', {
-                headers: { 'Authorization': 'Bearer ' + token, 'NGSILD-Tenant': 'miya', 'Accept': 'application/json' }
+              return fetch('__GEONICDB_URL__/ngsi-ld/v1/temporal/entities?type=' + encodeURIComponent(typeName) + '&limit=1', {
+                headers: { 'Authorization': 'Bearer ' + token, 'NGSILD-Tenant': '__GEONICDB_TENANT__', 'Accept': 'application/json' }
               }).then(function(r) { return r.json(); });
             }).then(function(result) {
               var hasTemporal = Array.isArray(result) && result.length > 0;
@@ -542,8 +542,8 @@
       var _dbCheck = new GeonicDB();
       _dbCheck._dpopReady = (_dbCheck._dpopReady || Promise.resolve()).then(function() { _dbCheck._dpopKeyPair = null; });
       _dbCheck._ensureToken().then(function(token) {
-        return fetch('https://geonicdb.geolonia.com/ngsi-ld/v1/temporal/entities?type=' + encodeURIComponent(ENTITY_TYPE) + '&limit=1', {
-          headers: { 'Authorization': 'Bearer ' + token, 'NGSILD-Tenant': 'miya', 'Accept': 'application/json' }
+        return fetch('__GEONICDB_URL__/ngsi-ld/v1/temporal/entities?type=' + encodeURIComponent(ENTITY_TYPE) + '&limit=1', {
+          headers: { 'Authorization': 'Bearer ' + token, 'NGSILD-Tenant': '__GEONICDB_TENANT__', 'Accept': 'application/json' }
         }).then(function(r) { return r.json(); });
       }).then(function(result) {
         var hasTemporal = Array.isArray(result) && result.length > 0;
@@ -675,8 +675,8 @@
     // Temporal API からデータ取得
     function fetchTemporalEntities(type) {
       return db._ensureToken().then(function(token) {
-        return fetch('https://geonicdb.geolonia.com/ngsi-ld/v1/temporal/entities?type=' + encodeURIComponent(type) + '&limit=1000', {
-          headers: { 'Authorization': 'Bearer ' + token, 'NGSILD-Tenant': 'miya', 'Accept': 'application/json' }
+        return fetch('__GEONICDB_URL__/ngsi-ld/v1/temporal/entities?type=' + encodeURIComponent(type) + '&limit=1000', {
+          headers: { 'Authorization': 'Bearer ' + token, 'NGSILD-Tenant': '__GEONICDB_TENANT__', 'Accept': 'application/json' }
         }).then(function(r) { return r.json(); });
       }).then(function(rawEntities) {
         // 生データを保持

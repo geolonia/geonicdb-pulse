@@ -1,0 +1,6 @@
+{
+  "name": "geonicdb-monitor",
+  "version": "1.0.0",
+  "private": true,
+  "description": "GeonicDB realtime entity monitor with Geolonia Maps"
+}
