@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GeonicDB リアルタイムモニター</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #0a0e1a; overflow: hidden; }
+
+    #map { width: 100%; height: 100vh; }
+
+    /* ── ヘッダー ── */
+    .header {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      z-index: 10;
+      background: linear-gradient(180deg, rgba(6,10,23,0.92) 0%, rgba(6,10,23,0.6) 60%, transparent 100%);
+      padding: 20px 24px 32px;
+      color: #fff;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .header-icon {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #00e5ff 0%, #2979ff 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      box-shadow: 0 0 20px rgba(0,229,255,0.3);
+    }
+    .header h1 {
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      color: #e0f7fa;
+    }
+    .header .subtitle {
+      font-size: 11px;
+      color: rgba(255,255,255,0.45);
+      font-weight: 400;
+      margin-top: 2px;
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 0.5px;
+    }
+
+    /* ── 接続ステータス ── */
+    .ws-status {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: #fff;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      margin-left: 12px;
+      vertical-align: middle;
+    }
+    .ws-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #555;
+      transition: background 0.3s;
+    }
+    .ws-dot.connected {
+      background: #00e676;
+      box-shadow: 0 0 8px rgba(0,230,118,0.6);
+      animation: glow-pulse 2s ease-in-out infinite;
+    }
+    .ws-dot.connecting { background: #ff9800; }
+
+    @keyframes glow-pulse {
+      0%, 100% { box-shadow: 0 0 8px rgba(0,230,118,0.6); }
+      50% { box-shadow: 0 0 16px rgba(0,230,118,0.9), 0 0 4px rgba(0,230,118,0.4); }
+    }
+
+    /* ── サイドパネル ── */
+    .side-panel {
+      position: absolute;
+      top: 70px; left: 16px; bottom: 16px;
+      z-index: 10;
+      width: 280px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      pointer-events: none;
+    }
+    .side-panel > * { pointer-events: auto; }
+
+    .panel-card {
+      background: rgba(12, 17, 35, 0.85);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 12px;
+      backdrop-filter: blur(16px);
+      overflow: hidden;
+    }
+
+    /* ── 統計カード ── */
+    .stats-card {
+      padding: 16px;
+    }
+    .stats-card .card-label {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: rgba(255,255,255,0.35);
+      margin-bottom: 12px;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .stat-box {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+    }
+    .stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      background: linear-gradient(135deg, #00e5ff, #2979ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1.1;
+    }
+    .stat-label {
+      font-size: 9px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: rgba(255,255,255,0.35);
+      margin-top: 4px;
+    }
+
+    /* ── ライブフィード ── */
+    .feed-card {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .feed-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: rgba(255,255,255,0.35);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .feed-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #f44336;
+      animation: feed-blink 1.5s ease-in-out infinite;
+    }
+    @keyframes feed-blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+    .feed-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px;
+    }
+    .feed-list::-webkit-scrollbar { width: 4px; }
+    .feed-list::-webkit-scrollbar-track { background: transparent; }
+    .feed-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+    .feed-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      transition: background 0.2s;
+      cursor: pointer;
+    }
+    .feed-item:hover { background: rgba(255,255,255,0.05); }
+    .feed-item.new {
+      animation: feed-slide-in 0.4s ease-out;
+      background: rgba(0,229,255,0.06);
+    }
+    @keyframes feed-slide-in {
+      from { opacity: 0; transform: translateX(-12px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    .feed-item.active {
+      background: rgba(0,229,255,0.1);
+      border-left: 2px solid #00e5ff;
+      padding-left: 8px;
+    }
+    .feed-item.active .feed-marker {
+      background: #ff5252;
+      border-color: rgba(255,82,82,0.3);
+    }
+    .feed-item.active .feed-name {
+      color: #e0f7fa;
+    }
+    .feed-marker {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: #2979ff;
+      border: 2px solid rgba(41,121,255,0.3);
+      flex-shrink: 0;
+    }
+    .feed-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .feed-name {
+      font-size: 12px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.85);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .feed-meta {
+      font-size: 10px;
+      color: rgba(255,255,255,0.3);
+      font-family: 'JetBrains Mono', monospace;
+      margin-top: 1px;
+    }
+
+    /* ── タイプ選択オーバーレイ ── */
+    .type-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: rgba(6,10,23,0.92);
+      backdrop-filter: blur(24px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 1;
+      transition: opacity 0.4s ease;
+    }
+    .type-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .type-picker {
+      text-align: center;
+      max-width: 480px;
+      width: 100%;
+      padding: 0 24px;
+    }
+    .type-picker-icon {
+      width: 56px; height: 56px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #00e5ff 0%, #2979ff 100%);
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 28px;
+      margin-bottom: 20px;
+      box-shadow: 0 0 40px rgba(0,229,255,0.25);
+    }
+    .type-picker h2 {
+      font-size: 22px;
+      font-weight: 600;
+      color: #e0f7fa;
+      margin-bottom: 6px;
+    }
+    .type-picker p {
+      font-size: 13px;
+      color: rgba(255,255,255,0.4);
+      margin-bottom: 28px;
+    }
+    .type-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .type-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 18px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: left;
+    }
+    .type-item:hover {
+      background: rgba(0,229,255,0.08);
+      border-color: rgba(0,229,255,0.2);
+      transform: translateY(-1px);
+    }
+    .type-item-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: #00e5ff;
+      box-shadow: 0 0 8px rgba(0,229,255,0.4);
+      flex-shrink: 0;
+    }
+    .type-item-info { flex: 1; }
+    .type-item-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.9);
+    }
+    .type-item-attrs {
+      font-size: 11px;
+      color: rgba(255,255,255,0.3);
+      font-family: 'JetBrains Mono', monospace;
+      margin-top: 2px;
+    }
+    .type-item-arrow {
+      color: rgba(255,255,255,0.2);
+      font-size: 18px;
+      transition: color 0.2s;
+    }
+    .type-item:hover .type-item-arrow { color: #00e5ff; }
+    .type-loading {
+      color: rgba(255,255,255,0.4);
+      font-size: 13px;
+    }
+
+    /* ── トースト ── */
+    .toast {
+      position: absolute;
+      bottom: 24px; right: 20px;
+      z-index: 20;
+      background: rgba(12,17,35,0.9);
+      border: 1px solid rgba(0,229,255,0.2);
+      color: #e0f7fa;
+      padding: 12px 18px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 500;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: all 0.35s cubic-bezier(0.16,1,0.3,1);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .toast::before {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #00e5ff;
+      box-shadow: 0 0 8px rgba(0,229,255,0.5);
+      flex-shrink: 0;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── ポップアップ ── */
+    .maplibregl-popup { max-width: 420px !important; }
+    .maplibregl-popup-content {
+      background: rgba(12,17,35,0.95) !important;
+      border: 1px solid rgba(255,255,255,0.1) !important;
+      border-radius: 12px !important;
+      padding: 16px !important;
+      font-family: 'Inter', sans-serif !important;
+      color: #fff !important;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.5) !important;
+      backdrop-filter: blur(16px) !important;
+      width: max-content !important;
+      min-width: 220px !important;
+      max-width: 400px !important;
+    }
+    .maplibregl-popup-tip { border-top-color: rgba(12,17,35,0.95) !important; }
+    .maplibregl-popup-content { position: relative !important; overflow: visible !important; }
+    .maplibregl-popup-close-button {
+      color: rgba(255,255,255,0.4) !important;
+      font-size: 0 !important;
+      width: 30px !important;
+      height: 30px !important;
+      top: -12px !important;
+      right: -12px !important;
+      border-radius: 50% !important;
+      background: rgba(30,36,60,0.95) !important;
+      border: 1px solid rgba(255,255,255,0.12) !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      transition: background 0.2s, border-color 0.2s, transform 0.15s !important;
+      cursor: pointer !important;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4) !important;
+      position: absolute !important;
+      z-index: 1 !important;
+    }
+    .maplibregl-popup-close-button::after {
+      content: '\00d7';
+      font-size: 17px;
+      color: rgba(255,255,255,0.5);
+      line-height: 1;
+    }
+    .maplibregl-popup-close-button:hover {
+      background: rgba(255,60,80,0.85) !important;
+      border-color: rgba(255,60,80,0.5) !important;
+      transform: scale(1.15) !important;
+    }
+    .maplibregl-popup-close-button:hover::after {
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <div class="header">
+    <a href="./" class="header-icon" id="header-icon" style="text-decoration:none;color:inherit;pointer-events:auto">&#9673;</a>
+    <div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <h1 id="app-title">リアルタイムモニター</h1>
+        <span class="ws-status"><span class="ws-dot" id="ws-dot"></span><span id="ws-label">CONNECTING</span></span>
+      </div>
+      <div class="subtitle">GEONICDB LIVE STREAM &mdash; DPoP AUTH</div>
+    </div>
+  </div>
+
+  <div class="side-panel">
+    <div class="panel-card stats-card">
+      <div class="card-label" id="panel-title">Entities</div>
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-value" id="stat-count">-</div>
+          <div class="stat-label">Total</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="stat-latest">-</div>
+          <div class="stat-label">Last Recv</div>
+        </div>
+      </div>
+    </div>
+    <div class="panel-card feed-card">
+      <div class="feed-header">
+        <div class="feed-dot"></div>
+        Live Feed
+      </div>
+      <div class="feed-list" id="feed-list"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="type-overlay hidden" id="type-overlay">
+    <div class="type-picker">
+      <div class="type-picker-icon">&#9673;</div>
+      <h2>GeonicDB Monitor</h2>
+      <p>モニターするエンティティタイプを選択してください</p>
+      <div class="type-list" id="type-list">
+        <div class="type-loading">Loading entity types...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Geolonia Maps -->
+  <script src="https://cdn.geolonia.com/v1/embed?geolonia-api-key=YOUR-API-KEY"></script>
+
+  <!-- GeonicDB SDK -->
+  <script
+    src="https://geonicdb.geolonia.com/sdk/v1/geonicdb.js"
+    data-api-key="gdb_d5b178ca8865c0f167b5df12a09aec539076b64b31edee3d154184b6257973a6"
+    data-tenant="miya"
+  ></script>
+
+  <script>
+    // ============================================================
+    // 設定
+    // ============================================================
+    var params = new URLSearchParams(location.search);
+    var ENTITY_TYPE = params.get('type') || null;
+
+    // タイプ未指定 → 選択画面を表示
+    if (!ENTITY_TYPE) {
+      document.getElementById('type-overlay').classList.remove('hidden');
+      // タイプ一覧を取得して表示
+      var _db = new GeonicDB();
+      _db._dpopReady = (_db._dpopReady || Promise.resolve()).then(function() { _db._dpopKeyPair = null; });
+      _db._ensureToken().then(function(token) {
+        return fetch('https://geonicdb.geolonia.com/ngsi-ld/v1/types', {
+          headers: { 'Authorization': 'Bearer ' + token, 'NGSILD-Tenant': 'miya', 'Accept': 'application/json' }
+        }).then(function(r) { return r.json(); });
+      }).then(function(types) {
+        var list = document.getElementById('type-list');
+        list.innerHTML = '';
+        if (!types.length) {
+          list.innerHTML = '<div class="type-loading">No entity types found</div>';
+          return;
+        }
+        types.forEach(function(t) {
+          var item = document.createElement('div');
+          item.className = 'type-item';
+          var attrs = (t.attributeNames || []).join(', ');
+          item.innerHTML =
+            '<div class="type-item-dot"></div>' +
+            '<div class="type-item-info">' +
+              '<div class="type-item-name">' + t.typeName + '</div>' +
+              '<div class="type-item-attrs">' + attrs + '</div>' +
+            '</div>' +
+            '<div class="type-item-arrow">&rsaquo;</div>';
+          item.onclick = function() {
+            var typeName = t.typeName;
+            // ローディング表示
+            item.style.opacity = '0.5';
+            item.querySelector('.type-item-arrow').innerHTML = '&#8987;';
+            // temporal データがあるか自動判定
+            _db._ensureToken().then(function(token) {
+              return fetch('https://geonicdb.geolonia.com/ngsi-ld/v1/temporal/entities?type=' + encodeURIComponent(typeName) + '&limit=1', {
+                headers: { 'Authorization': 'Bearer ' + token, 'NGSILD-Tenant': 'miya', 'Accept': 'application/json' }
+              }).then(function(r) { return r.json(); });
+            }).then(function(result) {
+              var hasTemporal = Array.isArray(result) && result.length > 0;
+              location.href = '?type=' + encodeURIComponent(typeName) + '&temporal=' + hasTemporal;
+            }).catch(function() {
+              location.href = '?type=' + encodeURIComponent(typeName) + '&temporal=false';
+            });
+          };
+          list.appendChild(item);
+        });
+      }).catch(function() {
+        document.getElementById('type-list').innerHTML = '<div class="type-loading">Failed to load types</div>';
+      });
+    }
+
+    var TEMPORAL = params.get('temporal') === 'true';
+    var _waitingRedirect = false;
+    // temporal パラメータが明示されていない場合、自動判定してリダイレクト
+    if (ENTITY_TYPE && !params.has('temporal')) {
+      _waitingRedirect = true;
+      // リダイレクト中はオーバーレイ表示
+      var overlay = document.getElementById('type-overlay');
+      overlay.classList.remove('hidden');
+      document.getElementById('type-list').innerHTML = '<div class="type-loading">Loading ' + ENTITY_TYPE + '...</div>';
+      var _dbCheck = new GeonicDB();
+      _dbCheck._dpopReady = (_dbCheck._dpopReady || Promise.resolve()).then(function() { _dbCheck._dpopKeyPair = null; });
+      _dbCheck._ensureToken().then(function(token) {
+        return fetch('https://geonicdb.geolonia.com/ngsi-ld/v1/temporal/entities?type=' + encodeURIComponent(ENTITY_TYPE) + '&limit=1', {
+          headers: { 'Authorization': 'Bearer ' + token, 'NGSILD-Tenant': 'miya', 'Accept': 'application/json' }
+        }).then(function(r) { return r.json(); });
+      }).then(function(result) {
+        var hasTemporal = Array.isArray(result) && result.length > 0;
+        location.replace('?type=' + encodeURIComponent(ENTITY_TYPE) + '&temporal=' + hasTemporal);
+      }).catch(function() {
+        location.replace('?type=' + encodeURIComponent(ENTITY_TYPE) + '&temporal=false');
+      });
+    }
+
+    if (!ENTITY_TYPE) ENTITY_TYPE = '__none__';
+
+    var titleSuffix = TEMPORAL ? ' (Temporal)' : '';
+    document.getElementById('app-title').textContent = ENTITY_TYPE === '__none__' ? 'GeonicDB Monitor' : ENTITY_TYPE + titleSuffix;
+    document.getElementById('panel-title').textContent = ENTITY_TYPE === '__none__' ? '-' : ENTITY_TYPE;
+    document.title = (ENTITY_TYPE === '__none__' ? '' : ENTITY_TYPE + titleSuffix + ' — ') + 'GeonicDB Monitor';
+    if (ENTITY_TYPE === '__none__') {
+      document.querySelector('.header').style.display = 'none';
+      document.querySelector('.side-panel').style.display = 'none';
+    }
+
+    // ============================================================
+    // 地図初期化
+    // ============================================================
+    var map = new geolonia.Map({
+      container: 'map',
+      style: 'geolonia/midnight',
+      center: [139.7414, 35.6581],
+      zoom: 10,
+      minZoom: 2,
+      maxZoom: 16
+    });
+
+    // ユーザー操作によるズームレベルを記憶
+    var userZoom = null;
+    map.on('zoomend', function() {
+      // flyTo 等のプログラム操作ではなくユーザー操作の場合のみ記憶
+      if (!map.isMoving || !map._zooming) {
+        userZoom = Math.round(map.getZoom());
+      }
+    });
+    // ユーザーがホイールやピンチでズームした場合を確実にキャッチ
+    map.on('wheel', function() { setTimeout(function() { userZoom = Math.round(map.getZoom()); }, 300); });
+
+    // ユーザーがドラッグ/ズームで地図を手動操作したらハイライト解除
+    map.on('dragstart', function() { selectEntity(null); popup.remove(); });
+
+    function getFlyZoom(defaultZoom) {
+      return userZoom !== null ? userZoom : defaultZoom;
+    }
+
+    // ============================================================
+    // GeonicDB クライアント初期化
+    // ============================================================
+    var db = new GeonicDB();
+    db._dpopReady = (db._dpopReady || Promise.resolve()).then(function() {
+      db._dpopKeyPair = null;
+    });
+
+    var origOpenWs = GeonicDB.prototype._openWebSocket;
+    db._openWebSocket = function(token) {
+      var self = this;
+      return self._discoverWsEndpoint().then(function(endpoint) {
+        return new Promise(function(resolve, reject) {
+          var wsUrl = endpoint + (endpoint.indexOf('?') === -1 ? '?' : '&') +
+            'tenant=' + encodeURIComponent(self._tenant) +
+            '&token=' + encodeURIComponent(token);
+          var ws = new WebSocket(wsUrl);
+          self._ws = ws;
+          ws.onopen = function() {
+            if (self._ws !== ws) return;
+            self._reconnectAttempts = 0;
+            self._scheduleTokenRefresh();
+            if (self._subscription) ws.send(JSON.stringify(self._subscription));
+            self._emit('open');
+            self._emit('connected');
+            resolve();
+          };
+          ws.onmessage = function(event) {
+            if (self._ws !== ws) return;
+            var msg;
+            try { msg = JSON.parse(event.data); } catch (e) { return; }
+            if (msg.type === 'pong') return;
+            if (msg.type === 'error') { self._emit('error', new Error(msg.message)); return; }
+            self._emit(msg.type, msg);
+            self._emit('message', msg);
+          };
+          ws.onclose = function(event) {
+            if (self._ws !== ws) return;
+            self._clearTimers();
+            if (self._wsIntentionalClose) { self._emit('close', event); return; }
+            self._emit('close', event);
+            self._emit('disconnected');
+            self._reconnect();
+          };
+          ws.onerror = function(err) {
+            if (self._ws !== ws) return;
+            self._emit('error', err);
+            if (ws.readyState !== WebSocket.OPEN) reject(new Error('WebSocket connection failed'));
+          };
+        });
+      });
+    };
+
+    var entities = [];
+    // temporal の生データを保持（ポップアップのチャート用）
+    var temporalRaw = {};
+
+    // ============================================================
+    // Temporal ヘルパー: 配列形式 → 通常エンティティ形式に変換（最新値を採用）
+    // ============================================================
+    function flattenTemporal(te) {
+      var entity = { id: te.id, type: te.type };
+      Object.keys(te).forEach(function(key) {
+        if (key === 'id' || key === 'type' || key === '@context') return;
+        var attr = te[key];
+        if (!Array.isArray(attr) || attr.length === 0) { entity[key] = attr; return; }
+        // 配列の先頭が最新（API は降順で返す）
+        var latest = attr[0];
+        entity[key] = {
+          type: latest.type || 'Property',
+          value: latest.value,
+          observedAt: latest.observedAt,
+          unitCode: latest.unitCode
+        };
+      });
+      return entity;
+    }
+
+    // Temporal API からデータ取得
+    function fetchTemporalEntities(type) {
+      return db._ensureToken().then(function(token) {
+        return fetch('https://geonicdb.geolonia.com/ngsi-ld/v1/temporal/entities?type=' + encodeURIComponent(type) + '&limit=1000', {
+          headers: { 'Authorization': 'Bearer ' + token, 'NGSILD-Tenant': 'miya', 'Accept': 'application/json' }
+        }).then(function(r) { return r.json(); });
+      }).then(function(rawEntities) {
+        // 生データを保持
+        rawEntities.forEach(function(te) { temporalRaw[te.id] = te; });
+        // フラット化
+        return rawEntities.map(flattenTemporal);
+      });
+    }
+
+    // SVG スパークラインを生成
+    function buildSparkline(dataPoints, color) {
+      if (!dataPoints || dataPoints.length < 2) return '';
+      // observedAt 昇順に並べ替え
+      var sorted = dataPoints.slice().sort(function(a, b) {
+        return new Date(a.observedAt) - new Date(b.observedAt);
+      });
+      var values = sorted.map(function(d) { return d.value; });
+      var min = Math.min.apply(null, values);
+      var max = Math.max.apply(null, values);
+      var range = max - min || 1;
+      var w = 200, h = 48, pad = 4;
+      var points = values.map(function(v, i) {
+        var x = pad + (i / (values.length - 1)) * (w - pad * 2);
+        var y = h - pad - ((v - min) / range) * (h - pad * 2);
+        return x + ',' + y;
+      });
+      // 時刻ラベル
+      var first = sorted[0].observedAt ? new Date(sorted[0].observedAt) : null;
+      var last = sorted[sorted.length - 1].observedAt ? new Date(sorted[sorted.length - 1].observedAt) : null;
+      var tl = first ? String(first.getUTCHours()).padStart(2,'0') + ':00' : '';
+      var tr = last ? String(last.getUTCHours()).padStart(2,'0') + ':00' : '';
+      var latestVal = values[values.length - 1];
+
+      return '<svg width="' + w + '" height="' + (h + 14) + '" style="display:block;margin:4px 0">' +
+        '<defs><linearGradient id="g-' + color.replace('#','') + '" x1="0" y1="0" x2="0" y2="1">' +
+        '<stop offset="0%" stop-color="' + color + '" stop-opacity="0.3"/>' +
+        '<stop offset="100%" stop-color="' + color + '" stop-opacity="0.02"/>' +
+        '</linearGradient></defs>' +
+        '<polygon points="' + pad + ',' + h + ' ' + points.join(' ') + ' ' + (w - pad) + ',' + h + '" fill="url(#g-' + color.replace('#','') + ')"/>' +
+        '<polyline points="' + points.join(' ') + '" fill="none" stroke="' + color + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+        '<circle cx="' + points[points.length - 1].split(',')[0] + '" cy="' + points[points.length - 1].split(',')[1] + '" r="3" fill="' + color + '"/>' +
+        '<text x="' + pad + '" y="' + (h + 12) + '" font-size="9" fill="rgba(255,255,255,0.3)" font-family="JetBrains Mono,monospace">' + tl + '</text>' +
+        '<text x="' + (w - pad) + '" y="' + (h + 12) + '" font-size="9" fill="rgba(255,255,255,0.3)" font-family="JetBrains Mono,monospace" text-anchor="end">' + tr + '</text>' +
+        '<text x="' + (w - pad) + '" y="12" font-size="11" fill="' + color + '" font-family="JetBrains Mono,monospace" text-anchor="end" font-weight="600">' + latestVal + '</text>' +
+        '</svg>';
+    }
+
+    // ============================================================
+    // ユーティリティ
+    // ============================================================
+    function formatTime(isoString) {
+      var d = new Date(isoString);
+      return String(d.getHours()).padStart(2, '0') + ':' +
+        String(d.getMinutes()).padStart(2, '0') + ':' +
+        String(d.getSeconds()).padStart(2, '0');
+    }
+
+    function showToast(message) {
+      var toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      setTimeout(function() { toast.classList.remove('show'); }, 3500);
+    }
+
+    function getEntityName(e) {
+      if (e.name && e.name.value) return e.name.value;
+      if (e.epicenter && e.epicenter.value) return e.epicenter.value;
+      return e.id.split(':').pop();
+    }
+
+    function findGeoProperty(e) {
+      var geoKeys = ['location', 'position', 'geo', 'coordinates', 'place'];
+      for (var i = 0; i < geoKeys.length; i++) {
+        if (e[geoKeys[i]] && e[geoKeys[i]].value) return e[geoKeys[i]];
+      }
+      var keys = Object.keys(e);
+      for (var j = 0; j < keys.length; j++) {
+        var attr = e[keys[j]];
+        if (attr && attr.type === 'GeoProperty' && attr.value) return attr;
+      }
+      return null;
+    }
+
+    function getDisplayProperties(e) {
+      var skip = ['id', 'type', '@context', 'location', 'position', 'geo', 'coordinates', 'place'];
+      var props = [];
+      Object.keys(e).forEach(function(key) {
+        if (skip.indexOf(key) !== -1) return;
+        var attr = e[key];
+        if (!attr || typeof attr !== 'object') return;
+        if (attr.type === 'GeoProperty') return;
+        var val = attr.value !== undefined ? attr.value : attr;
+        if (typeof val === 'object') val = JSON.stringify(val);
+        props.push({ key: key, value: val, unit: attr.unitCode || '' });
+      });
+      return props;
+    }
+
+    // ============================================================
+    // ライブフィード
+    // ============================================================
+    var feedList = document.getElementById('feed-list');
+
+    function addFeedItem(entity, isNew) {
+      var name = getEntityName(entity);
+      var time = formatTime(new Date().toISOString());
+      var item = document.createElement('div');
+      item.className = 'feed-item' + (isNew ? ' new' : '');
+      item.setAttribute('data-id', entity.id);
+      item.innerHTML =
+        '<div class="feed-marker"></div>' +
+        '<div class="feed-info">' +
+          '<div class="feed-name">' + name + '</div>' +
+          '<div class="feed-meta">' + time + '</div>' +
+        '</div>';
+      item.onclick = function() {
+        var geo = findGeoProperty(entity);
+        if (geo && geo.value) {
+          selectEntity(entity.id);
+          map.flyTo({ center: geo.value.coordinates, zoom: getFlyZoom(16), duration: 1200 });
+          setTimeout(function() { openPopupForEntity(entity.id); }, 1300);
+        }
+      };
+      feedList.insertBefore(item, feedList.firstChild);
+      // 最大50件に制限
+      while (feedList.children.length > 50) {
+        feedList.removeChild(feedList.lastChild);
+      }
+      setTimeout(function() { item.classList.remove('new'); }, 2000);
+    }
+
+    function initFeed(list) {
+      feedList.innerHTML = '';
+      list.slice(-20).reverse().forEach(function(e) {
+        var name = getEntityName(e);
+        var item = document.createElement('div');
+        item.className = 'feed-item';
+        item.setAttribute('data-id', e.id);
+        item.innerHTML =
+          '<div class="feed-marker"></div>' +
+          '<div class="feed-info">' +
+            '<div class="feed-name">' + name + '</div>' +
+            '<div class="feed-meta">loaded</div>' +
+          '</div>';
+        item.onclick = (function(ent) {
+          return function() {
+            var geo = findGeoProperty(ent);
+            if (geo && geo.value) {
+              selectEntity(ent.id);
+              map.flyTo({ center: geo.value.coordinates, zoom: getFlyZoom(16), duration: 1200 });
+              setTimeout(function() { openPopupForEntity(ent.id); }, 1300);
+            }
+          };
+        })(e);
+        feedList.appendChild(item);
+      });
+    }
+
+    // ============================================================
+    // GeoJSON
+    // ============================================================
+    var selectedEntityId = null;
+
+    function buildGeoJSON(list) {
+      return {
+        type: 'FeatureCollection',
+        features: list.map(function(e) {
+          var geo = findGeoProperty(e);
+          if (!geo) return null;
+          return {
+            type: 'Feature', id: e.id,
+            geometry: geo.value,
+            properties: { id: e.id, name: getEntityName(e), entityType: e.type, selected: e.id === selectedEntityId ? 1 : 0 }
+          };
+        }).filter(Boolean)
+      };
+    }
+
+    function selectEntity(id) {
+      selectedEntityId = id;
+      if (map.getSource('entities')) {
+        map.getSource('entities').setData(buildGeoJSON(entities));
+      }
+      // フィードのハイライト更新
+      var items = feedList.querySelectorAll('.feed-item');
+      for (var i = 0; i < items.length; i++) {
+        if (id && items[i].getAttribute('data-id') === id) {
+          items[i].classList.add('active');
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        } else {
+          items[i].classList.remove('active');
+        }
+      }
+    }
+
+    // ============================================================
+    // 統計
+    // ============================================================
+    var latestTime = null;
+
+    function updateStats(list) {
+      document.getElementById('stat-count').textContent = list.length;
+      document.getElementById('stat-latest').textContent =
+        latestTime ? formatTime(latestTime) : '--:--';
+    }
+
+    // ============================================================
+    // レイヤー描画
+    // ============================================================
+    function renderEntities(list) {
+      var geojson = buildGeoJSON(list);
+      if (map.getSource('entities')) {
+        map.getSource('entities').setData(geojson);
+      } else {
+        map.addSource('entities', { type: 'geojson', data: geojson });
+
+        var selExpr = ['case', ['==', ['get', 'selected'], 1]];
+
+        map.addLayer({
+          id: 'entity-glow',
+          type: 'circle',
+          source: 'entities',
+          paint: {
+            'circle-radius': ['case', ['==', ['get', 'selected'], 1], 32, 24],
+            'circle-color': ['case', ['==', ['get', 'selected'], 1], '#ff1744', '#00b0ff'],
+            'circle-opacity': ['case', ['==', ['get', 'selected'], 1], 0.15, 0.08],
+            'circle-blur': 1
+          }
+        });
+        map.addLayer({
+          id: 'entity-pulse',
+          type: 'circle',
+          source: 'entities',
+          paint: {
+            'circle-radius': ['case', ['==', ['get', 'selected'], 1], 18, 14],
+            'circle-color': ['case', ['==', ['get', 'selected'], 1], '#ff1744', '#00b0ff'],
+            'circle-opacity': ['case', ['==', ['get', 'selected'], 1], 0.2, 0.12]
+          }
+        });
+        map.addLayer({
+          id: 'entity-points',
+          type: 'circle',
+          source: 'entities',
+          paint: {
+            'circle-radius': ['case', ['==', ['get', 'selected'], 1], 8, 6],
+            'circle-color': ['case', ['==', ['get', 'selected'], 1], '#ff5252', '#00e5ff'],
+            'circle-opacity': 0.9,
+            'circle-stroke-width': 1.5,
+            'circle-stroke-color': ['case', ['==', ['get', 'selected'], 1], 'rgba(255,255,255,0.8)', 'rgba(255,255,255,0.5)']
+          }
+        });
+        map.addLayer({
+          id: 'entity-labels',
+          type: 'symbol',
+          source: 'entities',
+          layout: {
+            'text-field': ['get', 'name'],
+            'text-size': 11,
+            'text-font': ['Noto Sans CJK JP Bold'],
+            'text-offset': [0, -1.5],
+            'text-allow-overlap': false,
+            'text-max-width': 10
+          },
+          paint: {
+            'text-color': 'rgba(224,247,250,0.8)',
+            'text-halo-color': 'rgba(6,10,23,0.85)',
+            'text-halo-width': 1.5
+          }
+        });
+      }
+      updateStats(list);
+    }
+
+    // ============================================================
+    // ポップアップ
+    // ============================================================
+    var popup = new geolonia.Popup({ offset: 15, closeButton: true, closeOnClick: false, maxWidth: '420px' });
+
+    var sparkColors = ['#00e5ff', '#76ff03', '#ffab00', '#ff4081', '#7c4dff', '#00e676'];
+
+    popup.on('close', function() { selectEntity(null); });
+
+    // エンティティIDからポップアップを開く共通関数
+    function openPopupForEntity(entityId) {
+      var entity = entities.find(function(e) { return e.id === entityId; });
+      if (!entity) return;
+      var geo = findGeoProperty(entity);
+      if (!geo || !geo.value) return;
+      var coords = geo.value.coordinates;
+      var name = getEntityName(entity);
+      var contentHtml = '';
+
+      if (TEMPORAL && temporalRaw[entityId]) {
+        var raw = temporalRaw[entityId];
+        var skip = ['id', 'type', '@context', 'location', 'position', 'geo', 'name'];
+        var ci = 0;
+        Object.keys(raw).forEach(function(key) {
+          if (skip.indexOf(key) !== -1) return;
+          var arr = raw[key];
+          if (!Array.isArray(arr) || arr.length < 2) return;
+          var color = sparkColors[ci % sparkColors.length]; ci++;
+          var unit = arr[0].unitCode || '';
+          contentHtml +=
+            '<div style="margin-bottom:8px">' +
+            '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">' +
+            '<span style="color:rgba(255,255,255,0.5);font-size:11px;font-weight:500">' + key + '</span>' +
+            (unit ? '<span style="color:rgba(255,255,255,0.25);font-size:9px;font-family:JetBrains Mono,monospace">' + unit + '</span>' : '') +
+            '</div>' +
+            buildSparkline(arr, color) +
+            '</div>';
+        });
+      } else {
+        getDisplayProperties(entity).forEach(function(prop) {
+          var unit = prop.unit ? ' <span style="color:rgba(255,255,255,0.3)">' + prop.unit + '</span>' : '';
+          var valStr = String(prop.value);
+          var isLong = valStr.length > 20;
+          contentHtml +=
+            '<div style="display:flex;' + (isLong ? 'flex-direction:column;gap:2px' : 'justify-content:space-between;align-items:baseline;gap:12px') + ';padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.05)">' +
+            '<span style="color:rgba(255,255,255,0.4);font-size:11px;flex-shrink:0;white-space:nowrap">' + prop.key + '</span>' +
+            '<span style="color:#e0f7fa;font-size:11px;font-family:JetBrains Mono,monospace;' + (isLong ? '' : 'text-align:right') + '">' + prop.value + unit + '</span>' +
+            '</div>';
+        });
+      }
+      var html =
+        '<div style="min-width:220px">' +
+        '<div style="font-size:15px;font-weight:600;color:#00e5ff;margin-bottom:4px">' + name + '</div>' +
+        '<div style="font-size:10px;color:rgba(255,255,255,0.25);margin-bottom:10px;font-family:JetBrains Mono,monospace;word-break:break-all">' + entityId + '</div>' +
+        (contentHtml ? '<div>' + contentHtml + '</div>' : '') +
+        '</div>';
+      popup.setLngLat(coords).setHTML(html).addTo(map);
+      selectEntity(entityId);
+    }
+
+    function showPopup(ev) {
+      var f = ev.features[0];
+      openPopupForEntity(f.properties.id);
+    }
+
+    // ============================================================
+    // マップ準備
+    // ============================================================
+    var mapReady = false;
+    var pendingRender = null;
+
+    function onMapReady() {
+      mapReady = true;
+      if (map.getLayer('road_shield')) {
+        map.setLayoutProperty('road_shield', 'visibility', 'none');
+      }
+      map.on('click', 'entity-points', showPopup);
+      map.on('mouseenter', 'entity-points', function() { map.getCanvas().style.cursor = 'pointer'; });
+      map.on('mouseleave', 'entity-points', function() { map.getCanvas().style.cursor = ''; });
+      if (pendingRender) {
+        renderEntities(pendingRender);
+        pendingRender = null;
+      }
+    }
+    map.on('load', onMapReady);
+    map.on('style.load', function() { if (!mapReady) onMapReady(); });
+
+    // ============================================================
+    // データ取得（タイプ選択済みの場合のみ）
+    // ============================================================
+    if (ENTITY_TYPE === '__none__') {
+      document.getElementById('stat-count').textContent = '-';
+      document.getElementById('stat-latest').textContent = '--:--';
+    }
+
+    var dataPromise = (ENTITY_TYPE !== '__none__' && !_waitingRedirect)
+      ? (TEMPORAL ? fetchTemporalEntities(ENTITY_TYPE) : db.getEntities({ type: ENTITY_TYPE, limit: 1000 }))
+      : null;
+
+    dataPromise && dataPromise
+      .then(function(result) {
+        entities = result;
+        latestTime = new Date().toISOString();
+        initFeed(entities);
+        if (mapReady) { renderEntities(entities); }
+        else { pendingRender = entities; updateStats(entities); }
+        // 最新エンティティの座標にセンター移動
+        if (entities.length) {
+          var latest = entities[entities.length - 1];
+          var geo = findGeoProperty(latest);
+          if (geo && geo.value) {
+            map.flyTo({ center: geo.value.coordinates, zoom: 10, duration: 1000 });
+            setTimeout(function() { openPopupForEntity(latest.id); }, 1100);
+          }
+        }
+      })
+      .catch(function(err) {
+        console.error('データ取得エラー:', err);
+        document.getElementById('stat-count').textContent = 'ERR';
+      });
+
+    // ============================================================
+    // WebSocket
+    // ============================================================
+    var wsDot = document.getElementById('ws-dot');
+    var wsLabel = document.getElementById('ws-label');
+    wsDot.classList.add('connecting');
+
+    function parseWsEntity(msg) {
+      if (msg.entity) return msg.entity;
+      if (msg.data && msg.entityId) {
+        var d = msg.data;
+        var entity = { id: msg.entityId, type: msg.entityType };
+        Object.keys(d).forEach(function(key) {
+          var attr = d[key];
+          if (attr.type === 'GeoProperty') {
+            entity[key] = { type: 'GeoProperty', value: attr.value };
+          } else {
+            entity[key] = { type: 'Property', value: attr.value };
+            if (attr.metadata) {
+              if (attr.metadata.observedAt) entity[key].observedAt = attr.metadata.observedAt.value;
+              if (attr.metadata.unitCode) entity[key].unitCode = attr.metadata.unitCode.value;
+            }
+          }
+        });
+        return entity;
+      }
+      return null;
+    }
+
+    function handleEntity(msg, isNew) {
+      var entity = parseWsEntity(msg);
+      if (!entity || entity.type !== ENTITY_TYPE) return;
+      if (isNew) {
+        entities.push(entity);
+      } else {
+        var found = false;
+        for (var i = 0; i < entities.length; i++) {
+          if (entities[i].id === entity.id) { entities[i] = entity; found = true; break; }
+        }
+        if (!found) entities.push(entity);
+      }
+      latestTime = new Date().toISOString();
+      if (mapReady) renderEntities(entities);
+      else updateStats(entities);
+
+      addFeedItem(entity, isNew);
+      showToast(getEntityName(entity));
+
+      var geo = findGeoProperty(entity);
+      if (geo && geo.value) {
+        map.flyTo({ center: geo.value.coordinates, zoom: getFlyZoom(16), duration: 1500 });
+      }
+    }
+
+    db.on('entityCreated', function(msg) { handleEntity(msg, true); });
+    db.on('entityUpdated', function(msg) { handleEntity(msg, false); });
+
+    if (ENTITY_TYPE !== '__none__' && !_waitingRedirect) {
+      db.subscribe({ entityTypes: [ENTITY_TYPE] });
+      db.connect();
+    }
+
+    db.on('connected', function() {
+      wsDot.className = 'ws-dot connected';
+      wsLabel.textContent = 'LIVE';
+    });
+    db.on('disconnected', function() {
+      wsDot.className = 'ws-dot';
+      wsLabel.textContent = 'OFFLINE';
+    });
+    db.on('reconnecting', function() {
+      wsDot.className = 'ws-dot connecting';
+      wsLabel.textContent = 'RECONNECTING';
+    });
+  </script>
+</body>
+</html>
