@@ -36,21 +36,40 @@ geonic auth login
 geonic config set service <your-tenant-name>
 ```
 
-### 4. API キーの発行
+### 4. XACML ポリシーの作成
 
-アプリで使用する読み取り専用の API キーを発行します。
+API キーに紐付ける読み取り専用の XACML ポリシーを作成します。
+
+```bash
+geonic me policies create '{
+  "policyId": "ngsi-ld-readonly",
+  "target": {
+    "resources": [{"attributeId": "path", "matchValue": "/ngsi-ld/**", "matchFunction": "glob"}]
+  },
+  "rules": [
+    {"ruleId": "allow-get", "effect": "Permit", "target": {"actions": [{"attributeId": "method", "matchValue": "GET"}]}},
+    {"ruleId": "deny-others", "effect": "Deny"}
+  ]
+}'
+```
+
+- `/ngsi-ld/**` への GET のみ許可し、それ以外はすべて Deny します
+
+### 5. API キーの発行
+
+アプリで使用する DPoP 対応の API キーを発行します。
 
 ```bash
 geonic me api-keys create \
   --name "monitor-app" \
-  --scopes read:entities \
+  --origins "https://your-app.vercel.app" \
   --dpop-required \
-  --origins "https://your-app.vercel.app"
+  --policy "ngsi-ld-readonly"
 ```
 
-- `--scopes read:entities` — エンティティの読み取り権限のみ（WebSocket 購読もこのスコープで動作します）
+- `--origins` — API キーの利用を許可するオリジン。デプロイ先のドメインを指定します。ローカル開発中は `"http://localhost:8080"` の代わりに `"*"` を使用してください（WAF が localhost URL を含むリクエストをブロックするため）
 - `--dpop-required` — DPoP (Demonstration of Proof-of-Possession) トークンバインディングを有効化。SDK がブラウザ側で自動的に DPoP Proof を生成するため、万が一 API キーが漏洩しても第三者は利用できません
-- `--origins` — API キーの利用を許可するオリジン。デプロイ先のドメインを指定してください。ローカル開発時は `"http://localhost:8080"` を指定します
+- `--policy` — 手順 4 で作成した XACML ポリシーを紐付けます
 
 レスポンスに含まれる `key` の値を控えておいてください（`gdb_` で始まる文字列です）。
 
@@ -78,7 +97,7 @@ geonic entities create '{
 | 変数名 | 必須 | 説明 |
 |--------|------|------|
 | `VITE_GEONICDB_URL` | Yes | GeonicDB サーバーの URL（例: `https://geonicdb.geolonia.com`） |
-| `VITE_GEONICDB_API_KEY` | Yes | 手順 4 で発行した API キー |
+| `VITE_GEONICDB_API_KEY` | Yes | 手順 5 で発行した API キー |
 | `VITE_GEONICDB_TENANT` | Yes | テナント名 |
 | `VITE_GEOLONIA_API_KEY` | No | Geolonia Maps の API キー |
 
