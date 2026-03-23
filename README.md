@@ -62,7 +62,7 @@ geonic me policies create '{
 ```bash
 geonic me api-keys create \
   --name "monitor-app" \
-  --origins "https://your-app.vercel.app" \
+  --origins "http://example.com" \
   --dpop-required \
   --policy "ngsi-ld-readonly"
 ```
