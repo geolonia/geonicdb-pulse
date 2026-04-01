@@ -358,9 +358,130 @@
     .maplibregl-popup-close-button:hover::after {
       color: #fff;
     }
+
+    /* ── ログイン画面 ── */
+    .login-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: rgba(6,10,23,0.96);
+      backdrop-filter: blur(24px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 1;
+      transition: opacity 0.4s ease;
+    }
+    .login-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .login-box {
+      text-align: center;
+      max-width: 400px;
+      width: 100%;
+      padding: 0 24px;
+    }
+    .login-box h2 {
+      font-size: 22px;
+      font-weight: 600;
+      color: #e0f7fa;
+      margin-bottom: 6px;
+    }
+    .login-box p {
+      font-size: 13px;
+      color: rgba(255,255,255,0.4);
+      margin-bottom: 24px;
+    }
+    .login-field {
+      width: 100%;
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px;
+      color: #e0f7fa;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      transition: border-color 0.2s;
+      margin-bottom: 12px;
+      display: block;
+    }
+    .login-field:focus {
+      border-color: rgba(0,229,255,0.4);
+    }
+    .login-field::placeholder {
+      color: rgba(255,255,255,0.25);
+    }
+    .login-btn {
+      width: 100%;
+      padding: 12px 20px;
+      background: linear-gradient(135deg, #00e5ff 0%, #2979ff 100%);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      margin-top: 4px;
+    }
+    .login-btn:hover { opacity: 0.85; }
+    .login-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .login-error {
+      color: #ff5252;
+      font-size: 12px;
+      margin-top: 12px;
+      min-height: 18px;
+    }
+
+    /* ── ログアウトボタン ── */
+    .logout-btn {
+      pointer-events: auto;
+      margin-left: auto;
+      padding: 4px 12px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 6px;
+      color: rgba(255,255,255,0.5);
+      font-size: 11px;
+      font-family: 'JetBrains Mono', monospace;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+    .logout-btn:hover {
+      background: rgba(255,82,82,0.15);
+      color: #ff5252;
+      border-color: rgba(255,82,82,0.3);
+    }
+
+    /* ── セレクトボックスのオプション ── */
+    #type-input option {
+      background: #0c1123;
+      color: #e0f7fa;
+    }
   </style>
 </head>
 <body>
+  <!-- ログイン画面 -->
+  <div class="login-overlay" id="login-overlay">
+    <div class="login-box">
+      <div class="type-picker-icon">&#9673;</div>
+      <h2>GeonicDB Monitor</h2>
+      <p>ログインしてモニターを開始</p>
+      <form id="login-form">
+        <input id="login-tenant" class="login-field" type="text" placeholder="テナント名（省略可）" autocomplete="organization" />
+        <input id="login-email" class="login-field" type="email" placeholder="メールアドレス" required autocomplete="email" />
+        <input id="login-password" class="login-field" type="password" placeholder="パスワード" required autocomplete="current-password" />
+        <button type="submit" class="login-btn" id="login-btn">ログイン</button>
+        <div class="login-error" id="login-error"></div>
+      </form>
+    </div>
+  </div>
+
   <div id="map"></div>
 
   <div class="header">
@@ -372,6 +493,7 @@
       </div>
       <div class="subtitle">GEONICDB LIVE STREAM &mdash; DPoP AUTH</div>
     </div>
+    <button class="logout-btn" id="logout-btn" onclick="handleLogout()">Logout</button>
   </div>
 
   <div class="side-panel">
@@ -403,29 +525,16 @@
     <div class="type-picker">
       <div class="type-picker-icon">&#9673;</div>
       <h2>GeonicDB Monitor</h2>
-      <p>モニターするエンティティタイプを入力してください</p>
+      <p>モニターするエンティティタイプを選択してください</p>
       <form id="type-form" style="display:flex;gap:8px;margin-top:8px">
-        <input
+        <select
           id="type-input"
-          type="text"
-          placeholder="例: Sensor, Earthquake, Vehicle..."
-          autocomplete="off"
-          spellcheck="false"
-          style="
-            flex:1;
-            padding:12px 16px;
-            background:rgba(255,255,255,0.06);
-            border:1px solid rgba(255,255,255,0.12);
-            border-radius:10px;
-            color:#e0f7fa;
-            font-size:14px;
-            font-family:'Inter',sans-serif;
-            outline:none;
-            transition:border-color 0.2s;
-          "
-          onfocus="this.style.borderColor='rgba(0,229,255,0.4)'"
-          onblur="this.style.borderColor='rgba(255,255,255,0.12)'"
-        />
+          class="login-field"
+          required
+          style="cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url('data:image/svg+xml,%3Csvg fill%3D%22rgba(255%2C255%2C255%2C0.4)%22 viewBox%3D%220 0 24 24%22 xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath d%3D%22M7 10l5 5 5-5z%22%2F%3E%3C%2Fsvg%3E');background-repeat:no-repeat;background-position:right 12px center;background-size:20px"
+        >
+          <option value="" disabled selected>読み込み中...</option>
+        </select>
         <button
           type="submit"
           style="
@@ -444,6 +553,9 @@
           onmouseout="this.style.opacity='1'"
         >Open</button>
       </form>
+      <div style="margin-top:20px">
+        <a href="#" onclick="handleLogout();return false" style="color:rgba(255,255,255,0.35);font-size:12px;text-decoration:none;transition:color 0.2s" onmouseover="this.style.color='#ff5252'" onmouseout="this.style.color='rgba(255,255,255,0.35)'">ログアウト</a>
+      </div>
     </div>
   </div>
 
@@ -470,19 +582,138 @@
   <!-- Geolonia Maps -->
   <script src="https://cdn.geolonia.com/v1/embed?geolonia-api-key=%VITE_GEOLONIA_API_KEY%"></script>
 
-  <!-- GeonicDB SDK -->
-  <script
-    src="%VITE_GEONICDB_URL%/sdk/v1/geonicdb.js"
-    data-api-key="%VITE_GEONICDB_API_KEY%"
-    data-tenant="%VITE_GEONICDB_TENANT%"
-  ></script>
-
+  <!-- GeonicDB SDK（認証後に動的ロード）+ アプリ本体 -->
   <script type="module">
     // ============================================================
     // 環境変数
     // ============================================================
     var ENV_GEONICDB_URL = import.meta.env.VITE_GEONICDB_URL;
-    var ENV_GEONICDB_TENANT = import.meta.env.VITE_GEONICDB_TENANT;
+
+    // ============================================================
+    // 認証管理
+    // ============================================================
+    var AUTH_STORAGE_KEY = 'gdb-monitor-auth';
+
+    function getStoredAuth() {
+      try {
+        var data = localStorage.getItem(AUTH_STORAGE_KEY);
+        return data ? JSON.parse(data) : null;
+      } catch (e) { return null; }
+    }
+
+    function storeAuth(auth) {
+      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(auth));
+    }
+
+    function clearAuth() {
+      localStorage.removeItem(AUTH_STORAGE_KEY);
+    }
+
+    window.handleLogout = function() {
+      clearAuth();
+      location.href = location.pathname;
+    };
+
+    // GeonicDB SDK を動的にロードする
+    function loadGeonicDBSDK(url) {
+      return new Promise(function(resolve, reject) {
+        var script = document.createElement('script');
+        script.src = url + '/sdk/v1/geonicdb.js';
+        script.onload = resolve;
+        script.onerror = function() { reject(new Error('GeonicDB SDK の読み込みに失敗しました')); };
+        document.head.appendChild(script);
+      });
+    }
+
+    // ログイン処理
+    function handleLogin(email, password, tenant) {
+      var geonicdbUrl = ENV_GEONICDB_URL;
+      var loginBtn = document.getElementById('login-btn');
+      var errorEl = document.getElementById('login-error');
+      loginBtn.disabled = true;
+      loginBtn.textContent = 'ログイン中...';
+      errorEl.textContent = '';
+
+      var headers = { 'Content-Type': 'application/json' };
+      if (tenant) headers['NGSILD-Tenant'] = tenant;
+
+      return fetch(geonicdbUrl + '/auth/login', {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify({ email: email, password: password })
+      })
+      .then(function(res) {
+        if (!res.ok) {
+          return res.json().then(function(body) {
+            throw new Error(body.message || body.description || body.detail || 'ログインに失敗しました');
+          }).catch(function(e) {
+            if (e.message && e.message !== 'ログインに失敗しました') throw e;
+            throw new Error('ログインに失敗しました（' + res.status + '）');
+          });
+        }
+        return res.json();
+      })
+      .then(function(data) {
+        var auth = {
+          email: email,
+          accessToken: data.accessToken,
+          refreshToken: data.refreshToken,
+          tenant: tenant || '',
+          url: geonicdbUrl
+        };
+        if (!auth.accessToken) throw new Error('認証レスポンスにアクセストークンが含まれていません');
+        storeAuth(auth);
+        // SDK ロード → ログイン画面非表示 → アプリ起動
+        return loadGeonicDBSDK(auth.url).then(function() {
+          document.getElementById('login-overlay').classList.add('hidden');
+          initApp(auth);
+        });
+      })
+      .catch(function(err) {
+        errorEl.textContent = err.message;
+        loginBtn.disabled = false;
+        loginBtn.textContent = 'ログイン';
+      });
+    }
+
+    // ============================================================
+    // 起動時チェック
+    // ============================================================
+    (function() {
+      var auth = getStoredAuth();
+      if (auth && auth.accessToken) {
+        // 認証済み → ログイン画面を非表示
+        document.getElementById('login-overlay').classList.add('hidden');
+        // SDK ロード後にアプリ初期化
+        loadGeonicDBSDK(auth.url).then(function() {
+          initApp(auth);
+        }).catch(function(err) {
+          console.error(err);
+          clearAuth();
+          document.getElementById('login-overlay').classList.remove('hidden');
+          document.getElementById('login-error').textContent = 'セッションが無効です。再度ログインしてください。';
+        });
+      } else {
+        // 未認証 → ログイン画面を表示
+        document.getElementById('login-overlay').classList.remove('hidden');
+      }
+
+      // ログインフォーム送信
+      document.getElementById('login-form').onsubmit = function(e) {
+        e.preventDefault();
+        var email = document.getElementById('login-email').value.trim();
+        var password = document.getElementById('login-password').value;
+        var tenant = document.getElementById('login-tenant').value.trim();
+        if (email && password) handleLogin(email, password, tenant);
+      };
+    })();
+
+    // ============================================================
+    // アプリケーション初期化（認証後に呼び出し）
+    // ============================================================
+    function initApp(auth) {
+    var ENV_GEONICDB_URL = auth.url;
+    var ENV_GEONICDB_TENANT = auth.tenant;
 
     // ============================================================
     // 設定
@@ -490,15 +721,33 @@
     var params = new URLSearchParams(location.search);
     var ENTITY_TYPE = params.get('type') || null;
 
-    // タイプ未指定 → 入力画面を表示
+    // タイプ未指定 → 選択画面を表示
     if (!ENTITY_TYPE) {
       document.getElementById('type-overlay').classList.remove('hidden');
       document.getElementById('type-form').onsubmit = function(e) {
         e.preventDefault();
-        var val = document.getElementById('type-input').value.trim();
+        var val = document.getElementById('type-input').value;
         if (val) location.href = '?type=' + encodeURIComponent(val);
       };
-      document.getElementById('type-input').focus();
+      // エンティティタイプ一覧を取得してプルダウンに設定
+      var select = document.getElementById('type-input');
+      fetch(ENV_GEONICDB_URL + '/ngsi-ld/v1/types', {
+        headers: { 'Authorization': 'Bearer ' + auth.accessToken }
+      })
+      .then(function(res) { return res.json(); })
+      .then(function(types) {
+        select.innerHTML = '<option value="" disabled selected>エンティティタイプを選択...</option>';
+        types.forEach(function(t) {
+          var name = t.typeName || t.id.split(':').pop();
+          var opt = document.createElement('option');
+          opt.value = name;
+          opt.textContent = name;
+          select.appendChild(opt);
+        });
+      })
+      .catch(function() {
+        select.innerHTML = '<option value="" disabled selected>取得に失敗しました</option>';
+      });
     }
 
     var TEMPORAL = false;
@@ -547,7 +796,51 @@
     // ============================================================
     // GeonicDB クライアント初期化
     // ============================================================
-    var db = new GeonicDB();
+    var db = new GeonicDB({
+      baseUrl: auth.url,
+      tenant: auth.tenant
+    });
+    // JWT トークンを直接セット（DPoP フローをスキップ）
+    db._token = auth.accessToken;
+    db._tokenExpiry = Date.now() + 3500 * 1000; // ~1時間
+    db._tokenType = 'Bearer';
+
+    // refreshToken で自動トークン更新
+    var _refreshPromise = null;
+    db._ensureToken = function() {
+      var self = this;
+      if (self._token && Date.now() < self._tokenExpiry) {
+        return Promise.resolve(self._token);
+      }
+      if (_refreshPromise) return _refreshPromise;
+      _refreshPromise = fetch(auth.url + '/auth/refresh', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken: auth.refreshToken })
+      })
+      .then(function(res) {
+        if (!res.ok) throw new Error('Token refresh failed');
+        return res.json();
+      })
+      .then(function(data) {
+        self._token = data.accessToken;
+        self._tokenExpiry = Date.now() + (data.expiresIn - 60) * 1000;
+        self._tokenType = 'Bearer';
+        // localStorage も更新
+        auth.accessToken = data.accessToken;
+        if (data.refreshToken) auth.refreshToken = data.refreshToken;
+        storeAuth(auth);
+        _refreshPromise = null;
+        return self._token;
+      })
+      .catch(function(err) {
+        _refreshPromise = null;
+        clearAuth();
+        location.href = location.pathname;
+        throw err;
+      });
+      return _refreshPromise;
+    };
 
     var origOpenWs = GeonicDB.prototype._openWebSocket;
     db._openWebSocket = function(token) {
@@ -1034,13 +1327,17 @@
         initFeed(entities);
         if (mapReady) { renderEntities(entities); }
         else { pendingRender = entities; updateStats(entities); }
-        // 最新エンティティの座標にセンター移動
+        // 全エンティティが収まるように fitBounds
         if (entities.length) {
-          var latest = entities[entities.length - 1];
-          var geo = findGeoProperty(latest);
-          if (geo && geo.value) {
-            map.flyTo({ center: geo.value.coordinates, zoom: 10, duration: 1000 });
-            setTimeout(function() { openPopupForEntity(latest.id); }, 1100);
+          var bounds = new geolonia.LngLatBounds();
+          entities.forEach(function(e) {
+            var geo = findGeoProperty(e);
+            if (geo && geo.value && geo.value.coordinates) {
+              bounds.extend(geo.value.coordinates);
+            }
+          });
+          if (!bounds.isEmpty()) {
+            map.fitBounds(bounds, { padding: { top: 80, bottom: 40, left: 300, right: 40 }, duration: 1000, maxZoom: 16 });
           }
         }
       })
@@ -1126,6 +1423,7 @@
       wsDot.className = 'ws-dot connecting';
       wsLabel.textContent = 'RECONNECTING';
     });
+    } // end initApp
   </script>
 </body>
 </html>
