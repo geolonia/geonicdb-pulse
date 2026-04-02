@@ -842,48 +842,52 @@
       return _refreshPromise;
     };
 
-    var origOpenWs = GeonicDB.prototype._openWebSocket;
-    db._openWebSocket = function(token) {
+    // Bearer JWT で WebSocket 接続（SDK デフォルトの DPoP PoW 待ちをスキップ）
+    db.connect = function() {
       var self = this;
-      return self._discoverWsEndpoint().then(function(endpoint) {
-        return new Promise(function(resolve, reject) {
-          var wsUrl = endpoint + (endpoint.indexOf('?') === -1 ? '?' : '&') +
-            'tenant=' + encodeURIComponent(self._tenant) +
-            '&token=' + encodeURIComponent(token);
-          var ws = new WebSocket(wsUrl);
-          self._ws = ws;
-          ws.onopen = function() {
-            if (self._ws !== ws) return;
-            self._reconnectAttempts = 0;
-            self._scheduleTokenRefresh();
-            if (self._subscription) ws.send(JSON.stringify(self._subscription));
-            self._emit('open');
-            self._emit('connected');
-            resolve();
-          };
-          ws.onmessage = function(event) {
-            if (self._ws !== ws) return;
-            var msg;
-            try { msg = JSON.parse(event.data); } catch (e) { return; }
-            if (msg.type === 'pong') return;
-            if (msg.type === 'error') { self._emit('error', new Error(msg.message)); return; }
-            self._emit(msg.type, msg);
-            self._emit('message', msg);
-          };
-          ws.onclose = function(event) {
-            if (self._ws !== ws) return;
-            self._clearTimers();
-            if (self._wsIntentionalClose) { self._emit('close', event); return; }
-            self._emit('close', event);
-            self._emit('disconnected');
-            self._reconnect();
-          };
-          ws.onerror = function(err) {
-            if (self._ws !== ws) return;
-            self._emit('error', err);
-            if (ws.readyState !== WebSocket.OPEN) reject(new Error('WebSocket connection failed'));
-          };
+      self._wsIntentionalClose = false;
+      self._reconnectAttempts = 0;
+      return self._ensureToken().then(function(token) {
+        return self._discoverWsEndpoint().then(function(endpoint) {
+          return new Promise(function(resolve, reject) {
+            var wsUrl = endpoint + (endpoint.indexOf('?') === -1 ? '?' : '&') +
+              'tenant=' + encodeURIComponent(self._tenant);
+            var ws = new WebSocket(wsUrl, ['access_token', token]);
+            self._ws = ws;
+            ws.onopen = function() {
+              if (self._ws !== ws) return;
+              self._reconnectAttempts = 0;
+              if (self._subscription) ws.send(JSON.stringify(self._subscription));
+              self._emit('open');
+              self._emit('connected');
+              resolve();
+            };
+            ws.onmessage = function(event) {
+              if (self._ws !== ws) return;
+              var msg;
+              try { msg = JSON.parse(event.data); } catch (e) { return; }
+              if (msg.type === 'pong') return;
+              if (msg.type === 'error') { self._emit('error', new Error(msg.message)); return; }
+              self._emit(msg.type, msg);
+              self._emit('message', msg);
+            };
+            ws.onclose = function(event) {
+              if (self._ws !== ws) return;
+              self._clearTimers();
+              if (self._wsIntentionalClose) { self._emit('close', event); return; }
+              self._emit('close', event);
+              self._emit('disconnected');
+              self._reconnect();
+            };
+            ws.onerror = function(err) {
+              if (self._ws !== ws) return;
+              self._emit('error', err);
+              if (ws.readyState !== WebSocket.OPEN) reject(new Error('WebSocket connection failed'));
+            };
+          });
         });
+      }).catch(function(err) {
+        self._emit('error', err);
       });
     };
 
