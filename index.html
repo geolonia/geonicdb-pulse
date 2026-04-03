@@ -1320,6 +1320,11 @@
       })
       .catch(function(err) {
         console.error('データ取得エラー:', err);
+        if (/Access denied|Unauthorized|token/i.test(err.message)) {
+          clearAuth();
+          location.href = location.pathname;
+          return;
+        }
         showError(
           'データの取得に失敗しました',
           err.message || '接続エラーが発生しました。API キーやテナント設定を確認してください。'
@@ -1399,6 +1404,12 @@
     db.on('reconnecting', function() {
       wsDot.className = 'ws-dot connecting';
       wsLabel.textContent = 'RECONNECTING';
+    });
+    db.on('error', function(err) {
+      if (err && /token|unauthorized|expired|invalid/i.test(err.message)) {
+        clearAuth();
+        location.href = location.pathname;
+      }
     });
     } // end initApp
   </script>
