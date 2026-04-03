@@ -14,6 +14,30 @@ import { initApp } from './app.js';
 
 window.handleLogout = handleLogout;
 
+// サイドパネルのモバイル用トグル
+(function() {
+  var toggle = document.getElementById('panel-toggle');
+  var panel = document.getElementById('side-panel');
+  var overlay = document.getElementById('panel-overlay');
+  var icon = document.getElementById('panel-toggle-icon');
+
+  function openPanel() {
+    panel.classList.add('open');
+    overlay.classList.add('visible');
+    icon.innerHTML = '&#10005;';
+  }
+  function closePanel() {
+    panel.classList.remove('open');
+    overlay.classList.remove('visible');
+    icon.innerHTML = '&#9776;';
+  }
+
+  toggle.onclick = function() {
+    panel.classList.contains('open') ? closePanel() : openPanel();
+  };
+  overlay.onclick = closePanel;
+})();
+
 (function() {
   var auth = getStoredAuth();
 
