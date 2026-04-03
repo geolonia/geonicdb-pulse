@@ -59,7 +59,6 @@ if (!ENTITY_TYPE) ENTITY_TYPE = '__none__';
 
 // UI のタイトル表示を更新
 document.getElementById('app-title').textContent = ENTITY_TYPE === '__none__' ? 'GeonicDB Monitor' : ENTITY_TYPE;
-document.getElementById('panel-title').textContent = ENTITY_TYPE === '__none__' ? '-' : ENTITY_TYPE;
 document.title = (ENTITY_TYPE === '__none__' ? '' : ENTITY_TYPE + ' — ') + 'GeonicDB Monitor';
 if (ENTITY_TYPE === '__none__') {
   document.querySelector('.header').style.display = 'none';
@@ -453,18 +452,6 @@ function selectEntity(id) {
 }
 
 // ============================================================
-// 統計表示
-// ============================================================
-
-var latestTime = null;
-
-function updateStats(list) {
-  document.getElementById('stat-count').textContent = list.length;
-  document.getElementById('stat-latest').textContent =
-    latestTime ? formatTime(latestTime) : '--:--';
-}
-
-// ============================================================
 // 地図レイヤー描画
 // ============================================================
 // MapLibre GL の data-driven styling を使い、選択状態に応じて
@@ -535,7 +522,6 @@ function renderEntities(list) {
       }
     });
   }
-  updateStats(list);
 }
 
 // ============================================================
@@ -640,11 +626,6 @@ map.on('style.load', function() { if (!mapReady) onMapReady(); });
 // なければ通常の NGSI-LD entities API にフォールバックする。
 // SDK の db.getEntities() は内部で認証ヘッダーを自動付与する。
 
-if (ENTITY_TYPE === '__none__') {
-  document.getElementById('stat-count').textContent = '-';
-  document.getElementById('stat-latest').textContent = '--:--';
-}
-
 var dataPromise = (ENTITY_TYPE !== '__none__')
   ? fetchTemporalEntities(ENTITY_TYPE).then(function(result) {
       if (result.length > 0) {
@@ -678,10 +659,9 @@ dataPromise && dataPromise
       );
       return;
     }
-    latestTime = new Date().toISOString();
     initFeed(entities);
     if (mapReady) { renderEntities(entities); }
-    else { pendingRender = entities; updateStats(entities); }
+    else { pendingRender = entities; }
     // 全エンティティが収まるように地図のビューを自動調整
     if (entities.length) {
       var bounds = new geolonia.LngLatBounds();
@@ -762,9 +742,7 @@ function handleEntity(msg, isNew) {
     }
     if (!found) entities.push(entity);
   }
-  latestTime = new Date().toISOString();
   if (mapReady) renderEntities(entities);
-  else updateStats(entities);
 
   addFeedItem(entity, isNew);
   showToast(getEntityName(entity));
