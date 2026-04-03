@@ -222,18 +222,46 @@ function flattenTemporal(te) {
 /**
  * NGSI-LD Temporal API からエンティティの時系列データを取得する。
  * SDK の _request() を使うことで認証ヘッダーが自動付与される。
+ *
+ * Temporal API は時系列属性のみ返すため、location や name などの
+ * 静的属性は通常の entities API から取得してマージする。
  */
 function fetchTemporalEntities(type) {
-  return db._request('GET', '/ngsi-ld/v1/temporal/entities?type=' + encodeURIComponent(type) + '&limit=1000')
+  var temporalPromise = db._request('GET', '/ngsi-ld/v1/temporal/entities?type=' + encodeURIComponent(type) + '&limit=1000')
     .then(function(res) {
       if (!res.ok) return res.json().then(function(e) { throw new Error(e.detail || 'Temporal query failed'); });
       return res.json();
     })
     .then(function(rawEntities) {
       if (!Array.isArray(rawEntities)) rawEntities = [];
-      // 生データを保持（ポップアップでスパークラインを描画するため）
       rawEntities.forEach(function(te) { temporalRaw[te.id] = te; });
-      return rawEntities.map(flattenTemporal);
+      return rawEntities;
+    });
+
+  var entitiesPromise = db.getEntities({ type: type, limit: 1000 });
+
+  return Promise.all([temporalPromise, entitiesPromise])
+    .then(function(results) {
+      var rawEntities = results[0];
+      var currentEntities = results[1];
+
+      // 通常エンティティを ID でルックアップできるようにする
+      var entityMap = {};
+      currentEntities.forEach(function(e) { entityMap[e.id] = e; });
+
+      return rawEntities.map(function(te) {
+        var flattened = flattenTemporal(te);
+        var current = entityMap[flattened.id];
+        if (current) {
+          // temporal にない属性を通常エンティティから補完する
+          Object.keys(current).forEach(function(key) {
+            if (flattened[key] === undefined) {
+              flattened[key] = current[key];
+            }
+          });
+        }
+        return flattened;
+      });
     });
 }
 
