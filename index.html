@@ -800,62 +800,39 @@
       baseUrl: auth.url,
       tenant: auth.tenant
     });
-    // JWT トークンを直接セット（DPoP フローをスキップ）
+    // SDK ネイティブの Bearer JWT サポートを利用（PR #824）
     db._token = auth.accessToken;
-    db._tokenExpiry = Date.now() + 3500 * 1000; // ~1時間
+    db._tokenExpiry = Date.now() + 3500 * 1000;
     db._tokenType = 'Bearer';
+    db._refreshToken = auth.refreshToken;
 
-    // refreshToken で自動トークン更新
-    var _refreshPromise = null;
+    // トークン更新時に localStorage を同期
+    var _origEnsureToken = GeonicDB.prototype._ensureToken.bind(db);
     db._ensureToken = function() {
-      var self = this;
-      if (self._token && Date.now() < self._tokenExpiry) {
-        return Promise.resolve(self._token);
-      }
-      if (_refreshPromise) return _refreshPromise;
-      _refreshPromise = fetch(auth.url + '/auth/refresh', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken: auth.refreshToken })
-      })
-      .then(function(res) {
-        if (!res.ok) throw new Error('Token refresh failed');
-        return res.json();
-      })
-      .then(function(data) {
-        self._token = data.accessToken;
-        self._tokenExpiry = Date.now() + (data.expiresIn - 60) * 1000;
-        self._tokenType = 'Bearer';
-        // localStorage も更新
-        auth.accessToken = data.accessToken;
-        if (data.refreshToken) auth.refreshToken = data.refreshToken;
+      return _origEnsureToken().then(function(token) {
+        auth.accessToken = db._token;
+        auth.refreshToken = db._refreshToken;
         storeAuth(auth);
-        _refreshPromise = null;
-        return self._token;
-      })
-      .catch(function(err) {
-        _refreshPromise = null;
+        return token;
+      }).catch(function(err) {
         clearAuth();
         location.href = location.pathname;
         throw err;
       });
-      return _refreshPromise;
     };
 
-    var origOpenWs = GeonicDB.prototype._openWebSocket;
+    // Bearer JWT で WebSocket 接続（SDK デフォルトの DPoP をスキップ）
     db._openWebSocket = function(token) {
       var self = this;
       return self._discoverWsEndpoint().then(function(endpoint) {
         return new Promise(function(resolve, reject) {
           var wsUrl = endpoint + (endpoint.indexOf('?') === -1 ? '?' : '&') +
-            'tenant=' + encodeURIComponent(self._tenant) +
-            '&token=' + encodeURIComponent(token);
-          var ws = new WebSocket(wsUrl);
+            'tenant=' + encodeURIComponent(self._tenant);
+          var ws = new WebSocket(wsUrl, ['access_token', token]);
           self._ws = ws;
           ws.onopen = function() {
             if (self._ws !== ws) return;
             self._reconnectAttempts = 0;
-            self._scheduleTokenRefresh();
             if (self._subscription) ws.send(JSON.stringify(self._subscription));
             self._emit('open');
             self._emit('connected');
