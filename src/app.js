@@ -87,7 +87,10 @@ var map = new geolonia.Map({
   zoom: 10,
   minZoom: 2,
   maxZoom: 16,
-  renderWorldCopies: false
+  renderWorldCopies: false,
+  dragRotate: false,
+  touchPitch: false,
+  pitchWithRotate: false
 });
 
 
