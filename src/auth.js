@@ -67,6 +67,7 @@ export function refreshAuth(auth) {
   .then(function(data) {
     auth.accessToken = data.accessToken;
     auth.refreshToken = data.refreshToken;
+    auth.expiresIn = data.expiresIn || 3600;
     storeAuth(auth);
     return auth;
   });
@@ -111,6 +112,7 @@ export function handleLogin(email, password, tenant) {
       email: email,
       accessToken: data.accessToken,
       refreshToken: data.refreshToken,
+      expiresIn: data.expiresIn || 3600,
       tenant: tenant || '',
       url: geonicdbUrl
     };

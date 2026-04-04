@@ -113,7 +113,9 @@ var db = new GeonicDB({
 
 // Bearer JWT トークンを直接セット（DPoP フローをスキップ）
 db._token = auth.accessToken;
-db._tokenExpiry = Date.now() + 3500 * 1000;
+// サーバーの expiresIn（秒）を使用し、少し余裕を持って期限を設定
+var expiresIn = (auth.expiresIn || 3600) - 60;
+db._tokenExpiry = Date.now() + expiresIn * 1000;
 db._tokenType = 'Bearer';
 db._refreshToken = auth.refreshToken;   // SDK がトークン期限切れ時に自動リフレッシュに使用
 
