@@ -502,14 +502,64 @@ function renderEntities(list) {
     // ソースが既にある場合はデータのみ更新
     map.getSource('entities').setData(geojson);
   } else {
-    // 初回はソースとレイヤーを作成
-    map.addSource('entities', { type: 'geojson', data: geojson });
+    // 初回はソースとレイヤーを作成（クラスタリング有効）
+    map.addSource('entities', {
+      type: 'geojson',
+      data: geojson,
+      cluster: true,
+      clusterMaxZoom: 14,
+      clusterRadius: 50
+    });
 
-    // グローレイヤー（背景のぼかし円）
+    // クラスタ円レイヤー（外側のグロー）
+    map.addLayer({
+      id: 'entity-cluster-glow',
+      type: 'circle',
+      source: 'entities',
+      filter: ['has', 'point_count'],
+      paint: {
+        'circle-radius': ['step', ['get', 'point_count'], 28, 10, 36, 50, 44],
+        'circle-color': 'rgba(0, 180, 255, 0.1)',
+        'circle-blur': 0.8
+      }
+    });
+
+    // クラスタ円レイヤー（メイン）
+    map.addLayer({
+      id: 'entity-clusters',
+      type: 'circle',
+      source: 'entities',
+      filter: ['has', 'point_count'],
+      paint: {
+        'circle-radius': ['step', ['get', 'point_count'], 18, 10, 24, 50, 32],
+        'circle-color': 'rgba(0, 180, 255, 0.25)',
+        'circle-stroke-width': 2,
+        'circle-stroke-color': 'rgba(0, 200, 255, 0.6)'
+      }
+    });
+
+    // クラスタ数ラベル
+    map.addLayer({
+      id: 'entity-cluster-count',
+      type: 'symbol',
+      source: 'entities',
+      filter: ['has', 'point_count'],
+      layout: {
+        'text-field': '{point_count_abbreviated}',
+        'text-size': 13,
+        'text-font': ['Noto Sans CJK JP Bold']
+      },
+      paint: {
+        'text-color': '#ffffff'
+      }
+    });
+
+    // グローレイヤー（背景のぼかし円）— 非クラスタのみ
     map.addLayer({
       id: 'entity-glow',
       type: 'circle',
       source: 'entities',
+      filter: ['!', ['has', 'point_count']],
       paint: {
         'circle-radius': ['case', ['==', ['get', 'selected'], 1], 32, 24],
         'circle-color': ['case', ['==', ['get', 'selected'], 1], '#ff1744', '#00b0ff'],
@@ -517,22 +567,24 @@ function renderEntities(list) {
         'circle-blur': 1
       }
     });
-    // パルスレイヤー（中間の円）
+    // パルスレイヤー（中間の円）— 非クラスタのみ
     map.addLayer({
       id: 'entity-pulse',
       type: 'circle',
       source: 'entities',
+      filter: ['!', ['has', 'point_count']],
       paint: {
         'circle-radius': ['case', ['==', ['get', 'selected'], 1], 18, 14],
         'circle-color': ['case', ['==', ['get', 'selected'], 1], '#ff1744', '#00b0ff'],
         'circle-opacity': ['case', ['==', ['get', 'selected'], 1], 0.2, 0.12]
       }
     });
-    // ポイントレイヤー（メインの円）
+    // ポイントレイヤー（メインの円）— 非クラスタのみ
     map.addLayer({
       id: 'entity-points',
       type: 'circle',
       source: 'entities',
+      filter: ['!', ['has', 'point_count']],
       paint: {
         'circle-radius': ['case', ['==', ['get', 'selected'], 1], 8, 6],
         'circle-color': ['case', ['==', ['get', 'selected'], 1], '#ff5252', '#00e5ff'],
@@ -541,18 +593,22 @@ function renderEntities(list) {
         'circle-stroke-color': ['case', ['==', ['get', 'selected'], 1], 'rgba(255,255,255,0.8)', 'rgba(255,255,255,0.5)']
       }
     });
-    // ラベルレイヤー（エンティティ名）
+    // ラベルレイヤー（エンティティ名）— 非クラスタのみ
     map.addLayer({
       id: 'entity-labels',
       type: 'symbol',
       source: 'entities',
+      filter: ['!', ['has', 'point_count']],
       layout: {
         'text-field': ['get', 'name'],
         'text-size': 11,
         'text-font': ['Noto Sans CJK JP Bold'],
         'text-offset': [0, -1.5],
         'text-allow-overlap': false,
-        'text-max-width': 10
+        'text-ignore-placement': false,
+        'text-max-width': 10,
+        'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
+        'text-radial-offset': 1.2
       },
       paint: {
         'text-color': 'rgba(224,247,250,0.8)',
@@ -560,6 +616,18 @@ function renderEntities(list) {
         'text-halo-width': 1.5
       }
     });
+
+    // クラスタをクリックしたらズームイン
+    map.on('click', 'entity-clusters', function(e) {
+      var features = map.queryRenderedFeatures(e.point, { layers: ['entity-clusters'] });
+      var clusterId = features[0].properties.cluster_id;
+      map.getSource('entities').getClusterExpansionZoom(clusterId, function(err, zoom) {
+        if (err) return;
+        map.easeTo({ center: features[0].geometry.coordinates, zoom: zoom });
+      });
+    });
+    map.on('mouseenter', 'entity-clusters', function() { map.getCanvas().style.cursor = 'pointer'; });
+    map.on('mouseleave', 'entity-clusters', function() { map.getCanvas().style.cursor = ''; });
   }
 }
 

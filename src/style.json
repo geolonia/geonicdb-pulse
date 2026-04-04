@@ -1,10 +1,28 @@
 {
   "version": 8,
-  "name": "Dark Gray",
+  "name": "Dark Gray GSI",
   "sources": {
-    "geolonia": {
+    "oceanus": {
       "type": "vector",
-      "url": "https://api.geolonia.com/v1/sources?key=YOUR-API-KEY"
+      "url": "https://tileserver.geolonia.com/oceanus/tiles.json?key=YOUR-API-KEY"
+    },
+    "gsi-japan": {
+      "type": "vector",
+      "url": "https://tileserver.geolonia.com/gsi_experimental_bvmap/tiles.json?key=YOUR-API-KEY",
+      "minzoom": 5
+    },
+    "geolonia-water": {
+      "type": "vector",
+      "url": "https://tileserver.geolonia.com/water/tiles.json?key=YOUR-API-KEY"
+    },
+    "geolonia-gsi-custom": {
+      "type": "vector",
+      "url": "https://tileserver.geolonia.com/gsi-extra-v2/tiles.json?key=YOUR-API-KEY"
+    },
+    "dem": {
+      "type": "raster-dem",
+      "url": "https://tileserver.geolonia.com/gsi-dem/tiles.json?key=YOUR-API-KEY",
+      "attribution": "<a href=\"https://www.gsi.go.jp/\" target=\"_blank\">&copy; GSI Japan</a>"
     }
   },
   "sprite": "https://sprites.geolonia.com/basic-white",
@@ -18,210 +36,87 @@
       }
     },
     {
-      "id": "landcover-glacier",
+      "id": "landcover-grass",
       "type": "fill",
-      "source": "geolonia",
+      "source": "geolonia-gsi-custom",
       "source-layer": "landcover",
       "filter": [
         "==",
-        "subclass",
-        "glacier"
+        "class",
+        "grass"
       ],
       "layout": {
         "visibility": "visible"
       },
       "paint": {
-        "fill-color": "rgba(255, 255, 255, 0.04)",
-        "fill-opacity": {
-          "base": 1,
-          "stops": [
-            [
-              0,
-              0.9
-            ],
-            [
-              10,
-              0.3
-            ]
-          ]
-        }
+        "fill-color": "rgba(255,255,255,0.04)",
+        "fill-opacity": 1
       }
     },
     {
-      "id": "landuse-commercial",
-      "type": "fill",
-      "source": "geolonia",
-      "source-layer": "landuse",
-      "filter": [
-        "all",
-        [
-          "==",
-          "$type",
-          "Polygon"
-        ],
-        [
-          "==",
-          "class",
-          "commercial"
-        ]
-      ],
-      "paint": {
-        "fill-color": "rgba(255, 255, 255, 0.03)"
-      }
-    },
-    {
-      "id": "landuse-industrial",
-      "type": "fill",
-      "source": "geolonia",
-      "source-layer": "landuse",
-      "filter": [
-        "all",
-        [
-          "==",
-          "$type",
-          "Polygon"
-        ],
-        [
-          "==",
-          "class",
-          "industrial"
-        ]
-      ],
-      "paint": {
-        "fill-color": "rgba(255, 255, 255, 0.08)"
-      }
-    },
-    {
-      "id": "park",
-      "type": "fill",
-      "source": "geolonia",
-      "source-layer": "park",
-      "filter": [
-        "==",
-        "$type",
-        "Polygon"
-      ],
-      "paint": {
-        "fill-color": "rgba(51, 51, 51, 0.17)",
-        "fill-opacity": {
-          "base": 1.8,
-          "stops": [
-            [
-              9,
-              0.5
-            ],
-            [
-              12,
-              0.2
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "id": "park-outline",
+      "id": "landcover-wood-blur",
       "type": "line",
-      "source": "geolonia",
-      "source-layer": "park",
+      "source": "geolonia-gsi-custom",
+      "source-layer": "landcover",
       "filter": [
         "==",
-        "$type",
-        "Polygon"
+        "class",
+        "wood"
       ],
       "layout": {
         "visibility": "visible"
       },
       "paint": {
-        "line-color": "rgba(70, 70, 70, 0.35)",
-        "line-dasharray": [
-          3,
-          3
-        ]
-      }
-    },
-    {
-      "id": "landuse-cemetery",
-      "type": "fill",
-      "source": "geolonia",
-      "source-layer": "landuse",
-      "filter": [
-        "==",
-        "class",
-        "cemetery"
-      ],
-      "paint": {
-        "fill-color": "rgba(255, 255, 255, 0.08)"
-      }
-    },
-    {
-      "id": "landuse-hospital",
-      "type": "fill",
-      "source": "geolonia",
-      "source-layer": "landuse",
-      "filter": [
-        "==",
-        "class",
-        "hospital"
-      ],
-      "paint": {
-        "fill-color": "rgba(255, 255, 255, 0.08)"
-      }
-    },
-    {
-      "id": "landuse-school",
-      "type": "fill",
-      "source": "geolonia",
-      "source-layer": "landuse",
-      "filter": [
-        "==",
-        "class",
-        "school"
-      ],
-      "paint": {
-        "fill-color": "rgba(255, 255, 255, 0.08)"
-      }
-    },
-    {
-      "id": "landuse-railway",
-      "type": "fill",
-      "source": "geolonia",
-      "source-layer": "landuse",
-      "filter": [
-        "==",
-        "class",
-        "railway"
-      ],
-      "paint": {
-        "fill-color": "rgba(255, 255, 255, 0.08)"
+        "line-color": "rgba(255,255,255,0.04)",
+        "line-width": 5,
+        "line-translate": {
+          "stops": [
+            [
+              14,
+              [
+                0,
+                0
+              ]
+            ],
+            [
+              17,
+              [
+                0,
+                2
+              ]
+            ]
+          ]
+        },
+        "line-opacity": {
+          "stops": [
+            [
+              14,
+              0
+            ],
+            [
+              17,
+              0.4
+            ]
+          ]
+        },
+        "line-blur": 10
       }
     },
     {
       "id": "landcover-wood",
       "type": "fill",
-      "source": "geolonia",
+      "source": "geolonia-gsi-custom",
       "source-layer": "landcover",
       "filter": [
-        "any",
-        [
-          "==",
-          "class",
-          "wood"
-        ],
-        [
-          "==",
-          "class",
-          "public_park"
-        ],
-        [
-          "==",
-          "class",
-          "grass"
-        ]
+        "==",
+        "class",
+        "wood"
       ],
+      "layout": {
+        "visibility": "visible"
+      },
       "paint": {
-        "fill-color": "rgba(91, 91, 91, 0.3)",
-        "fill-opacity": 0.2,
-        "fill-outline-color": "rgba(255, 255, 255, 0.03)",
+        "fill-color": "rgba(255,255,255,0.04)",
         "fill-antialias": {
           "base": 1,
           "stops": [
@@ -238,112 +133,27 @@
       }
     },
     {
-      "id": "waterway_tunnel",
-      "type": "line",
-      "source": "geolonia",
-      "source-layer": "waterway",
-      "minzoom": 14,
+      "id": "landcover-grass-park",
+      "type": "fill",
+      "source": "geolonia-gsi-custom",
+      "source-layer": "park",
       "filter": [
         "==",
-        "brunnel",
-        "tunnel"
+        "class",
+        "public_park"
       ],
       "layout": {
-        "line-cap": "round"
+        "visibility": "visible"
       },
       "paint": {
-        "line-color": "#262626",
-        "line-width": {
-          "base": 1.3,
-          "stops": [
-            [
-              13,
-              0.5
-            ],
-            [
-              20,
-              6
-            ]
-          ]
-        },
-        "line-dasharray": [
-          2,
-          4
-        ]
+        "fill-color": "rgba(255,255,255,0.04)",
+        "fill-opacity": 0.8
       }
     },
     {
-      "id": "waterway",
-      "type": "line",
-      "source": "geolonia",
-      "source-layer": "waterway",
-      "filter": [
-        "!=",
-        "brunnel",
-        "tunnel"
-      ],
-      "layout": {
-        "line-cap": "round"
-      },
-      "paint": {
-        "line-color": "#262626",
-        "line-width": {
-          "base": 1.3,
-          "stops": [
-            [
-              13,
-              0.5
-            ],
-            [
-              20,
-              6
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "id": "water-offset",
+      "id": "geolonia-water-ocean",
       "type": "fill",
-      "source": "geolonia",
-      "source-layer": "water",
-      "maxzoom": 8,
-      "filter": [
-        "==",
-        "$type",
-        "Polygon"
-      ],
-      "layout": {
-        "visibility": "none"
-      },
-      "paint": {
-        "fill-opacity": 1,
-        "fill-color": "#262626",
-        "fill-translate": {
-          "base": 1,
-          "stops": [
-            [
-              6,
-              [
-                2,
-                0
-              ]
-            ],
-            [
-              8,
-              [
-                0,
-                0
-              ]
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "id": "water",
-      "type": "fill",
-      "source": "geolonia",
+      "source": "geolonia-water",
       "source-layer": "water",
       "layout": {
         "visibility": "visible"
@@ -353,1753 +163,390 @@
       }
     },
     {
-      "id": "landcover-ice-shelf",
-      "type": "fill",
-      "source": "geolonia",
-      "source-layer": "landcover",
-      "filter": [
-        "==",
-        "subclass",
-        "ice_shelf"
-      ],
-      "layout": {
-        "visibility": "visible"
-      },
-      "paint": {
-        "fill-color": "#fff",
-        "fill-opacity": {
-          "base": 1,
-          "stops": [
-            [
-              0,
-              0.9
-            ],
-            [
-              10,
-              0.3
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "id": "tunnel-railway",
+      "id": "water-blur",
       "type": "line",
-      "source": "geolonia",
-      "source-layer": "transportation",
-      "filter": [
-        "all",
-        [
-          "==",
-          "brunnel",
-          "tunnel"
-        ],
-        [
-          "==",
-          "class",
-          "rail"
-        ]
-      ],
-      "paint": {
-        "line-color": "rgba(203, 203, 203, 0.4)",
-        "line-opacity": 1,
-        "line-width": {
-          "base": 1.4,
-          "stops": [
-            [
-              10,
-              0.5
-            ],
-            [
-              18,
-              4
-            ],
-            [
-              22,
-              18
-            ]
-          ]
-        },
-        "line-dasharray": [
-          6,
-          4
-        ]
-      }
-    },
-    {
-      "id": "tunnel-path",
-      "type": "line",
-      "source": "geolonia",
-      "source-layer": "transportation",
-      "filter": [
-        "all",
-        [
-          "==",
-          "$type",
-          "LineString"
-        ],
-        [
-          "all",
-          [
-            "==",
-            "brunnel",
-            "tunnel"
-          ],
-          [
-            "==",
-            "class",
-            "path"
-          ]
-        ]
-      ],
-      "paint": {
-        "line-color": "rgba(120, 120, 120, 0.5)",
-        "line-dasharray": [
-          1.5,
-          0.75
-        ],
-        "line-width": {
-          "base": 1.2,
-          "stops": [
-            [
-              15,
-              1.2
-            ],
-            [
-              20,
-              4
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "id": "tunnel-service-track",
-      "type": "line",
-      "source": "geolonia",
-      "source-layer": "transportation",
-      "filter": [
-        "all",
-        [
-          "==",
-          "brunnel",
-          "tunnel"
-        ],
-        [
-          "in",
-          "class",
-          "service",
-          "track"
-        ]
-      ],
-      "layout": {
-        "line-join": "round"
-      },
-      "paint": {
-        "line-color": "#fff",
-        "line-width": {
-          "base": 1.2,
-          "stops": [
-            [
-              15.5,
-              0
-            ],
-            [
-              16,
-              2
-            ],
-            [
-              20,
-              7.5
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "id": "tunnel-minor",
-      "type": "line",
-      "source": "geolonia",
-      "source-layer": "transportation",
-      "filter": [
-        "all",
-        [
-          "==",
-          "brunnel",
-          "tunnel"
-        ],
-        [
-          "==",
-          "class",
-          "minor_road"
-        ]
-      ],
-      "layout": {
-        "line-join": "round"
-      },
-      "paint": {
-        "line-color": "rgba(120, 120, 120, 0.5)",
-        "line-opacity": 1,
-        "line-width": {
-          "base": 1.2,
-          "stops": [
-            [
-              13.5,
-              0
-            ],
-            [
-              14,
-              2.5
-            ],
-            [
-              20,
-              11.5
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "id": "tunnel-secondary-tertiary",
-      "type": "line",
-      "source": "geolonia",
-      "source-layer": "transportation",
-      "filter": [
-        "all",
-        [
-          "==",
-          "brunnel",
-          "tunnel"
-        ],
-        [
-          "in",
-          "class",
-          "secondary",
-          "tertiary"
-        ]
-      ],
-      "layout": {
-        "line-join": "round"
-      },
-      "paint": {
-        "line-color": "rgba(120, 120, 120, 0.5)",
-        "line-width": {
-          "base": 1.2,
-          "stops": [
-            [
-              6.5,
-              0
-            ],
-            [
-              7,
-              0.5
-            ],
-            [
-              20,
-              10
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "id": "tunnel-trunk-primary",
-      "type": "line",
-      "source": "geolonia",
-      "source-layer": "transportation",
-      "filter": [
-        "all",
-        [
-          "==",
-          "brunnel",
-          "tunnel"
-        ],
-        [
-          "in",
-          "class",
-          "primary",
-          "trunk"
-        ]
-      ],
-      "layout": {
-        "line-join": "round"
-      },
-      "paint": {
-        "line-color": "rgba(120, 120, 120, 0.5)",
-        "line-width": {
-          "base": 1.2,
-          "stops": [
-            [
-              6.5,
-              0
-            ],
-            [
-              7,
-              0.5
-            ],
-            [
-              20,
-              18
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "id": "tunnel-motorway",
-      "type": "line",
-      "source": "geolonia",
-      "source-layer": "transportation",
-      "filter": [
-        "all",
-        [
-          "==",
-          "brunnel",
-          "tunnel"
-        ],
-        [
-          "==",
-          "class",
-          "motorway"
-        ]
-      ],
+      "source": "geolonia-water",
+      "source-layer": "water",
+      "minzoom": 17,
       "layout": {
         "line-join": "round",
         "visibility": "visible"
       },
       "paint": {
-        "line-color": "rgba(120, 120, 120, 0.5)",
+        "line-color": "#262626",
         "line-width": {
-          "base": 1.2,
           "stops": [
-            [
-              6.5,
-              0
-            ],
-            [
-              7,
-              0.5
-            ],
-            [
-              20,
-              18
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "id": "ferry",
-      "type": "line",
-      "source": "geolonia",
-      "source-layer": "transportation",
-      "filter": [
-        "all",
-        [
-          "in",
-          "class",
-          "ferry"
-        ]
-      ],
-      "layout": {
-        "line-join": "round",
-        "visibility": "visible"
-      },
-      "paint": {
-        "line-color": "rgba(146, 146, 146, 1)",
-        "line-width": 1.1,
-        "line-dasharray": [
-          2,
-          2
-        ]
-      }
-    },
-    {
-      "id": "aeroway-area",
-      "type": "fill",
-      "source": "geolonia",
-      "source-layer": "aeroway",
-      "minzoom": 4,
-      "filter": [
-        "all",
-        [
-          "==",
-          "$type",
-          "Polygon"
-        ],
-        [
-          "in",
-          "class",
-          "runway",
-          "taxiway"
-        ]
-      ],
-      "layout": {
-        "visibility": "visible"
-      },
-      "paint": {
-        "fill-opacity": {
-          "base": 1,
-          "stops": [
-            [
-              13,
-              0
-            ],
-            [
-              14,
-              1
-            ]
-          ]
-        },
-        "fill-color": "rgba(255, 255, 255, 1)"
-      }
-    },
-    {
-      "id": "aeroway-taxiway",
-      "type": "line",
-      "source": "geolonia",
-      "source-layer": "aeroway",
-      "minzoom": 4,
-      "filter": [
-        "all",
-        [
-          "in",
-          "class",
-          "taxiway"
-        ],
-        [
-          "==",
-          "$type",
-          "LineString"
-        ]
-      ],
-      "layout": {
-        "line-cap": "round",
-        "line-join": "round",
-        "visibility": "visible"
-      },
-      "paint": {
-        "line-color": "rgba(255, 255, 255, 1)",
-        "line-width": {
-          "base": 1.5,
-          "stops": [
-            [
-              11,
-              1
-            ],
             [
               17,
-              10
+              3
+            ],
+            [
+              20,
+              5
             ]
           ]
         },
-        "line-opacity": {
-          "base": 1,
+        "line-translate": {
           "stops": [
             [
-              11,
-              0
+              17,
+              [
+                1,
+                1
+              ]
             ],
             [
-              12,
-              1
+              20,
+              [
+                -2,
+                -2
+              ]
             ]
           ]
-        }
+        },
+        "line-blur": 2
       }
     },
     {
-      "id": "aeroway-runway",
+      "id": "water-blur-gsi",
       "type": "line",
-      "source": "geolonia",
-      "source-layer": "aeroway",
-      "minzoom": 4,
-      "filter": [
-        "all",
-        [
-          "in",
-          "class",
-          "runway"
-        ],
-        [
-          "==",
-          "$type",
-          "LineString"
-        ]
-      ],
+      "source": "gsi-japan",
+      "source-layer": "river",
+      "minzoom": 17,
       "layout": {
-        "line-cap": "round",
         "line-join": "round",
         "visibility": "visible"
       },
       "paint": {
-        "line-color": "rgba(255, 255, 255, 1)",
+        "line-color": "#262626",
         "line-width": {
-          "base": 1.5,
           "stops": [
             [
-              11,
-              4
+              17,
+              3
             ],
             [
-              17,
-              50
+              20,
+              5
             ]
           ]
         },
-        "line-opacity": {
-          "base": 1,
+        "line-translate": {
           "stops": [
             [
-              11,
-              0
+              17,
+              [
+                1,
+                1
+              ]
             ],
             [
-              12,
-              1
+              20,
+              [
+                -2,
+                -2
+              ]
             ]
           ]
-        }
+        },
+        "line-blur": 2
       }
     },
     {
-      "id": "highway-area",
-      "type": "fill",
-      "source": "geolonia",
-      "source-layer": "transportation",
-      "filter": [
-        "==",
-        "$type",
-        "Polygon"
-      ],
-      "layout": {
-        "visibility": "visible"
-      },
-      "paint": {
-        "fill-color": "rgba(255, 255, 255, 0.03)",
-        "fill-outline-color": "#cfcdca",
-        "fill-opacity": 0.9,
-        "fill-antialias": false
-      }
-    },
-    {
-      "id": "highway-path",
+      "id": "water-gsi",
       "type": "line",
-      "source": "geolonia",
-      "source-layer": "transportation",
+      "source": "gsi-japan",
+      "source-layer": "river",
       "minzoom": 16,
       "filter": [
         "all",
         [
-          "==",
-          "$type",
-          "LineString"
-        ],
-        [
-          "all",
-          [
-            "!in",
-            "brunnel",
-            "bridge",
-            "tunnel"
-          ],
-          [
-            "==",
-            "class",
-            "path"
-          ]
-        ]
-      ],
-      "paint": {
-        "line-color": "rgba(238, 238, 238, 0.16)",
-        "line-dasharray": [
-          1.5,
-          0.75
-        ],
-        "line-width": {
-          "base": 1.2,
-          "stops": [
-            [
-              15,
-              1.2
-            ],
-            [
-              20,
-              4
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "id": "highway-motorway-link",
-      "type": "line",
-      "source": "geolonia",
-      "source-layer": "transportation",
-      "minzoom": 12,
-      "filter": [
-        "all",
-        [
-          "!in",
-          "brunnel",
-          "bridge",
-          "tunnel"
-        ],
-        [
-          "==",
-          "class",
-          "motorway_link"
+          "!=",
+          "ftCode",
+          5322
         ]
       ],
       "layout": {
-        "line-cap": "round",
-        "line-join": "round"
-      },
-      "paint": {
-        "line-color": "#fc8",
-        "line-width": {
-          "base": 1.2,
-          "stops": [
-            [
-              12.5,
-              0
-            ],
-            [
-              13,
-              1.5
-            ],
-            [
-              14,
-              2.5
-            ],
-            [
-              20,
-              11.5
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "id": "highway-link",
-      "type": "line",
-      "source": "geolonia",
-      "source-layer": "transportation",
-      "minzoom": 13,
-      "filter": [
-        "all",
-        [
-          "!in",
-          "brunnel",
-          "bridge",
-          "tunnel"
-        ],
-        [
-          "in",
-          "class",
-          "primary_link",
-          "secondary_link",
-          "tertiary_link",
-          "trunk_link"
-        ]
-      ],
-      "layout": {
-        "line-cap": "round",
         "line-join": "round",
+        "line-round-limit": 0.5,
         "visibility": "visible"
       },
       "paint": {
-        "line-color": "#fea",
-        "line-width": {
-          "base": 1.2,
-          "stops": [
-            [
-              12.5,
-              0
-            ],
-            [
-              13,
-              1.5
-            ],
-            [
-              14,
-              2.5
-            ],
-            [
-              20,
-              11.5
-            ]
-          ]
-        }
+        "line-color": "#262626",
+        "line-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          16,
+          1,
+          20,
+          5
+        ]
       }
     },
     {
-      "id": "highway-minor",
-      "type": "line",
-      "source": "geolonia",
-      "source-layer": "transportation",
-      "minzoom": 13,
+      "id": "water",
+      "type": "fill",
+      "source": "gsi-japan",
+      "source-layer": "waterarea",
+      "filter": [
+        "all"
+      ],
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-color": "#262626"
+      }
+    },
+    {
+      "id": "oc-ocean",
+      "type": "fill",
+      "source": "oceanus",
+      "source-layer": "oc-water",
+      "maxzoom": 10,
       "filter": [
         "all",
         [
           "==",
-          "$type",
-          "LineString"
-        ],
-        [
-          "all",
           [
-            "!=",
-            "brunnel",
-            "tunnel"
+            "get",
+            "class"
           ],
-          [
-            "in",
-            "class",
-            "minor",
-            "service",
-            "track"
-          ]
+          "ocean"
         ]
       ],
       "layout": {
-        "line-cap": "round",
-        "line-join": "round"
-      },
-      "paint": {
-        "line-color": "rgba(255, 255, 255, 0.25)",
-        "line-opacity": 1,
-        "line-width": {
-          "base": 1.2,
-          "stops": [
-            [
-              13.5,
-              0
-            ],
-            [
-              14,
-              2.5
-            ],
-            [
-              20,
-              11.5
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "id": "highway-secondary-tertiary",
-      "type": "line",
-      "source": "geolonia",
-      "source-layer": "transportation",
-      "filter": [
-        "all",
-        [
-          "!in",
-          "brunnel",
-          "bridge",
-          "tunnel"
-        ],
-        [
-          "in",
-          "class",
-          "secondary",
-          "tertiary"
-        ]
-      ],
-      "layout": {
-        "line-cap": "round",
-        "line-join": "round",
         "visibility": "visible"
       },
       "paint": {
-        "line-color": "rgba(255, 255, 255, 0.25)",
-        "line-width": {
-          "base": 1.2,
+        "fill-opacity": {
           "stops": [
             [
-              6.5,
+              9,
+              1
+            ],
+            [
+              10,
               0
-            ],
-            [
-              8,
-              0.5
-            ],
-            [
-              20,
-              13
             ]
           ]
         },
-        "line-opacity": 1
+        "fill-color": "#262626"
       }
     },
     {
-      "id": "highway-primary",
-      "type": "line",
-      "source": "geolonia",
-      "source-layer": "transportation",
+      "id": "oc-glacier",
+      "type": "fill",
+      "source": "oceanus",
+      "source-layer": "oc-glacier",
+      "maxzoom": 8,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-color": "#262626"
+      }
+    },
+    {
+      "id": "oc-landuse-commercial-ja",
+      "type": "fill",
+      "source": "oceanus",
+      "source-layer": "oc-landuse",
+      "minzoom": 5,
+      "maxzoom": 8,
       "filter": [
         "all",
         [
           "==",
-          "$type",
-          "LineString"
-        ],
-        [
-          "all",
           [
-            "!in",
-            "brunnel",
-            "bridge",
-            "tunnel"
+            "geometry-type"
           ],
-          [
-            "in",
-            "class",
-            "primary"
-          ]
-        ]
-      ],
-      "layout": {
-        "line-cap": "round",
-        "line-join": "round",
-        "visibility": "visible"
-      },
-      "paint": {
-        "line-color": "rgba(255, 255, 255, 0.25)",
-        "line-width": {
-          "base": 1.2,
-          "stops": [
-            [
-              8.5,
-              0
-            ],
-            [
-              9,
-              0.5
-            ],
-            [
-              20,
-              18
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "id": "highway-trunk",
-      "type": "line",
-      "source": "geolonia",
-      "source-layer": "transportation",
-      "filter": [
-        "all",
+          "Polygon"
+        ],
         [
           "==",
-          "$type",
-          "LineString"
+          [
+            "get",
+            "class"
+          ],
+          "commercial"
         ],
         [
-          "all",
-          [
-            "!in",
-            "brunnel",
-            "bridge",
-            "tunnel"
-          ],
-          [
-            "in",
-            "class",
-            "trunk"
-          ]
+          "has",
+          "jflag"
         ]
       ],
-      "layout": {
-        "line-cap": "round",
-        "line-join": "round",
-        "visibility": "visible"
-      },
       "paint": {
-        "line-color": "rgba(255, 255, 255, 0.25)",
-        "line-width": {
-          "base": 1.2,
-          "stops": [
-            [
-              6.5,
-              0
-            ],
-            [
-              7,
-              0.5
-            ],
-            [
-              20,
-              18
-            ]
-          ]
-        }
+        "fill-color": "rgba(255,255,255,0.03)"
       }
     },
     {
-      "id": "highway-motorway",
-      "type": "line",
-      "source": "geolonia",
-      "source-layer": "transportation",
+      "id": "oc-landuse-commercial",
+      "type": "fill",
+      "source": "oceanus",
+      "source-layer": "oc-landuse",
       "minzoom": 5,
       "filter": [
         "all",
         [
           "==",
-          "$type",
-          "LineString"
-        ],
-        [
-          "all",
           [
-            "!in",
-            "brunnel",
-            "bridge",
-            "tunnel"
+            "geometry-type"
           ],
+          "Polygon"
+        ],
+        [
+          "==",
           [
-            "==",
-            "class",
-            "motorway"
-          ]
-        ]
-      ],
-      "layout": {
-        "line-cap": "round",
-        "line-join": "round",
-        "visibility": "visible"
-      },
-      "paint": {
-        "line-color": "rgba(255, 255, 255, 0.25)",
-        "line-width": {
-          "base": 1.2,
-          "stops": [
-            [
-              6.5,
-              0
-            ],
-            [
-              7,
-              0.5
-            ],
-            [
-              20,
-              18
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "id": "bridge-motorway-link-casing",
-      "type": "line",
-      "source": "geolonia",
-      "source-layer": "transportation",
-      "filter": [
-        "all",
-        [
-          "==",
-          "brunnel",
-          "bridge"
-        ],
-        [
-          "==",
-          "class",
-          "motorway_link"
-        ]
-      ],
-      "layout": {
-        "line-join": "round"
-      },
-      "paint": {
-        "line-color": "#e9ac77",
-        "line-opacity": 1,
-        "line-width": {
-          "base": 1.2,
-          "stops": [
-            [
-              12,
-              1
-            ],
-            [
-              13,
-              3
-            ],
-            [
-              14,
-              4
-            ],
-            [
-              20,
-              15
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "id": "bridge-link-casing",
-      "type": "line",
-      "source": "geolonia",
-      "source-layer": "transportation",
-      "filter": [
-        "all",
-        [
-          "==",
-          "brunnel",
-          "bridge"
-        ],
-        [
-          "in",
-          "class",
-          "primary_link",
-          "secondary_link",
-          "tertiary_link",
-          "trunk_link"
-        ]
-      ],
-      "layout": {
-        "line-join": "round"
-      },
-      "paint": {
-        "line-color": "#e9ac77",
-        "line-opacity": 1,
-        "line-width": {
-          "base": 1.2,
-          "stops": [
-            [
-              12,
-              1
-            ],
-            [
-              13,
-              3
-            ],
-            [
-              14,
-              4
-            ],
-            [
-              20,
-              15
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "id": "bridge-secondary-tertiary-casing",
-      "type": "line",
-      "source": "geolonia",
-      "source-layer": "transportation",
-      "filter": [
-        "all",
-        [
-          "==",
-          "brunnel",
-          "bridge"
-        ],
-        [
-          "in",
-          "class",
-          "secondary",
-          "tertiary"
-        ]
-      ],
-      "layout": {
-        "line-join": "round"
-      },
-      "paint": {
-        "line-color": "rgba(153, 153, 153, 1)",
-        "line-opacity": 1,
-        "line-width": {
-          "base": 1.2,
-          "stops": [
-            [
-              8,
-              1.5
-            ],
-            [
-              20,
-              28
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "id": "bridge-trunk-primary-casing",
-      "type": "line",
-      "source": "geolonia",
-      "source-layer": "transportation",
-      "filter": [
-        "all",
-        [
-          "==",
-          "brunnel",
-          "bridge"
-        ],
-        [
-          "in",
-          "class",
-          "primary",
-          "trunk"
-        ]
-      ],
-      "layout": {
-        "line-join": "round"
-      },
-      "paint": {
-        "line-color": "rgba(153, 153, 153, 1)",
-        "line-width": {
-          "base": 1.2,
-          "stops": [
-            [
-              5,
-              0.4
-            ],
-            [
-              6,
-              0.6
-            ],
-            [
-              7,
-              1.5
-            ],
-            [
-              20,
-              26
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "id": "bridge-motorway-casing",
-      "type": "line",
-      "source": "geolonia",
-      "source-layer": "transportation",
-      "filter": [
-        "all",
-        [
-          "==",
-          "brunnel",
-          "bridge"
-        ],
-        [
-          "==",
-          "class",
-          "motorway"
-        ]
-      ],
-      "layout": {
-        "line-join": "round",
-        "visibility": "none"
-      },
-      "paint": {
-        "line-color": "rgba(153, 153, 153, 0.2)",
-        "line-width": {
-          "base": 1.2,
-          "stops": [
-            [
-              5,
-              0.4
-            ],
-            [
-              6,
-              0.6
-            ],
-            [
-              7,
-              1.5
-            ],
-            [
-              20,
-              22
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "id": "bridge-path-casing",
-      "type": "line",
-      "source": "geolonia",
-      "source-layer": "transportation",
-      "filter": [
-        "all",
-        [
-          "==",
-          "$type",
-          "LineString"
-        ],
-        [
-          "all",
-          [
-            "==",
-            "brunnel",
-            "bridge"
+            "get",
+            "class"
           ],
-          [
-            "==",
-            "class",
-            "path"
-          ]
-        ]
-      ],
-      "paint": {
-        "line-color": "#f8f4f0",
-        "line-width": {
-          "base": 1.2,
-          "stops": [
-            [
-              15,
-              1.2
-            ],
-            [
-              20,
-              18
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "id": "bridge-path",
-      "type": "line",
-      "source": "geolonia",
-      "source-layer": "transportation",
-      "filter": [
-        "all",
-        [
-          "==",
-          "$type",
-          "LineString"
+          "commercial"
         ],
         [
-          "all",
+          "==",
           [
-            "==",
-            "brunnel",
-            "bridge"
+            "has",
+            "jflag"
           ],
-          [
-            "==",
-            "class",
-            "path"
-          ]
+          false
         ]
       ],
       "paint": {
-        "line-color": "#cba",
-        "line-width": {
-          "base": 1.2,
-          "stops": [
-            [
-              15,
-              1.2
-            ],
-            [
-              20,
-              4
-            ]
-          ]
-        },
-        "line-dasharray": [
-          1.5,
-          0.75
-        ]
+        "fill-color": "rgba(255,255,255,0.03)"
       }
     },
     {
-      "id": "bridge-motorway-link",
-      "type": "line",
-      "source": "geolonia",
-      "source-layer": "transportation",
-      "filter": [
-        "all",
-        [
-          "==",
-          "brunnel",
-          "bridge"
-        ],
-        [
-          "==",
-          "class",
-          "motorway_link"
-        ]
-      ],
-      "layout": {
-        "line-join": "round"
-      },
-      "paint": {
-        "line-color": "#fc8",
-        "line-width": {
-          "base": 1.2,
-          "stops": [
-            [
-              12.5,
-              0
-            ],
-            [
-              13,
-              1.5
-            ],
-            [
-              14,
-              2.5
-            ],
-            [
-              20,
-              11.5
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "id": "bridge-link",
-      "type": "line",
-      "source": "geolonia",
-      "source-layer": "transportation",
-      "filter": [
-        "all",
-        [
-          "==",
-          "brunnel",
-          "bridge"
-        ],
-        [
-          "in",
-          "class",
-          "primary_link",
-          "secondary_link",
-          "tertiary_link",
-          "trunk_link"
-        ]
-      ],
-      "layout": {
-        "line-join": "round"
-      },
-      "paint": {
-        "line-color": "#fea",
-        "line-width": {
-          "base": 1.2,
-          "stops": [
-            [
-              12.5,
-              0
-            ],
-            [
-              13,
-              1.5
-            ],
-            [
-              14,
-              2.5
-            ],
-            [
-              20,
-              11.5
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "id": "bridge-secondary-tertiary",
-      "type": "line",
-      "source": "geolonia",
-      "source-layer": "transportation",
-      "filter": [
-        "all",
-        [
-          "==",
-          "brunnel",
-          "bridge"
-        ],
-        [
-          "in",
-          "class",
-          "secondary",
-          "tertiary"
-        ]
-      ],
-      "layout": {
-        "line-join": "round"
-      },
-      "paint": {
-        "line-color": "rgba(255, 255, 255, 0.25)",
-        "line-width": {
-          "base": 1.2,
-          "stops": [
-            [
-              6.5,
-              0
-            ],
-            [
-              7,
-              0.5
-            ],
-            [
-              20,
-              20
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "id": "bridge-trunk-primary",
-      "type": "line",
-      "source": "geolonia",
-      "source-layer": "transportation",
-      "filter": [
-        "all",
-        [
-          "==",
-          "brunnel",
-          "bridge"
-        ],
-        [
-          "in",
-          "class",
-          "primary",
-          "trunk"
-        ]
-      ],
-      "layout": {
-        "line-join": "round"
-      },
-      "paint": {
-        "line-color": "rgba(255, 255, 255, 0.25)",
-        "line-width": {
-          "base": 1.2,
-          "stops": [
-            [
-              6.5,
-              0
-            ],
-            [
-              7,
-              0.5
-            ],
-            [
-              20,
-              18
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "id": "bridge-motorway",
-      "type": "line",
-      "source": "geolonia",
-      "source-layer": "transportation",
-      "filter": [
-        "all",
-        [
-          "==",
-          "brunnel",
-          "bridge"
-        ],
-        [
-          "==",
-          "class",
-          "motorway"
-        ]
-      ],
-      "layout": {
-        "line-join": "round"
-      },
-      "paint": {
-        "line-color": "rgba(255, 255, 255, 0.25)",
-        "line-width": {
-          "base": 1.2,
-          "stops": [
-            [
-              6.5,
-              0
-            ],
-            [
-              7,
-              0.5
-            ],
-            [
-              20,
-              18
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "id": "railway",
-      "type": "line",
-      "source": "geolonia",
-      "source-layer": "transportation",
-      "filter": [
-        "all",
-        [
-          "==",
-          "class",
-          "rail"
-        ],
-        [
-          "!in",
-          "brunnel",
-          "tunnel"
-        ]
-      ],
-      "paint": {
-        "line-color": "rgba(153, 153, 153, 0.8)",
-        "line-width": {
-          "stops": [
-            [
-              10,
-              0.8
-            ],
-            [
-              18,
-              4
-            ],
-            [
-              22,
-              20
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "id": "railway-hatching",
-      "type": "line",
-      "source": "geolonia",
-      "source-layer": "transportation",
-      "filter": [
-        "all",
-        [
-          "==",
-          "class",
-          "rail"
-        ],
-        [
-          "!in",
-          "brunnel",
-          "tunnel"
-        ]
-      ],
+      "id": "oc-forest",
+      "type": "fill",
+      "source": "oceanus",
+      "source-layer": "oc-forest",
+      "minzoom": 0,
+      "maxzoom": 9,
       "layout": {
         "visibility": "visible"
       },
       "paint": {
-        "line-color": "rgba(255, 255, 255, 1)",
-        "line-dasharray": [
-          6,
-          4
-        ],
-        "line-width": {
-          "stops": [
-            [
-              10,
-              0.5
-            ],
-            [
-              18,
-              2
-            ],
-            [
-              22,
-              18
-            ]
-          ]
-        }
+        "fill-color": "rgba(255,255,255,0.04)"
       }
     },
     {
-      "id": "cablecar",
+      "id": "oc-waterway-river-ja",
       "type": "line",
-      "source": "geolonia",
-      "source-layer": "transportation",
-      "minzoom": 13,
-      "filter": [
-        "==",
-        "class",
-        "cable_car"
-      ],
-      "layout": {
-        "visibility": "visible",
-        "line-cap": "round"
-      },
-      "paint": {
-        "line-color": "hsl(0, 0%, 70%)",
-        "line-width": {
-          "base": 1,
-          "stops": [
-            [
-              11,
-              1
-            ],
-            [
-              19,
-              2.5
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "id": "cablecar-dash",
-      "type": "line",
-      "source": "geolonia",
-      "source-layer": "transportation",
-      "minzoom": 13,
-      "filter": [
-        "==",
-        "class",
-        "cable_car"
-      ],
-      "layout": {
-        "visibility": "visible",
-        "line-cap": "round"
-      },
-      "paint": {
-        "line-color": "hsl(0, 0%, 70%)",
-        "line-width": {
-          "base": 1,
-          "stops": [
-            [
-              11,
-              3
-            ],
-            [
-              19,
-              5.5
-            ]
-          ]
-        },
-        "line-dasharray": [
-          2,
-          3
-        ]
-      }
-    },
-    {
-      "id": "boundary-land-level-4",
-      "type": "line",
-      "source": "geolonia",
-      "source-layer": "boundary",
-      "maxzoom": 14,
+      "source": "oceanus",
+      "source-layer": "oc-waterway",
+      "minzoom": 4,
+      "maxzoom": 8,
       "filter": [
         "all",
         [
           "==",
-          "admin_level",
-          4
+          [
+            "get",
+            "class"
+          ],
+          "river"
+        ],
+        [
+          "!=",
+          [
+            "get",
+            "brunnel"
+          ],
+          "tunnel"
+        ],
+        [
+          "has",
+          "jflag"
         ]
       ],
       "layout": {
-        "line-join": "round"
+        "line-cap": "round"
       },
       "paint": {
-        "line-color": "#444444",
-        "line-dasharray": [
-          3,
-          1,
-          1,
-          1
-        ],
-        "line-width": {
-          "base": 1.4,
-          "stops": [
-            [
-              4,
-              0.4
-            ],
-            [
-              5,
-              1
-            ],
-            [
-              12,
-              2
-            ]
-          ]
-        }
+        "line-color": "#262626",
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            1.2
+          ],
+          [
+            "zoom"
+          ],
+          10,
+          0.8,
+          20,
+          6
+        ]
       }
     },
     {
-      "id": "boundary-water",
+      "id": "oc-waterway-river",
       "type": "line",
-      "source": "geolonia",
-      "source-layer": "boundary",
+      "source": "oceanus",
+      "source-layer": "oc-waterway",
+      "minzoom": 4,
       "filter": [
         "all",
         [
-          "in",
-          "admin_level",
-          2,
-          4
+          "==",
+          [
+            "get",
+            "class"
+          ],
+          "river"
+        ],
+        [
+          "!=",
+          [
+            "get",
+            "brunnel"
+          ],
+          "tunnel"
         ],
         [
           "==",
-          "maritime",
-          1
+          [
+            "has",
+            "jflag"
+          ],
+          false
         ]
       ],
       "layout": {
-        "line-cap": "round",
-        "line-join": "round"
+        "line-cap": "round"
       },
       "paint": {
-        "line-color": "#444444",
-        "line-width": {
-          "base": 1,
-          "stops": [
-            [
-              0,
-              0.6
-            ],
-            [
-              4,
-              1.4
-            ],
-            [
-              5,
-              2
-            ],
-            [
-              12,
-              8
-            ]
-          ]
-        },
-        "line-opacity": {
-          "stops": [
-            [
-              6,
-              0.6
-            ],
-            [
-              10,
-              1
-            ]
-          ]
-        }
+        "line-color": "#262626",
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            1.2
+          ],
+          [
+            "zoom"
+          ],
+          10,
+          0.8,
+          20,
+          6
+        ]
       }
     },
     {
-      "id": "waterway-name",
+      "id": "oc-waterway-name-ja",
       "type": "symbol",
-      "source": "geolonia",
-      "source-layer": "waterway",
-      "minzoom": 13,
+      "source": "oceanus",
+      "source-layer": "oc-waterway",
+      "minzoom": 6,
+      "maxzoom": 8,
       "filter": [
         "all",
         [
@@ -2110,35 +557,11 @@
         [
           "has",
           "name"
-        ]
-      ],
-      "layout": {
-        "text-font": [
-          "Noto Sans Regular"
         ],
-        "text-size": 14,
-        "text-field": "{name}",
-        "text-max-width": 5,
-        "text-rotation-alignment": "map",
-        "symbol-placement": "line",
-        "text-letter-spacing": 0.2,
-        "symbol-spacing": 350
-      },
-      "paint": {
-        "text-color": "#555555",
-        "text-halo-width": 1.5,
-        "text-halo-color": "rgba(44, 44, 44, 0.9)"
-      }
-    },
-    {
-      "id": "water-name-lakeline",
-      "type": "symbol",
-      "source": "geolonia",
-      "source-layer": "water_name",
-      "filter": [
-        "==",
-        "$type",
-        "LineString"
+        [
+          "has",
+          "jflag"
+        ]
       ],
       "layout": {
         "text-font": [
@@ -2155,24 +578,302 @@
       "paint": {
         "text-color": "#555555",
         "text-halo-width": 1.5,
-        "text-halo-color": "rgba(44, 44, 44, 0.9)"
+        "text-halo-color": "rgba(255,255,255,0.7)"
       }
     },
     {
-      "id": "water-name-ocean",
+      "id": "oc-waterway-name",
       "type": "symbol",
-      "source": "geolonia",
-      "source-layer": "water_name",
+      "source": "oceanus",
+      "source-layer": "oc-waterway",
+      "minzoom": 6,
+      "filter": [
+        "all",
+        [
+          "has",
+          "name"
+        ],
+        [
+          "==",
+          [
+            "has",
+            "jflag"
+          ],
+          false
+        ]
+      ],
+      "layout": {
+        "text-font": [
+          "Noto Sans Regular"
+        ],
+        "text-size": 14,
+        "text-field": "{name}",
+        "text-max-width": 5,
+        "text-rotation-alignment": "map",
+        "symbol-placement": "line",
+        "symbol-spacing": 350,
+        "text-letter-spacing": 0.2
+      },
+      "paint": {
+        "text-color": "#555555",
+        "text-halo-width": 1.5,
+        "text-halo-color": "rgba(255,255,255,0.7)"
+      }
+    },
+    {
+      "id": "oc-lake-blur",
+      "type": "line",
+      "source": "oceanus",
+      "source-layer": "oc-water",
+      "minzoom": 17,
       "filter": [
         "all",
         [
           "==",
-          "$type",
+          [
+            "get",
+            "class"
+          ],
+          "lakes"
+        ],
+        [
+          "==",
+          [
+            "has",
+            "jflag"
+          ],
+          false
+        ]
+      ],
+      "layout": {
+        "line-join": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "#262626",
+        "line-width": {
+          "stops": [
+            [
+              17,
+              3
+            ],
+            [
+              20,
+              5
+            ]
+          ]
+        },
+        "line-translate": {
+          "stops": [
+            [
+              17,
+              [
+                1,
+                1
+              ]
+            ],
+            [
+              20,
+              [
+                -2,
+                -2
+              ]
+            ]
+          ]
+        },
+        "line-blur": 2
+      }
+    },
+    {
+      "id": "oc-lake-ja",
+      "type": "fill",
+      "source": "oceanus",
+      "source-layer": "oc-water",
+      "minzoom": 4,
+      "maxzoom": 8,
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "get",
+            "class"
+          ],
+          "lakes"
+        ],
+        [
+          "has",
+          "jflag"
+        ]
+      ],
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-color": "#262626"
+      }
+    },
+    {
+      "id": "oc-lake",
+      "type": "fill",
+      "source": "oceanus",
+      "source-layer": "oc-water",
+      "minzoom": 4,
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "get",
+            "class"
+          ],
+          "lakes"
+        ],
+        [
+          "==",
+          [
+            "has",
+            "jflag"
+          ],
+          false
+        ]
+      ],
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-color": "#262626"
+      }
+    },
+    {
+      "id": "oc-boundary-land-level-1-ja",
+      "type": "line",
+      "source": "oceanus",
+      "source-layer": "oc-boundary",
+      "minzoom": 4,
+      "maxzoom": 6,
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "get",
+            "admin_level"
+          ],
+          1
+        ],
+        [
+          "has",
+          "jflag"
+        ]
+      ],
+      "layout": {
+        "line-join": "round"
+      },
+      "paint": {
+        "line-color": "#444444",
+        "line-dasharray": [
+          3,
+          1,
+          1,
+          1
+        ],
+        "line-width": {
+          "stops": [
+            [
+              4,
+              0.5
+            ],
+            [
+              7,
+              1.8
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "oc-boundary-land-level-1",
+      "type": "line",
+      "source": "oceanus",
+      "source-layer": "oc-boundary",
+      "minzoom": 4,
+      "maxzoom": 8,
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "get",
+            "admin_level"
+          ],
+          1
+        ],
+        [
+          "==",
+          [
+            "has",
+            "jflag"
+          ],
+          false
+        ]
+      ],
+      "layout": {
+        "line-join": "round"
+      },
+      "paint": {
+        "line-color": "#444444",
+        "line-dasharray": [
+          3,
+          1,
+          1,
+          1
+        ],
+        "line-width": 1
+      }
+    },
+    {
+      "id": "oc-boundary-land-level-0",
+      "type": "line",
+      "source": "oceanus",
+      "source-layer": "oc-boundary",
+      "filter": [
+        "==",
+        [
+          "get",
+          "admin_level"
+        ],
+        0
+      ],
+      "layout": {
+        "line-join": "round"
+      },
+      "paint": {
+        "line-color": "#444444",
+        "line-width": 1,
+        "line-blur": 0.4
+      }
+    },
+    {
+      "id": "oc-water-name-ocean",
+      "type": "symbol",
+      "source": "oceanus",
+      "source-layer": "oc-water_name",
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "geometry-type"
+          ],
           "Point"
         ],
         [
           "==",
-          "class",
+          [
+            "get",
+            "class"
+          ],
           "ocean"
         ]
       ],
@@ -2191,13 +892,533 @@
       "paint": {
         "text-color": "#555555",
         "text-halo-width": 1.5,
-        "text-halo-color": "rgba(44, 44, 44, 0.9)"
+        "text-halo-color": "rgba(44,44,44,0.9)"
+      }
+    },
+    {
+      "id": "oc-water-name-other",
+      "type": "symbol",
+      "source": "oceanus",
+      "source-layer": "oc-water",
+      "minzoom": 6,
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "geometry-type"
+          ],
+          "Polygon"
+        ],
+        [
+          "has",
+          "name"
+        ]
+      ],
+      "layout": {
+        "text-font": [
+          "Noto Sans Regular"
+        ],
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          10,
+          6,
+          14
+        ],
+        "text-field": "{name}",
+        "text-max-width": 5,
+        "text-rotation-alignment": "map",
+        "symbol-placement": "point",
+        "symbol-spacing": 350,
+        "text-letter-spacing": 0.2,
+        "visibility": "visible"
+      },
+      "paint": {
+        "text-color": "#555555",
+        "text-halo-width": 1.5,
+        "text-halo-color": "rgba(44,44,44,0.9)"
+      }
+    },
+    {
+      "id": "oc-motorway",
+      "type": "line",
+      "source": "oceanus",
+      "source-layer": "oc-road",
+      "minzoom": 6,
+      "maxzoom": 6,
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "get",
+            "class"
+          ],
+          "highway"
+        ],
+        [
+          "==",
+          [
+            "has",
+            "jflag"
+          ],
+          true
+        ]
+      ],
+      "layout": {
+        "line-cap": "round"
+      },
+      "paint": {
+        "line-color": "rgba(255,255,255,0.25)",
+        "line-width": 2
+      }
+    },
+    {
+      "id": "nt-water-name-ocean",
+      "type": "symbol",
+      "source": "oceanus",
+      "source-layer": "nt-water-name",
+      "minzoom": 8,
+      "filter": [
+        "==",
+        [
+          "get",
+          "class"
+        ],
+        "ocean"
+      ],
+      "layout": {
+        "text-font": [
+          "Noto Sans Regular"
+        ],
+        "text-size": 14,
+        "text-field": "{name}",
+        "text-max-width": 5,
+        "text-rotation-alignment": "map",
+        "symbol-placement": "point",
+        "symbol-spacing": 350,
+        "text-letter-spacing": 0.2
+      },
+      "paint": {
+        "text-color": "#555555",
+        "text-halo-width": 1.5,
+        "text-halo-color": "rgba(44,44,44,0.9)"
+      }
+    },
+    {
+      "id": "nt-water-name-river",
+      "type": "symbol",
+      "source": "oceanus",
+      "source-layer": "nt-water-name",
+      "minzoom": 13,
+      "filter": [
+        "==",
+        [
+          "get",
+          "class"
+        ],
+        "river"
+      ],
+      "layout": {
+        "text-font": [
+          "Noto Sans Regular"
+        ],
+        "text-size": 14,
+        "text-field": "{name}",
+        "text-max-width": 5,
+        "text-rotation-alignment": "map",
+        "symbol-placement": "point",
+        "symbol-spacing": 350,
+        "text-letter-spacing": 0.2
+      },
+      "paint": {
+        "text-color": "#555555",
+        "text-halo-width": 1.5,
+        "text-halo-color": "rgba(44,44,44,0.9)"
+      }
+    },
+    {
+      "id": "landuse-commercial",
+      "type": "fill",
+      "source": "geolonia-gsi-custom",
+      "source-layer": "landuse",
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "Polygon"
+        ],
+        [
+          "==",
+          "class",
+          "commercial"
+        ]
+      ],
+      "paint": {
+        "fill-color": "rgba(255,255,255,0.03)"
+      }
+    },
+    {
+      "id": "landuse-industrial",
+      "type": "fill",
+      "source": "geolonia-gsi-custom",
+      "source-layer": "landuse",
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "Polygon"
+        ],
+        [
+          "==",
+          "class",
+          "industrial"
+        ]
+      ],
+      "paint": {
+        "fill-color": "rgba(255,255,255,0.03)"
+      }
+    },
+    {
+      "id": "park",
+      "type": "fill",
+      "source": "geolonia-gsi-custom",
+      "source-layer": "park",
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "Polygon"
+        ],
+        [
+          "!=",
+          "class",
+          "national_park"
+        ]
+      ],
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-color": "rgba(255,255,255,0.04)",
+        "fill-opacity": {
+          "stops": [
+            [
+              7,
+              0
+            ],
+            [
+              9,
+              0.2
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "landuse-cemetery",
+      "type": "fill",
+      "source": "geolonia-gsi-custom",
+      "source-layer": "landuse",
+      "filter": [
+        "==",
+        "class",
+        "cemetery"
+      ],
+      "paint": {
+        "fill-color": "rgba(255,255,255,0.03)"
+      }
+    },
+    {
+      "id": "landuse-hospital",
+      "type": "fill",
+      "source": "geolonia-gsi-custom",
+      "source-layer": "landuse",
+      "filter": [
+        "==",
+        "class",
+        "hospital"
+      ],
+      "paint": {
+        "fill-color": "rgba(255,255,255,0.03)"
+      }
+    },
+    {
+      "id": "landuse-school",
+      "type": "fill",
+      "source": "geolonia-gsi-custom",
+      "source-layer": "landuse",
+      "filter": [
+        "==",
+        "class",
+        "school"
+      ],
+      "paint": {
+        "fill-color": "rgba(255,255,255,0.03)"
+      }
+    },
+    {
+      "id": "landuse-railway",
+      "type": "fill",
+      "source": "geolonia-gsi-custom",
+      "source-layer": "landuse",
+      "filter": [
+        "==",
+        "class",
+        "railway"
+      ],
+      "paint": {
+        "fill-color": "rgba(255,255,255,0.03)"
+      }
+    },
+    {
+      "id": "waterway_tunnel",
+      "type": "line",
+      "source": "geolonia-gsi-custom",
+      "source-layer": "waterway",
+      "minzoom": 14,
+      "filter": [
+        "all",
+        [
+          "in",
+          "class",
+          "river",
+          "stream",
+          "canal"
+        ],
+        [
+          "==",
+          "brunnel",
+          "tunnel"
+        ]
+      ],
+      "layout": {
+        "line-cap": "round"
+      },
+      "paint": {
+        "line-color": "#262626",
+        "line-width": {
+          "base": 1.3,
+          "stops": [
+            [
+              13,
+              0.5
+            ],
+            [
+              20,
+              6
+            ]
+          ]
+        },
+        "line-dasharray": [
+          2,
+          4
+        ]
+      }
+    },
+    {
+      "id": "waterway-other",
+      "type": "line",
+      "source": "geolonia-gsi-custom",
+      "source-layer": "waterway",
+      "filter": [
+        "!in",
+        "class",
+        "canal",
+        "river",
+        "stream"
+      ],
+      "layout": {
+        "line-cap": "round"
+      },
+      "paint": {
+        "line-color": "#262626",
+        "line-width": {
+          "base": 1.3,
+          "stops": [
+            [
+              13,
+              0.5
+            ],
+            [
+              20,
+              2
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "waterway-stream-canal",
+      "type": "line",
+      "source": "geolonia-gsi-custom",
+      "source-layer": "waterway",
+      "filter": [
+        "all",
+        [
+          "in",
+          "class",
+          "canal",
+          "stream"
+        ],
+        [
+          "!=",
+          "brunnel",
+          "tunnel"
+        ]
+      ],
+      "layout": {
+        "line-cap": "round"
+      },
+      "paint": {
+        "line-color": "#262626",
+        "line-width": {
+          "base": 1.3,
+          "stops": [
+            [
+              13,
+              0.5
+            ],
+            [
+              20,
+              6
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "waterway-name",
+      "type": "symbol",
+      "source": "geolonia-gsi-custom",
+      "source-layer": "waterway",
+      "minzoom": 13,
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "LineString"
+        ],
+        [
+          "has",
+          "name"
+        ],
+        [
+          "!=",
+          "disputed",
+          "japan_northern_territories"
+        ]
+      ],
+      "layout": {
+        "text-font": [
+          "Noto Sans Regular"
+        ],
+        "text-size": 14,
+        "text-field": "{name}",
+        "text-max-width": 5,
+        "text-rotation-alignment": "map",
+        "symbol-placement": "line",
+        "text-letter-spacing": 0.2,
+        "symbol-spacing": 350
+      },
+      "paint": {
+        "text-color": "#555555",
+        "text-halo-width": 1.5,
+        "text-halo-color": "rgba(255,255,255,0.7)"
+      }
+    },
+    {
+      "id": "water-name-lakeline",
+      "type": "symbol",
+      "source": "geolonia-gsi-custom",
+      "source-layer": "water_name",
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "LineString"
+        ],
+        [
+          "!=",
+          "disputed",
+          "japan_northern_territories"
+        ]
+      ],
+      "layout": {
+        "text-font": [
+          "Noto Sans Regular"
+        ],
+        "text-size": 14,
+        "text-field": "{name}",
+        "text-max-width": 5,
+        "text-rotation-alignment": "map",
+        "symbol-placement": "line",
+        "symbol-spacing": 350,
+        "text-letter-spacing": 0.2
+      },
+      "paint": {
+        "text-color": "#555555",
+        "text-halo-width": 1.5,
+        "text-halo-color": "rgba(44,44,44,0.9)"
+      }
+    },
+    {
+      "id": "water-name-ocean",
+      "type": "symbol",
+      "source": "geolonia-gsi-custom",
+      "source-layer": "water_name",
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "Point"
+        ],
+        [
+          "==",
+          "class",
+          "ocean"
+        ],
+        [
+          "!=",
+          "disputed",
+          "japan_northern_territories"
+        ]
+      ],
+      "layout": {
+        "text-font": [
+          "Noto Sans Regular"
+        ],
+        "text-size": 14,
+        "text-field": "{name}",
+        "text-max-width": 5,
+        "text-rotation-alignment": "map",
+        "symbol-placement": "point",
+        "symbol-spacing": 350,
+        "text-letter-spacing": 0.2
+      },
+      "paint": {
+        "text-color": "#555555",
+        "text-halo-width": 1.5,
+        "text-halo-color": "rgba(44,44,44,0.9)"
       }
     },
     {
       "id": "water-name-other",
       "type": "symbol",
-      "source": "geolonia",
+      "source": "geolonia-gsi-custom",
       "source-layer": "water_name",
       "filter": [
         "all",
@@ -2210,6 +1431,16 @@
           "!in",
           "class",
           "ocean"
+        ],
+        [
+          "!=",
+          "disputed",
+          "japan_northern_territories"
+        ],
+        [
+          "!=",
+          "subclass",
+          "moat"
         ]
       ],
       "layout": {
@@ -2239,13 +1470,3564 @@
       "paint": {
         "text-color": "#555555",
         "text-halo-width": 1.5,
-        "text-halo-color": "rgba(44, 44, 44, 0.9)"
+        "text-halo-color": "rgba(44,44,44,0.9)"
+      }
+    },
+    {
+      "id": "highway-minor-bridge-casing-blur",
+      "type": "line",
+      "source": "gsi-japan",
+      "source-layer": "road",
+      "minzoom": 7,
+      "filter": [
+        "all",
+        [
+          "in",
+          "ftCode",
+          2702,
+          2703
+        ],
+        [
+          "!=",
+          "motorway",
+          1
+        ],
+        [
+          "!=",
+          "rdCtg",
+          0
+        ],
+        [
+          "!=",
+          "rdCtg",
+          1
+        ],
+        [
+          "!=",
+          "rdCtg",
+          2
+        ],
+        [
+          "!=",
+          "rdCtg",
+          3
+        ]
+      ],
+      "paint": {
+        "line-color": "rgba(0,0,0,0.3)",
+        "line-width": {
+          "base": 1.2,
+          "stops": [
+            [
+              15,
+              1.2
+            ],
+            [
+              20,
+              15
+            ]
+          ]
+        },
+        "line-translate": {
+          "stops": [
+            [
+              14,
+              [
+                0,
+                0
+              ]
+            ],
+            [
+              17,
+              [
+                5,
+                2
+              ]
+            ]
+          ]
+        },
+        "line-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          14,
+          0.2,
+          17,
+          0.8,
+          18,
+          0
+        ],
+        "line-blur": {
+          "stops": [
+            [
+              14,
+              20
+            ],
+            [
+              17,
+              25
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "highway-secondary-bridge-casing-blur",
+      "type": "line",
+      "source": "gsi-japan",
+      "source-layer": "road",
+      "minzoom": 7,
+      "filter": [
+        "any",
+        [
+          "all",
+          [
+            "!=",
+            "rnkWidth",
+            0
+          ],
+          [
+            "!=",
+            "rnkWidth",
+            4
+          ],
+          [
+            "in",
+            "ftCode",
+            2702,
+            2703
+          ],
+          [
+            "!=",
+            "motorway",
+            1
+          ],
+          [
+            "in",
+            "rdCtg",
+            0,
+            1,
+            2
+          ]
+        ],
+        [
+          "all",
+          [
+            ">=",
+            "ftCode",
+            52700
+          ],
+          [
+            "<",
+            "ftCode",
+            52800
+          ],
+          [
+            "!=",
+            "ftCode",
+            52703
+          ]
+        ]
+      ],
+      "layout": {
+        "line-join": "round",
+        "line-cap": "round"
+      },
+      "paint": {
+        "line-color": "rgba(0,0,0,0.3)",
+        "line-translate": {
+          "stops": [
+            [
+              14,
+              [
+                0,
+                0
+              ]
+            ],
+            [
+              17,
+              [
+                5,
+                2
+              ]
+            ]
+          ]
+        },
+        "line-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          14,
+          0.2,
+          17,
+          0.8,
+          18,
+          0
+        ],
+        "line-blur": {
+          "stops": [
+            [
+              14,
+              20
+            ],
+            [
+              17,
+              25
+            ]
+          ]
+        },
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            0.9
+          ],
+          [
+            "zoom"
+          ],
+          8,
+          0,
+          9,
+          0.6,
+          12,
+          0.9,
+          14,
+          4,
+          16,
+          14,
+          18,
+          24,
+          19,
+          72,
+          20,
+          166
+        ]
+      }
+    },
+    {
+      "id": "highway-primary-bridge-casing-blur",
+      "type": "line",
+      "source": "gsi-japan",
+      "source-layer": "road",
+      "minzoom": 7,
+      "filter": [
+        "any",
+        [
+          "all",
+          [
+            "==",
+            "rnkWidth",
+            4
+          ],
+          [
+            "in",
+            "ftCode",
+            2702,
+            2703
+          ],
+          [
+            "!=",
+            "motorway",
+            1
+          ],
+          [
+            "in",
+            "rdCtg",
+            0,
+            1,
+            2
+          ]
+        ],
+        [
+          "all",
+          [
+            ">=",
+            "ftCode",
+            52700
+          ],
+          [
+            "<",
+            "ftCode",
+            52800
+          ],
+          [
+            "!=",
+            "ftCode",
+            52703
+          ]
+        ]
+      ],
+      "layout": {
+        "line-join": "round",
+        "line-cap": "round"
+      },
+      "paint": {
+        "line-color": "rgba(0,0,0,0.3)",
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            0.9
+          ],
+          [
+            "zoom"
+          ],
+          8,
+          0,
+          9,
+          0.6,
+          12,
+          0.9,
+          14,
+          4,
+          16,
+          14,
+          18,
+          24,
+          19,
+          72,
+          20,
+          166
+        ],
+        "line-translate": {
+          "stops": [
+            [
+              14,
+              [
+                0,
+                0
+              ]
+            ],
+            [
+              17,
+              [
+                5,
+                2
+              ]
+            ]
+          ]
+        },
+        "line-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          14,
+          0.2,
+          17,
+          0.8,
+          18,
+          0
+        ],
+        "line-blur": {
+          "stops": [
+            [
+              14,
+              20
+            ],
+            [
+              17,
+              25
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "highway-motorway-bridge-casing-blur",
+      "type": "line",
+      "source": "gsi-japan",
+      "source-layer": "road",
+      "minzoom": 6,
+      "filter": [
+        "any",
+        [
+          "all",
+          [
+            "in",
+            "ftCode",
+            2702,
+            2703
+          ],
+          [
+            "any",
+            [
+              "==",
+              "motorway",
+              1
+            ],
+            [
+              "==",
+              "rdCtg",
+              3
+            ]
+          ]
+        ],
+        [
+          "==",
+          "ftCode",
+          52703
+        ]
+      ],
+      "layout": {
+        "line-join": "round",
+        "line-cap": "round"
+      },
+      "paint": {
+        "line-color": "rgba(0,0,0,0.3)",
+        "line-translate": {
+          "stops": [
+            [
+              14,
+              [
+                0,
+                0
+              ]
+            ],
+            [
+              17,
+              [
+                5,
+                2
+              ]
+            ]
+          ]
+        },
+        "line-opacity": {
+          "stops": [
+            [
+              14,
+              0.2
+            ],
+            [
+              17,
+              0.6
+            ]
+          ]
+        },
+        "line-blur": {
+          "stops": [
+            [
+              14,
+              20
+            ],
+            [
+              17,
+              30
+            ]
+          ]
+        },
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            0.9
+          ],
+          [
+            "zoom"
+          ],
+          8,
+          0,
+          9,
+          0.6,
+          12,
+          0.9,
+          14,
+          4,
+          16,
+          14,
+          18,
+          24,
+          19,
+          72,
+          20,
+          166
+        ]
+      }
+    },
+    {
+      "id": "highway-motorway-casing",
+      "type": "line",
+      "source": "gsi-japan",
+      "source-layer": "road",
+      "minzoom": 4,
+      "filter": [
+        "any",
+        [
+          "all",
+          [
+            ">=",
+            "ftCode",
+            2700
+          ],
+          [
+            "<",
+            "ftCode",
+            2800
+          ],
+          [
+            "!=",
+            "ftCode",
+            2702
+          ],
+          [
+            "!=",
+            "ftCode",
+            2703
+          ],
+          [
+            "!=",
+            "ftCode",
+            2704
+          ],
+          [
+            "any",
+            [
+              "==",
+              "motorway",
+              1
+            ],
+            [
+              "==",
+              "rdCtg",
+              3
+            ]
+          ]
+        ],
+        [
+          "==",
+          "ftCode",
+          52703
+        ]
+      ],
+      "layout": {
+        "line-cap": "butt",
+        "line-join": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "rgba(0,0,0,0.3)",
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            0.9
+          ],
+          [
+            "zoom"
+          ],
+          8,
+          0,
+          9,
+          0.6,
+          12,
+          0.9,
+          14,
+          4,
+          16,
+          14,
+          18,
+          24,
+          19,
+          72,
+          20,
+          166
+        ],
+        "line-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          8,
+          0.6,
+          11,
+          1
+        ]
+      }
+    },
+    {
+      "id": "highway-minor",
+      "type": "line",
+      "source": "gsi-japan",
+      "source-layer": "road",
+      "filter": [
+        "all",
+        [
+          ">=",
+          "ftCode",
+          2700
+        ],
+        [
+          "<",
+          "ftCode",
+          2800
+        ],
+        [
+          "!=",
+          "ftCode",
+          2704
+        ]
+      ],
+      "layout": {
+        "line-cap": "butt",
+        "line-join": "bevel"
+      },
+      "paint": {
+        "line-color": "rgba(255,255,255,0.06)",
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            0.9
+          ],
+          [
+            "zoom"
+          ],
+          13.5,
+          0,
+          14,
+          1.2,
+          16,
+          2.2,
+          20,
+          16
+        ]
+      }
+    },
+    {
+      "id": "highway-secondary",
+      "type": "line",
+      "source": "gsi-japan",
+      "source-layer": "road",
+      "minzoom": 7,
+      "filter": [
+        "any",
+        [
+          "all",
+          [
+            "any",
+            [
+              "==",
+              "ftCode",
+              2701
+            ]
+          ],
+          [
+            "!=",
+            "motorway",
+            1
+          ],
+          [
+            "!=",
+            "rdCtg",
+            3
+          ],
+          [
+            "any",
+            [
+              "in",
+              "rdCtg",
+              0,
+              1,
+              2
+            ],
+            [
+              "==",
+              "rnkWidth",
+              4
+            ]
+          ]
+        ],
+        [
+          "all",
+          [
+            ">=",
+            "ftCode",
+            52700
+          ],
+          [
+            "<",
+            "ftCode",
+            52800
+          ],
+          [
+            "!=",
+            "ftCode",
+            52703
+          ]
+        ]
+      ],
+      "layout": {
+        "line-cap": "butt",
+        "line-join": "bevel",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "rgba(255,255,255,0.12)",
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            0.9
+          ],
+          [
+            "zoom"
+          ],
+          8,
+          0,
+          9,
+          0.5,
+          12,
+          0.8,
+          14,
+          3,
+          16,
+          10,
+          18,
+          20,
+          19,
+          68,
+          20,
+          160
+        ]
+      }
+    },
+    {
+      "id": "highway-primary",
+      "type": "line",
+      "source": "gsi-japan",
+      "source-layer": "road",
+      "minzoom": 7,
+      "filter": [
+        "any",
+        [
+          "all",
+          [
+            "==",
+            "rnkWidth",
+            4
+          ],
+          [
+            "any",
+            [
+              "==",
+              "ftCode",
+              2701
+            ]
+          ],
+          [
+            "!=",
+            "motorway",
+            1
+          ],
+          [
+            "!=",
+            "rdCtg",
+            3
+          ],
+          [
+            "in",
+            "rdCtg",
+            0,
+            1,
+            2,
+            6
+          ]
+        ],
+        [
+          "all",
+          [
+            ">=",
+            "ftCode",
+            52700
+          ],
+          [
+            "<",
+            "ftCode",
+            52800
+          ],
+          [
+            "!=",
+            "ftCode",
+            52703
+          ]
+        ]
+      ],
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round"
+      },
+      "paint": {
+        "line-color": "rgba(255,255,255,0.18)",
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            0.9
+          ],
+          [
+            "zoom"
+          ],
+          8,
+          0,
+          9,
+          0.5,
+          12,
+          0.8,
+          14,
+          3,
+          16,
+          10,
+          18,
+          20,
+          19,
+          68,
+          20,
+          160
+        ]
+      }
+    },
+    {
+      "id": "road-outline",
+      "type": "line",
+      "source": "gsi-japan",
+      "source-layer": "road",
+      "minzoom": 16,
+      "filter": [
+        "all",
+        [
+          ">=",
+          "ftCode",
+          2200
+        ],
+        [
+          "<",
+          "ftCode",
+          2700
+        ]
+      ],
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "rgba(0,0,0,0.3)",
+        "line-width": 2
+      }
+    },
+    {
+      "id": "highway-motorway",
+      "type": "line",
+      "source": "gsi-japan",
+      "source-layer": "road",
+      "minzoom": 6,
+      "filter": [
+        "any",
+        [
+          "all",
+          [
+            ">=",
+            "ftCode",
+            2700
+          ],
+          [
+            "<",
+            "ftCode",
+            2800
+          ],
+          [
+            "!=",
+            "ftCode",
+            2702
+          ],
+          [
+            "!=",
+            "ftCode",
+            2703
+          ],
+          [
+            "!=",
+            "ftCode",
+            2704
+          ],
+          [
+            "any",
+            [
+              "==",
+              "motorway",
+              1
+            ],
+            [
+              "==",
+              "rdCtg",
+              3
+            ]
+          ]
+        ],
+        [
+          "==",
+          "ftCode",
+          52703
+        ]
+      ],
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round"
+      },
+      "paint": {
+        "line-color": "rgba(255,255,255,0.25)",
+        "line-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          6,
+          2,
+          8,
+          2,
+          14,
+          3,
+          16,
+          10,
+          18,
+          20,
+          19,
+          68,
+          20,
+          160
+        ]
+      }
+    },
+    {
+      "id": "structurea-casing",
+      "type": "line",
+      "source": "gsi-japan",
+      "source-layer": "structurea",
+      "minzoom": 15,
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "Polygon"
+        ]
+      ],
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "rgba(0,0,0,0.3)",
+        "line-width": {
+          "stops": [
+            [
+              15,
+              1
+            ],
+            [
+              18,
+              3
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "structurea",
+      "type": "fill",
+      "source": "gsi-japan",
+      "source-layer": "structurea",
+      "minzoom": 15,
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "Polygon"
+        ]
+      ],
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-color": "rgba(255,255,255,0.06)"
+      }
+    },
+    {
+      "id": "highway-secondary-tunnel-casing",
+      "type": "line",
+      "source": "gsi-japan",
+      "source-layer": "road",
+      "minzoom": 4,
+      "filter": [
+        "any",
+        [
+          "all",
+          [
+            "==",
+            "ftCode",
+            2704
+          ],
+          [
+            "!=",
+            "motorway",
+            1
+          ],
+          [
+            "!=",
+            "rdCtg",
+            3
+          ],
+          [
+            "any",
+            [
+              "in",
+              "rdCtg",
+              0,
+              1,
+              2
+            ],
+            [
+              "==",
+              "rnkWidth",
+              4
+            ]
+          ]
+        ],
+        [
+          "all",
+          [
+            ">=",
+            "ftCode",
+            52700
+          ],
+          [
+            "<",
+            "ftCode",
+            52800
+          ],
+          [
+            "!=",
+            "ftCode",
+            52703
+          ]
+        ]
+      ],
+      "layout": {
+        "line-join": "round"
+      },
+      "paint": {
+        "line-color": "rgba(0,0,0,0.3)",
+        "line-dasharray": [
+          0.5,
+          0.25
+        ],
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            0.9
+          ],
+          [
+            "zoom"
+          ],
+          8,
+          0,
+          9,
+          0.6,
+          12,
+          0.9,
+          14,
+          4,
+          16,
+          14,
+          18,
+          24,
+          19,
+          72,
+          20,
+          166
+        ]
+      }
+    },
+    {
+      "id": "highway-secondary-tunnel",
+      "type": "line",
+      "source": "gsi-japan",
+      "source-layer": "road",
+      "minzoom": 4,
+      "filter": [
+        "any",
+        [
+          "all",
+          [
+            "==",
+            "ftCode",
+            2704
+          ],
+          [
+            "!=",
+            "motorway",
+            1
+          ],
+          [
+            "!=",
+            "rdCtg",
+            3
+          ],
+          [
+            "any",
+            [
+              "in",
+              "rdCtg",
+              0,
+              1,
+              2
+            ],
+            [
+              "==",
+              "rnkWidth",
+              4
+            ]
+          ]
+        ],
+        [
+          "all",
+          [
+            ">=",
+            "ftCode",
+            52700
+          ],
+          [
+            "<",
+            "ftCode",
+            52800
+          ],
+          [
+            "!=",
+            "ftCode",
+            52703
+          ]
+        ]
+      ],
+      "layout": {
+        "line-join": "round"
+      },
+      "paint": {
+        "line-color": "rgba(255,255,255,0.12)",
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            0.9
+          ],
+          [
+            "zoom"
+          ],
+          8,
+          0,
+          9,
+          0.5,
+          12,
+          0.8,
+          14,
+          3,
+          16,
+          10,
+          18,
+          20,
+          19,
+          68,
+          20,
+          160
+        ]
+      }
+    },
+    {
+      "id": "highway-primary-tunnel-casing",
+      "type": "line",
+      "source": "gsi-japan",
+      "source-layer": "road",
+      "minzoom": 7,
+      "filter": [
+        "any",
+        [
+          "all",
+          [
+            "==",
+            "rnkWidth",
+            4
+          ],
+          [
+            "in",
+            "ftCode",
+            2704
+          ],
+          [
+            "!=",
+            "motorway",
+            1
+          ],
+          [
+            "in",
+            "rdCtg",
+            0,
+            1,
+            2
+          ]
+        ],
+        [
+          "all",
+          [
+            ">=",
+            "ftCode",
+            52700
+          ],
+          [
+            "<",
+            "ftCode",
+            52800
+          ],
+          [
+            "!=",
+            "ftCode",
+            52703
+          ]
+        ]
+      ],
+      "layout": {
+        "line-join": "round"
+      },
+      "paint": {
+        "line-color": "rgba(0,0,0,0.3)",
+        "line-dasharray": [
+          0.5,
+          0.25
+        ],
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            0.9
+          ],
+          [
+            "zoom"
+          ],
+          8,
+          0,
+          9,
+          0.6,
+          12,
+          0.9,
+          14,
+          4,
+          16,
+          14,
+          18,
+          24,
+          19,
+          72,
+          20,
+          166
+        ]
+      }
+    },
+    {
+      "id": "highway-primary-tunnel",
+      "type": "line",
+      "source": "gsi-japan",
+      "source-layer": "road",
+      "minzoom": 7,
+      "filter": [
+        "any",
+        [
+          "all",
+          [
+            "==",
+            "rnkWidth",
+            4
+          ],
+          [
+            "in",
+            "ftCode",
+            2704
+          ],
+          [
+            "!=",
+            "motorway",
+            1
+          ],
+          [
+            "in",
+            "rdCtg",
+            0,
+            1,
+            2
+          ]
+        ],
+        [
+          "all",
+          [
+            ">=",
+            "ftCode",
+            52700
+          ],
+          [
+            "<",
+            "ftCode",
+            52800
+          ],
+          [
+            "!=",
+            "ftCode",
+            52703
+          ]
+        ]
+      ],
+      "layout": {
+        "line-join": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "rgba(255,255,255,0.18)",
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            0.9
+          ],
+          [
+            "zoom"
+          ],
+          8,
+          0,
+          9,
+          0.5,
+          12,
+          0.8,
+          14,
+          3,
+          16,
+          10,
+          18,
+          20,
+          19,
+          68,
+          20,
+          160
+        ]
+      }
+    },
+    {
+      "id": "highway-motorway-tunnel-casing",
+      "type": "line",
+      "source": "gsi-japan",
+      "source-layer": "road",
+      "minzoom": 6,
+      "filter": [
+        "all",
+        [
+          "==",
+          "ftCode",
+          2704
+        ],
+        [
+          "any",
+          [
+            "==",
+            "motorway",
+            1
+          ],
+          [
+            "==",
+            "rdCtg",
+            3
+          ]
+        ]
+      ],
+      "layout": {
+        "line-join": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "rgba(0,0,0,0.3)",
+        "line-dasharray": [
+          0.5,
+          0.25
+        ],
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            0.9
+          ],
+          [
+            "zoom"
+          ],
+          8,
+          0,
+          9,
+          0.6,
+          12,
+          0.9,
+          14,
+          4,
+          16,
+          14,
+          18,
+          24,
+          19,
+          72,
+          20,
+          166
+        ]
+      }
+    },
+    {
+      "id": "highway-motorway-tunnel",
+      "type": "line",
+      "source": "gsi-japan",
+      "source-layer": "road",
+      "minzoom": 6,
+      "filter": [
+        "all",
+        [
+          "==",
+          "ftCode",
+          2704
+        ],
+        [
+          "any",
+          [
+            "==",
+            "motorway",
+            1
+          ],
+          [
+            "==",
+            "rdCtg",
+            3
+          ]
+        ]
+      ],
+      "layout": {
+        "line-join": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "rgba(255,255,255,0.25)",
+        "line-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          6,
+          2,
+          8,
+          2,
+          14,
+          3,
+          16,
+          10,
+          18,
+          20,
+          19,
+          68,
+          20,
+          160
+        ]
+      }
+    },
+    {
+      "id": "highway-minor-bridge-casing",
+      "type": "line",
+      "source": "gsi-japan",
+      "source-layer": "road",
+      "minzoom": 7,
+      "filter": [
+        "all",
+        [
+          "in",
+          "ftCode",
+          2702,
+          2703
+        ],
+        [
+          "!=",
+          "motorway",
+          1
+        ],
+        [
+          "!=",
+          "rdCtg",
+          0
+        ],
+        [
+          "!=",
+          "rdCtg",
+          1
+        ],
+        [
+          "!=",
+          "rdCtg",
+          2
+        ],
+        [
+          "!=",
+          "rdCtg",
+          3
+        ]
+      ],
+      "paint": {
+        "line-color": "rgba(0,0,0,0.3)",
+        "line-width": {
+          "base": 1.2,
+          "stops": [
+            [
+              15,
+              1.2
+            ],
+            [
+              20,
+              18
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "highway-minor-bridge",
+      "type": "line",
+      "source": "gsi-japan",
+      "source-layer": "road",
+      "minzoom": 7,
+      "filter": [
+        "all",
+        [
+          "in",
+          "ftCode",
+          2702,
+          2703
+        ],
+        [
+          "!=",
+          "motorway",
+          1
+        ],
+        [
+          "!=",
+          "rdCtg",
+          0
+        ],
+        [
+          "!=",
+          "rdCtg",
+          1
+        ],
+        [
+          "!=",
+          "rdCtg",
+          2
+        ],
+        [
+          "!=",
+          "rdCtg",
+          3
+        ]
+      ],
+      "paint": {
+        "line-color": "rgba(255,255,255,0.06)",
+        "line-width": {
+          "base": 1.2,
+          "stops": [
+            [
+              15,
+              1.2
+            ],
+            [
+              20,
+              4
+            ]
+          ]
+        },
+        "line-dasharray": [
+          1.5,
+          0.75
+        ]
+      }
+    },
+    {
+      "id": "highway-secondary-bridge-casing",
+      "type": "line",
+      "source": "gsi-japan",
+      "source-layer": "road",
+      "minzoom": 7,
+      "filter": [
+        "any",
+        [
+          "all",
+          [
+            "!=",
+            "rnkWidth",
+            0
+          ],
+          [
+            "!=",
+            "rnkWidth",
+            4
+          ],
+          [
+            "in",
+            "ftCode",
+            2702,
+            2703
+          ],
+          [
+            "!=",
+            "motorway",
+            1
+          ],
+          [
+            "in",
+            "rdCtg",
+            0,
+            1,
+            2
+          ]
+        ],
+        [
+          "all",
+          [
+            ">=",
+            "ftCode",
+            52700
+          ],
+          [
+            "<",
+            "ftCode",
+            52800
+          ],
+          [
+            "!=",
+            "ftCode",
+            52703
+          ]
+        ]
+      ],
+      "layout": {
+        "line-join": "round"
+      },
+      "paint": {
+        "line-color": "rgba(0,0,0,0.3)",
+        "line-opacity": 1,
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            0.9
+          ],
+          [
+            "zoom"
+          ],
+          8,
+          0,
+          9,
+          0.6,
+          12,
+          0.9,
+          14,
+          4,
+          16,
+          14,
+          18,
+          24,
+          19,
+          72,
+          20,
+          166
+        ]
+      }
+    },
+    {
+      "id": "highway-secondary-bridge",
+      "type": "line",
+      "source": "gsi-japan",
+      "source-layer": "road",
+      "minzoom": 7,
+      "filter": [
+        "any",
+        [
+          "all",
+          [
+            "!=",
+            "rnkWidth",
+            0
+          ],
+          [
+            "!=",
+            "rnkWidth",
+            4
+          ],
+          [
+            "in",
+            "ftCode",
+            2702,
+            2703
+          ],
+          [
+            "!=",
+            "motorway",
+            1
+          ],
+          [
+            "in",
+            "rdCtg",
+            0,
+            1,
+            2
+          ]
+        ],
+        [
+          "all",
+          [
+            ">=",
+            "ftCode",
+            52700
+          ],
+          [
+            "<",
+            "ftCode",
+            52800
+          ],
+          [
+            "!=",
+            "ftCode",
+            52703
+          ]
+        ]
+      ],
+      "layout": {
+        "line-join": "round"
+      },
+      "paint": {
+        "line-color": "rgba(255,255,255,0.12)",
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            0.9
+          ],
+          [
+            "zoom"
+          ],
+          8,
+          0,
+          9,
+          0.5,
+          12,
+          0.8,
+          14,
+          3,
+          16,
+          10,
+          18,
+          20,
+          19,
+          68,
+          20,
+          160
+        ]
+      }
+    },
+    {
+      "id": "highway-primary-bridge-casing",
+      "type": "line",
+      "source": "gsi-japan",
+      "source-layer": "road",
+      "minzoom": 7,
+      "filter": [
+        "any",
+        [
+          "all",
+          [
+            "==",
+            "rnkWidth",
+            4
+          ],
+          [
+            "in",
+            "ftCode",
+            2702,
+            2703
+          ],
+          [
+            "!=",
+            "motorway",
+            1
+          ],
+          [
+            "in",
+            "rdCtg",
+            0,
+            1,
+            2
+          ]
+        ],
+        [
+          "all",
+          [
+            ">=",
+            "ftCode",
+            52700
+          ],
+          [
+            "<",
+            "ftCode",
+            52800
+          ],
+          [
+            "!=",
+            "ftCode",
+            52703
+          ]
+        ]
+      ],
+      "layout": {
+        "line-join": "round"
+      },
+      "paint": {
+        "line-color": "rgba(0,0,0,0.3)",
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            0.9
+          ],
+          [
+            "zoom"
+          ],
+          8,
+          0,
+          9,
+          0.6,
+          12,
+          0.9,
+          14,
+          4,
+          16,
+          14,
+          18,
+          24,
+          19,
+          72,
+          20,
+          166
+        ]
+      }
+    },
+    {
+      "id": "highway-primary-bridge",
+      "type": "line",
+      "source": "gsi-japan",
+      "source-layer": "road",
+      "minzoom": 7,
+      "filter": [
+        "any",
+        [
+          "all",
+          [
+            "==",
+            "rnkWidth",
+            4
+          ],
+          [
+            "in",
+            "ftCode",
+            2702,
+            2703
+          ],
+          [
+            "!=",
+            "motorway",
+            1
+          ],
+          [
+            "in",
+            "rdCtg",
+            0,
+            1,
+            2
+          ]
+        ],
+        [
+          "all",
+          [
+            ">=",
+            "ftCode",
+            52700
+          ],
+          [
+            "<",
+            "ftCode",
+            52800
+          ],
+          [
+            "!=",
+            "ftCode",
+            52703
+          ]
+        ]
+      ],
+      "layout": {
+        "line-join": "round"
+      },
+      "paint": {
+        "line-color": "rgba(255,255,255,0.18)",
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            0.9
+          ],
+          [
+            "zoom"
+          ],
+          8,
+          0,
+          9,
+          0.5,
+          12,
+          0.8,
+          14,
+          3,
+          16,
+          10,
+          18,
+          20,
+          19,
+          68,
+          20,
+          160
+        ]
+      }
+    },
+    {
+      "id": "highway-motorway-bridge-casing",
+      "type": "line",
+      "source": "gsi-japan",
+      "source-layer": "road",
+      "minzoom": 6,
+      "filter": [
+        "any",
+        [
+          "all",
+          [
+            "in",
+            "ftCode",
+            2702,
+            2703
+          ],
+          [
+            "any",
+            [
+              "==",
+              "motorway",
+              1
+            ],
+            [
+              "==",
+              "rdCtg",
+              3
+            ]
+          ]
+        ],
+        [
+          "==",
+          "ftCode",
+          52703
+        ]
+      ],
+      "layout": {
+        "line-join": "round"
+      },
+      "paint": {
+        "line-color": "rgba(0,0,0,0.3)",
+        "line-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          8,
+          0,
+          11,
+          1
+        ],
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            0.9
+          ],
+          [
+            "zoom"
+          ],
+          8,
+          0,
+          9,
+          0.6,
+          12,
+          0.9,
+          14,
+          4,
+          16,
+          14,
+          18,
+          24,
+          19,
+          72,
+          20,
+          166
+        ]
+      }
+    },
+    {
+      "id": "highway-motorway-bridge",
+      "type": "line",
+      "source": "gsi-japan",
+      "source-layer": "road",
+      "minzoom": 6,
+      "filter": [
+        "any",
+        [
+          "all",
+          [
+            "in",
+            "ftCode",
+            2702,
+            2703
+          ],
+          [
+            "any",
+            [
+              "==",
+              "motorway",
+              1
+            ],
+            [
+              "==",
+              "rdCtg",
+              3
+            ]
+          ]
+        ],
+        [
+          "==",
+          "ftCode",
+          52703
+        ]
+      ],
+      "layout": {
+        "line-join": "round"
+      },
+      "paint": {
+        "line-color": "rgba(255,255,255,0.25)",
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            0.9
+          ],
+          [
+            "zoom"
+          ],
+          8,
+          0,
+          9,
+          0.5,
+          12,
+          0.8,
+          14,
+          3,
+          16,
+          10,
+          18,
+          20,
+          19,
+          68,
+          20,
+          160
+        ]
+      }
+    },
+    {
+      "id": "railway-subway",
+      "type": "line",
+      "source": "gsi-japan",
+      "source-layer": "railway",
+      "minzoom": 13,
+      "filter": [
+        "any",
+        [
+          "==",
+          "rtCode10",
+          "2"
+        ],
+        [
+          "all",
+          [
+            ">=",
+            "rtCode",
+            "40203000000"
+          ],
+          [
+            "<",
+            "rtCode",
+            "40204000000"
+          ]
+        ],
+        [
+          "all",
+          [
+            ">=",
+            "rtCode1",
+            "40203000000"
+          ],
+          [
+            "<",
+            "rtCode1",
+            "40204000000"
+          ]
+        ]
+      ],
+      "paint": {
+        "line-color": "rgba(255,255,255,0.08)",
+        "line-opacity": 1,
+        "line-width": 1.5
+      }
+    },
+    {
+      "id": "railway-tunnel",
+      "type": "line",
+      "source": "gsi-japan",
+      "source-layer": "railway",
+      "minzoom": 10,
+      "filter": [
+        "all",
+        [
+          "in",
+          "railState",
+          100,
+          200,
+          300,
+          2,
+          3,
+          4
+        ]
+      ],
+      "paint": {
+        "line-color": "rgba(255,255,255,0.08)",
+        "line-opacity": 0.6,
+        "line-width": {
+          "stops": [
+            [
+              10,
+              1
+            ],
+            [
+              22,
+              3
+            ]
+          ]
+        },
+        "line-dasharray": [
+          3,
+          2
+        ]
+      }
+    },
+    {
+      "id": "railway-minor",
+      "type": "line",
+      "source": "gsi-japan",
+      "source-layer": "railway",
+      "minzoom": 14,
+      "filter": [
+        "all",
+        [
+          "in",
+          "railState",
+          0,
+          200,
+          400,
+          4,
+          5,
+          6,
+          7
+        ],
+        [
+          "any",
+          [
+            "==",
+            "rtCode10",
+            "0"
+          ],
+          [
+            "!has",
+            "rtCode10"
+          ]
+        ],
+        [
+          "all",
+          [
+            ">=",
+            "rtCode1",
+            "40217000000"
+          ],
+          [
+            "<",
+            "rtCode1",
+            "40218000000"
+          ]
+        ]
+      ],
+      "paint": {
+        "line-color": "rgba(255,255,255,0.08)",
+        "line-width": {
+          "stops": [
+            [
+              10,
+              1
+            ],
+            [
+              22,
+              2
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "railway-minor-hatching",
+      "type": "line",
+      "source": "gsi-japan",
+      "source-layer": "railway",
+      "minzoom": 14,
+      "filter": [
+        "all",
+        [
+          "in",
+          "railState",
+          0,
+          200,
+          400,
+          4,
+          5,
+          6,
+          7
+        ],
+        [
+          "any",
+          [
+            "==",
+            "rtCode10",
+            "0"
+          ],
+          [
+            "!has",
+            "rtCode10"
+          ]
+        ],
+        [
+          "all",
+          [
+            ">=",
+            "rtCode1",
+            "40217000000"
+          ],
+          [
+            "<",
+            "rtCode1",
+            "40218000000"
+          ]
+        ]
+      ],
+      "paint": {
+        "line-color": "rgba(255,255,255,0.08)",
+        "line-dasharray": [
+          0.2,
+          1.5
+        ],
+        "line-width": {
+          "stops": [
+            [
+              10,
+              4
+            ],
+            [
+              22,
+              8
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "railway-secondary",
+      "type": "line",
+      "source": "gsi-japan",
+      "source-layer": "railway",
+      "minzoom": 10,
+      "filter": [
+        "all",
+        [
+          "in",
+          "railState",
+          0,
+          200,
+          400,
+          4,
+          5,
+          6,
+          7
+        ],
+        [
+          "any",
+          [
+            "==",
+            "rtCode10",
+            "0"
+          ],
+          [
+            "!has",
+            "rtCode10"
+          ]
+        ],
+        [
+          "any",
+          [
+            "all",
+            [
+              ">=",
+              "rtCode",
+              "40202000000"
+            ],
+            [
+              "<",
+              "rtCode",
+              "40203000000"
+            ]
+          ],
+          [
+            "all",
+            [
+              ">=",
+              "rtCode1",
+              "40202000000"
+            ],
+            [
+              "<",
+              "rtCode1",
+              "40203000000"
+            ]
+          ],
+          [
+            "all",
+            [
+              ">=",
+              "rtCode",
+              "40205000000"
+            ],
+            [
+              "<",
+              "rtCode",
+              "40206000000"
+            ]
+          ],
+          [
+            "all",
+            [
+              ">=",
+              "rtCode1",
+              "40205000000"
+            ],
+            [
+              "<",
+              "rtCode1",
+              "40206000000"
+            ]
+          ],
+          [
+            "all",
+            [
+              ">=",
+              "rtCode",
+              "40204000000"
+            ],
+            [
+              "<",
+              "rtCode",
+              "40205000000"
+            ]
+          ],
+          [
+            "all",
+            [
+              ">=",
+              "rtCode",
+              "40217000000"
+            ],
+            [
+              "<",
+              "rtCode",
+              "40218000000"
+            ]
+          ],
+          [
+            "all",
+            [
+              ">=",
+              "rtCode1",
+              "40204000000"
+            ],
+            [
+              "<",
+              "rtCode1",
+              "40205000000"
+            ]
+          ]
+        ]
+      ],
+      "paint": {
+        "line-color": "rgba(255,255,255,0.08)",
+        "line-width": {
+          "stops": [
+            [
+              10,
+              1
+            ],
+            [
+              22,
+              2
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "railway-secondary-hatching",
+      "type": "line",
+      "source": "gsi-japan",
+      "source-layer": "railway",
+      "minzoom": 10,
+      "filter": [
+        "all",
+        [
+          "in",
+          "railState",
+          0,
+          200,
+          400,
+          4,
+          5,
+          6,
+          7
+        ],
+        [
+          "any",
+          [
+            "==",
+            "rtCode10",
+            "0"
+          ],
+          [
+            "!has",
+            "rtCode10"
+          ]
+        ],
+        [
+          "any",
+          [
+            "all",
+            [
+              ">=",
+              "rtCode",
+              "40202000000"
+            ],
+            [
+              "<",
+              "rtCode",
+              "40203000000"
+            ]
+          ],
+          [
+            "all",
+            [
+              ">=",
+              "rtCode1",
+              "40202000000"
+            ],
+            [
+              "<",
+              "rtCode1",
+              "40203000000"
+            ]
+          ],
+          [
+            "all",
+            [
+              ">=",
+              "rtCode",
+              "40205000000"
+            ],
+            [
+              "<",
+              "rtCode",
+              "40206000000"
+            ]
+          ],
+          [
+            "all",
+            [
+              ">=",
+              "rtCode1",
+              "40205000000"
+            ],
+            [
+              "<",
+              "rtCode1",
+              "40206000000"
+            ]
+          ],
+          [
+            "all",
+            [
+              ">=",
+              "rtCode",
+              "40204000000"
+            ],
+            [
+              "<",
+              "rtCode",
+              "40205000000"
+            ]
+          ],
+          [
+            "all",
+            [
+              ">=",
+              "rtCode",
+              "40217000000"
+            ],
+            [
+              "<",
+              "rtCode",
+              "40218000000"
+            ]
+          ],
+          [
+            "all",
+            [
+              ">=",
+              "rtCode1",
+              "40204000000"
+            ],
+            [
+              "<",
+              "rtCode1",
+              "40205000000"
+            ]
+          ]
+        ]
+      ],
+      "paint": {
+        "line-color": "rgba(255,255,255,0.08)",
+        "line-dasharray": [
+          0.2,
+          1.5
+        ],
+        "line-width": {
+          "stops": [
+            [
+              10,
+              4
+            ],
+            [
+              22,
+              8
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "railway-jr",
+      "type": "line",
+      "source": "gsi-japan",
+      "source-layer": "railway",
+      "minzoom": 10,
+      "filter": [
+        "all",
+        [
+          "in",
+          "railState",
+          0,
+          200,
+          400,
+          4,
+          5,
+          6,
+          7
+        ],
+        [
+          "any",
+          [
+            "==",
+            "rtCode10",
+            "0"
+          ],
+          [
+            "==",
+            "rtCode10",
+            "1"
+          ],
+          [
+            "!has",
+            "rtCode10"
+          ]
+        ],
+        [
+          "any",
+          [
+            "all",
+            [
+              ">=",
+              "rtCode",
+              "40201000000"
+            ],
+            [
+              "<",
+              "rtCode",
+              "40202000000"
+            ]
+          ],
+          [
+            "all",
+            [
+              ">=",
+              "rtCode1",
+              "40201000000"
+            ],
+            [
+              "<",
+              "rtCode1",
+              "40202000000"
+            ]
+          ],
+          [
+            "all",
+            [
+              ">=",
+              "rtCode",
+              "40216000000"
+            ],
+            [
+              "<",
+              "rtCode",
+              "40217000000"
+            ]
+          ],
+          [
+            "all",
+            [
+              ">=",
+              "rtCode1",
+              "40216000000"
+            ],
+            [
+              "<",
+              "rtCode1",
+              "40217000000"
+            ]
+          ]
+        ]
+      ],
+      "paint": {
+        "line-color": "rgba(255,255,255,0.08)",
+        "line-width": {
+          "stops": [
+            [
+              6,
+              2
+            ],
+            [
+              10,
+              3
+            ],
+            [
+              18,
+              4
+            ],
+            [
+              22,
+              20
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "railway-jr-hatching",
+      "type": "line",
+      "source": "gsi-japan",
+      "source-layer": "railway",
+      "minzoom": 10,
+      "filter": [
+        "all",
+        [
+          "in",
+          "railState",
+          0,
+          200,
+          400,
+          4,
+          5,
+          6,
+          7
+        ],
+        [
+          "any",
+          [
+            "==",
+            "rtCode10",
+            "0"
+          ],
+          [
+            "==",
+            "rtCode10",
+            "1"
+          ],
+          [
+            "!has",
+            "rtCode10"
+          ]
+        ],
+        [
+          "any",
+          [
+            "all",
+            [
+              ">=",
+              "rtCode",
+              "40201000000"
+            ],
+            [
+              "<",
+              "rtCode",
+              "40202000000"
+            ]
+          ],
+          [
+            "all",
+            [
+              ">=",
+              "rtCode1",
+              "40201000000"
+            ],
+            [
+              "<",
+              "rtCode1",
+              "40202000000"
+            ]
+          ],
+          [
+            "all",
+            [
+              ">=",
+              "rtCode",
+              "40216000000"
+            ],
+            [
+              "<",
+              "rtCode",
+              "40217000000"
+            ]
+          ],
+          [
+            "all",
+            [
+              ">=",
+              "rtCode1",
+              "40216000000"
+            ],
+            [
+              "<",
+              "rtCode1",
+              "40217000000"
+            ]
+          ]
+        ]
+      ],
+      "paint": {
+        "line-color": "rgba(255,255,255,0.08)",
+        "line-dasharray": [
+          3,
+          4
+        ],
+        "line-width": {
+          "stops": [
+            [
+              6,
+              1
+            ],
+            [
+              10,
+              2
+            ],
+            [
+              18,
+              3
+            ],
+            [
+              22,
+              19
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "railway-jr-bridge",
+      "type": "line",
+      "source": "gsi-japan",
+      "source-layer": "railway",
+      "minzoom": 10,
+      "filter": [
+        "all",
+        [
+          "==",
+          "railState",
+          1
+        ],
+        [
+          "any",
+          [
+            "all",
+            [
+              ">=",
+              "rtCode",
+              "40201000000"
+            ],
+            [
+              "<",
+              "rtCode",
+              "40202000000"
+            ]
+          ],
+          [
+            "all",
+            [
+              ">=",
+              "rtCode1",
+              "40201000000"
+            ],
+            [
+              "<",
+              "rtCode1",
+              "40202000000"
+            ]
+          ],
+          [
+            "all",
+            [
+              ">=",
+              "rtCode",
+              "40216000000"
+            ],
+            [
+              "<",
+              "rtCode",
+              "40217000000"
+            ]
+          ],
+          [
+            "all",
+            [
+              ">=",
+              "rtCode1",
+              "40216000000"
+            ],
+            [
+              "<",
+              "rtCode1",
+              "40217000000"
+            ]
+          ]
+        ]
+      ],
+      "paint": {
+        "line-color": "rgba(255,255,255,0.08)",
+        "line-width": {
+          "stops": [
+            [
+              6,
+              2
+            ],
+            [
+              10,
+              3
+            ],
+            [
+              18,
+              4
+            ],
+            [
+              22,
+              20
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "railway-secondary-bridge",
+      "type": "line",
+      "source": "gsi-japan",
+      "source-layer": "railway",
+      "minzoom": 10,
+      "filter": [
+        "all",
+        [
+          "in",
+          "railState",
+          1
+        ],
+        [
+          "any",
+          [
+            "==",
+            "rtCode10",
+            "0"
+          ],
+          [
+            "==",
+            "rtCode10",
+            "1"
+          ],
+          [
+            "!has",
+            "rtCode10"
+          ]
+        ],
+        [
+          "any",
+          [
+            "all",
+            [
+              ">=",
+              "rtCode",
+              "40202000000"
+            ],
+            [
+              "<",
+              "rtCode",
+              "40203000000"
+            ]
+          ],
+          [
+            "all",
+            [
+              ">=",
+              "rtCode1",
+              "40202000000"
+            ],
+            [
+              "<",
+              "rtCode1",
+              "40203000000"
+            ]
+          ],
+          [
+            "all",
+            [
+              ">=",
+              "rtCode",
+              "40205000000"
+            ],
+            [
+              "<",
+              "rtCode",
+              "40206000000"
+            ]
+          ],
+          [
+            "all",
+            [
+              ">=",
+              "rtCode1",
+              "40205000000"
+            ],
+            [
+              "<",
+              "rtCode1",
+              "40206000000"
+            ]
+          ],
+          [
+            "all",
+            [
+              ">=",
+              "rtCode",
+              "40204000000"
+            ],
+            [
+              "<",
+              "rtCode",
+              "40205000000"
+            ]
+          ],
+          [
+            "all",
+            [
+              ">=",
+              "rtCode",
+              "40217000000"
+            ],
+            [
+              "<",
+              "rtCode",
+              "40218000000"
+            ]
+          ],
+          [
+            "all",
+            [
+              ">=",
+              "rtCode1",
+              "40204000000"
+            ],
+            [
+              "<",
+              "rtCode1",
+              "40205000000"
+            ]
+          ],
+          [
+            "all",
+            [
+              ">=",
+              "rtCode1",
+              "40217000000"
+            ],
+            [
+              "<",
+              "rtCode1",
+              "40218000000"
+            ]
+          ]
+        ]
+      ],
+      "paint": {
+        "line-color": "rgba(255,255,255,0.08)",
+        "line-width": {
+          "stops": [
+            [
+              10,
+              1
+            ],
+            [
+              22,
+              2
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "railway-secondary-bridge-hatching",
+      "type": "line",
+      "source": "gsi-japan",
+      "source-layer": "railway",
+      "minzoom": 10,
+      "filter": [
+        "all",
+        [
+          "in",
+          "railState",
+          1
+        ],
+        [
+          "any",
+          [
+            "==",
+            "rtCode10",
+            "0"
+          ],
+          [
+            "==",
+            "rtCode10",
+            "1"
+          ],
+          [
+            "!has",
+            "rtCode10"
+          ]
+        ],
+        [
+          "any",
+          [
+            "all",
+            [
+              ">=",
+              "rtCode",
+              "40202000000"
+            ],
+            [
+              "<",
+              "rtCode",
+              "40203000000"
+            ]
+          ],
+          [
+            "all",
+            [
+              ">=",
+              "rtCode1",
+              "40202000000"
+            ],
+            [
+              "<",
+              "rtCode1",
+              "40203000000"
+            ]
+          ],
+          [
+            "all",
+            [
+              ">=",
+              "rtCode",
+              "40205000000"
+            ],
+            [
+              "<",
+              "rtCode",
+              "40206000000"
+            ]
+          ],
+          [
+            "all",
+            [
+              ">=",
+              "rtCode1",
+              "40205000000"
+            ],
+            [
+              "<",
+              "rtCode1",
+              "40206000000"
+            ]
+          ],
+          [
+            "all",
+            [
+              ">=",
+              "rtCode",
+              "40204000000"
+            ],
+            [
+              "<",
+              "rtCode",
+              "40205000000"
+            ]
+          ],
+          [
+            "all",
+            [
+              ">=",
+              "rtCode",
+              "40217000000"
+            ],
+            [
+              "<",
+              "rtCode",
+              "40218000000"
+            ]
+          ],
+          [
+            "all",
+            [
+              ">=",
+              "rtCode1",
+              "40204000000"
+            ],
+            [
+              "<",
+              "rtCode1",
+              "40205000000"
+            ]
+          ],
+          [
+            "all",
+            [
+              ">=",
+              "rtCode1",
+              "40217000000"
+            ],
+            [
+              "<",
+              "rtCode1",
+              "40218000000"
+            ]
+          ]
+        ]
+      ],
+      "paint": {
+        "line-color": "rgba(255,255,255,0.08)",
+        "line-dasharray": [
+          0.2,
+          1.5
+        ],
+        "line-width": {
+          "stops": [
+            [
+              10,
+              4
+            ],
+            [
+              22,
+              8
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "railway-jr-bridge-hatching",
+      "type": "line",
+      "source": "gsi-japan",
+      "source-layer": "railway",
+      "minzoom": 10,
+      "filter": [
+        "all",
+        [
+          "==",
+          "railState",
+          1
+        ],
+        [
+          "any",
+          [
+            "all",
+            [
+              ">=",
+              "rtCode",
+              "40201000000"
+            ],
+            [
+              "<",
+              "rtCode",
+              "40202000000"
+            ]
+          ],
+          [
+            "all",
+            [
+              ">=",
+              "rtCode1",
+              "40201000000"
+            ],
+            [
+              "<",
+              "rtCode1",
+              "40202000000"
+            ]
+          ],
+          [
+            "all",
+            [
+              ">=",
+              "rtCode",
+              "40216000000"
+            ],
+            [
+              "<",
+              "rtCode",
+              "40217000000"
+            ]
+          ],
+          [
+            "all",
+            [
+              ">=",
+              "rtCode1",
+              "40216000000"
+            ],
+            [
+              "<",
+              "rtCode1",
+              "40217000000"
+            ]
+          ]
+        ]
+      ],
+      "paint": {
+        "line-color": "rgba(255,255,255,0.08)",
+        "line-dasharray": [
+          3,
+          4
+        ],
+        "line-width": {
+          "stops": [
+            [
+              6,
+              1
+            ],
+            [
+              10,
+              2
+            ],
+            [
+              18,
+              3
+            ],
+            [
+              22,
+              19
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "railway-jr-high-speed",
+      "type": "line",
+      "source": "gsi-japan",
+      "source-layer": "railway",
+      "minzoom": 5,
+      "filter": [
+        "any",
+        [
+          "==",
+          "rtCode10",
+          "1"
+        ],
+        [
+          "==",
+          "ftCode",
+          58203
+        ],
+        [
+          "==",
+          "ftCode",
+          58204
+        ]
+      ],
+      "paint": {
+        "line-color": "rgba(255,255,255,0.08)",
+        "line-width": {
+          "stops": [
+            [
+              5,
+              2
+            ],
+            [
+              10,
+              3
+            ],
+            [
+              18,
+              4
+            ],
+            [
+              22,
+              20
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "railway-jr-high-speed-hatching",
+      "type": "line",
+      "source": "gsi-japan",
+      "source-layer": "railway",
+      "minzoom": 5,
+      "filter": [
+        "any",
+        [
+          "==",
+          "rtCode10",
+          "1"
+        ],
+        [
+          "==",
+          "ftCode",
+          58203
+        ],
+        [
+          "==",
+          "ftCode",
+          58204
+        ]
+      ],
+      "paint": {
+        "line-color": "rgba(255,255,255,0.08)",
+        "line-dasharray": [
+          3,
+          4
+        ],
+        "line-width": {
+          "stops": [
+            [
+              5,
+              1
+            ],
+            [
+              10,
+              2
+            ],
+            [
+              18,
+              3
+            ],
+            [
+              22,
+              19
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "boundary-sea",
+      "type": "line",
+      "source": "gsi-japan",
+      "source-layer": "boundary",
+      "minzoom": 6,
+      "maxzoom": 8,
+      "filter": [
+        "all",
+        [
+          "in",
+          "ftCode",
+          51221
+        ]
+      ],
+      "layout": {
+        "line-join": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "#444444",
+        "line-dasharray": [
+          4,
+          1,
+          1,
+          1
+        ],
+        "line-width": 2
+      }
+    },
+    {
+      "id": "boundary",
+      "type": "line",
+      "source": "gsi-japan",
+      "source-layer": "boundary",
+      "minzoom": 6,
+      "maxzoom": 14,
+      "filter": [
+        "all",
+        [
+          "in",
+          "ftCode",
+          1211,
+          1212,
+          51212
+        ]
+      ],
+      "layout": {
+        "line-join": "round"
+      },
+      "paint": {
+        "line-color": "#444444",
+        "line-dasharray": [
+          3,
+          1,
+          1,
+          1
+        ],
+        "line-width": {
+          "base": 1.4,
+          "stops": [
+            [
+              8,
+              1.2
+            ],
+            [
+              12,
+              2
+            ]
+          ]
+        },
+        "line-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          6,
+          1,
+          14,
+          0.1
+        ]
+      }
+    },
+    {
+      "id": "structurea-3d",
+      "type": "fill-extrusion",
+      "metadata": {
+        "visible-on-3d": true
+      },
+      "source": "gsi-japan",
+      "source-layer": "structurea",
+      "minzoom": 16,
+      "layout": {
+        "visibility": "none"
+      },
+      "paint": {
+        "fill-extrusion-color": "rgba(255,255,255,0.06)",
+        "fill-extrusion-height": 30,
+        "fill-extrusion-opacity": 0.4
       }
     },
     {
       "id": "poi",
       "type": "symbol",
-      "source": "geolonia",
+      "source": "geolonia-gsi-custom",
       "source-layer": "poi",
       "minzoom": 16,
       "filter": [
@@ -2263,6 +5045,76 @@
         [
           "has",
           "name"
+        ],
+        [
+          "!=",
+          "disputed",
+          "japan_northern_territories"
+        ]
+      ],
+      "layout": {
+        "text-padding": 2,
+        "text-font": [
+          "Noto Sans Regular"
+        ],
+        "icon-image": [
+          "coalesce",
+          [
+            "image",
+            [
+              "get",
+              "class"
+            ]
+          ],
+          [
+            "image",
+            "circle"
+          ]
+        ],
+        "text-field": "{name}",
+        "text-size": 12,
+        "text-max-width": 9,
+        "text-variable-anchor": [
+          "top",
+          "bottom",
+          "left",
+          "right"
+        ],
+        "text-radial-offset": 0.7,
+        "text-justify": "center",
+        "text-anchor": "center"
+      },
+      "paint": {
+        "text-halo-blur": 0.5,
+        "text-color": "#555555",
+        "text-halo-width": 1,
+        "text-halo-color": "rgba(44,44,44,0.9)",
+        "icon-opacity": 0.5
+      }
+    },
+    {
+      "id": "oc-label-town",
+      "type": "symbol",
+      "source": "oceanus",
+      "source-layer": "oc-label",
+      "minzoom": 6,
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "get",
+            "class"
+          ],
+          "town"
+        ],
+        [
+          "==",
+          [
+            "has",
+            "jflag"
+          ],
+          false
         ]
       ],
       "layout": {
@@ -2271,24 +5123,7 @@
           "Noto Sans Regular"
         ],
         "text-anchor": "top",
-        "icon-image": [
-          "coalesce",
-          [
-            "image",
-            [
-              "concat",
-              [
-                "get",
-                "class"
-              ],
-              "-11"
-            ]
-          ],
-          [
-            "image",
-            "circle-11"
-          ]
-        ],
+        "icon-image": "circle",
         "text-field": "{name}",
         "text-offset": [
           0,
@@ -2301,13 +5136,717 @@
         "text-halo-blur": 0.5,
         "text-color": "#666666",
         "text-halo-width": 1,
-        "text-halo-color": "rgba(44, 44, 44, 0.9)"
+        "text-halo-color": "rgba(44,44,44,0.9)",
+        "icon-opacity": 0.5
       }
     },
     {
-      "id": "poi-primary",
+      "id": "oc-label-town-ja",
       "type": "symbol",
-      "source": "geolonia",
+      "source": "oceanus",
+      "source-layer": "oc-label",
+      "minzoom": 7,
+      "maxzoom": 8,
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "get",
+            "class"
+          ],
+          "town"
+        ],
+        [
+          "has",
+          "jflag"
+        ],
+        [
+          "==",
+          [
+            "has",
+            "pref-capital"
+          ],
+          false
+        ]
+      ],
+      "layout": {
+        "text-padding": 2,
+        "text-font": [
+          "Noto Sans Regular"
+        ],
+        "text-anchor": "top",
+        "icon-image": "circle-stroked",
+        "icon-size": 0.8,
+        "text-field": [
+          "match",
+          [
+            "length",
+            [
+              "get",
+              "name"
+            ]
+          ],
+          2,
+          [
+            "get",
+            "name"
+          ],
+          3,
+          [
+            "slice",
+            [
+              "get",
+              "name"
+            ],
+            0,
+            2
+          ],
+          4,
+          [
+            "slice",
+            [
+              "get",
+              "name"
+            ],
+            0,
+            3
+          ],
+          5,
+          [
+            "slice",
+            [
+              "get",
+              "name"
+            ],
+            0,
+            4
+          ],
+          [
+            "get",
+            "name"
+          ]
+        ],
+        "text-offset": [
+          0,
+          0.6
+        ],
+        "text-size": 12,
+        "text-max-width": 9
+      },
+      "paint": {
+        "text-halo-blur": 0.5,
+        "text-color": "#666666",
+        "text-halo-width": 1,
+        "text-halo-color": "rgba(44,44,44,0.9)",
+        "icon-opacity": 0.5
+      }
+    },
+    {
+      "id": "oc-label-pref",
+      "type": "symbol",
+      "source": "oceanus",
+      "source-layer": "oc-label",
+      "minzoom": 5,
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "get",
+            "class"
+          ],
+          "pref"
+        ],
+        [
+          "==",
+          [
+            "has",
+            "jflag"
+          ],
+          false
+        ]
+      ],
+      "layout": {
+        "text-font": [
+          "Noto Sans Regular"
+        ],
+        "text-size": {
+          "stops": [
+            [
+              5,
+              12
+            ],
+            [
+              8,
+              14
+            ]
+          ]
+        },
+        "text-field": "{name}",
+        "text-max-width": 8,
+        "visibility": "visible"
+      },
+      "paint": {
+        "text-color": "#888888",
+        "text-halo-width": 1.2,
+        "text-halo-color": "rgba(44,44,44,0.9)"
+      }
+    },
+    {
+      "id": "oc-label-pref-ja",
+      "type": "symbol",
+      "source": "oceanus",
+      "source-layer": "oc-label",
+      "minzoom": 6,
+      "maxzoom": 8,
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "get",
+            "class"
+          ],
+          "pref"
+        ],
+        [
+          "has",
+          "jflag"
+        ]
+      ],
+      "layout": {
+        "text-font": [
+          "Noto Sans Regular"
+        ],
+        "text-size": {
+          "stops": [
+            [
+              6,
+              13
+            ],
+            [
+              8,
+              17
+            ]
+          ]
+        },
+        "text-field": "{name}",
+        "text-max-width": 8,
+        "visibility": "visible"
+      },
+      "paint": {
+        "text-color": "#888888",
+        "text-halo-width": 1,
+        "text-halo-color": "rgba(44,44,44,0.9)"
+      }
+    },
+    {
+      "id": "oc-label-pref-capital-ja",
+      "type": "symbol",
+      "source": "oceanus",
+      "source-layer": "oc-label",
+      "minzoom": 7,
+      "maxzoom": 8,
+      "filter": [
+        "all",
+        [
+          "has",
+          "jflag"
+        ],
+        [
+          "has",
+          "pref-capital"
+        ],
+        [
+          "!in",
+          "name",
+          "福岡市",
+          "広島市",
+          "大阪市",
+          "神戸市",
+          "名古屋市",
+          "横浜市",
+          "東京",
+          "新潟市",
+          "仙台市",
+          "盛岡市",
+          "札幌市"
+        ]
+      ],
+      "layout": {
+        "text-padding": 2,
+        "text-font": [
+          "Noto Sans Regular"
+        ],
+        "text-anchor": "top",
+        "text-variable-anchor": [
+          "top",
+          "bottom",
+          "left",
+          "right"
+        ],
+        "icon-image": "circle-stroked",
+        "icon-size": 0.8,
+        "icon-allow-overlap": true,
+        "text-field": [
+          "match",
+          [
+            "length",
+            [
+              "get",
+              "name"
+            ]
+          ],
+          2,
+          [
+            "get",
+            "name"
+          ],
+          3,
+          [
+            "slice",
+            [
+              "get",
+              "name"
+            ],
+            0,
+            2
+          ],
+          4,
+          [
+            "slice",
+            [
+              "get",
+              "name"
+            ],
+            0,
+            3
+          ],
+          5,
+          [
+            "slice",
+            [
+              "get",
+              "name"
+            ],
+            0,
+            4
+          ],
+          [
+            "get",
+            "name"
+          ]
+        ],
+        "text-offset": [
+          0.6,
+          0.6
+        ],
+        "text-size": 12,
+        "text-max-width": 9
+      },
+      "paint": {
+        "text-halo-blur": 0.5,
+        "text-color": "#888888",
+        "text-halo-width": 1,
+        "text-halo-color": "rgba(44,44,44,0.9)",
+        "icon-opacity": 0.5
+      }
+    },
+    {
+      "id": "oc-label-pref-capital-popular-ja",
+      "type": "symbol",
+      "source": "oceanus",
+      "source-layer": "oc-label",
+      "minzoom": 5,
+      "maxzoom": 8,
+      "filter": [
+        "all",
+        [
+          "has",
+          "jflag"
+        ],
+        [
+          "has",
+          "pref-capital"
+        ],
+        [
+          "in",
+          "name",
+          "福岡市",
+          "鹿児島市",
+          "長崎市",
+          "広島市",
+          "岡山市",
+          "大阪市",
+          "神戸市",
+          "京都市",
+          "名古屋市",
+          "金沢市",
+          "静岡市",
+          "横浜市",
+          "東京",
+          "宇都宮市",
+          "新潟市",
+          "福島市",
+          "仙台市",
+          "盛岡市",
+          "青森市",
+          "札幌市"
+        ]
+      ],
+      "layout": {
+        "text-padding": 2,
+        "text-font": [
+          "Noto Sans CJK JP Bold"
+        ],
+        "text-anchor": "top",
+        "text-variable-anchor": [
+          "top",
+          "bottom",
+          "left",
+          "right"
+        ],
+        "icon-image": "circle-stroked",
+        "icon-size": 0.8,
+        "icon-allow-overlap": true,
+        "text-field": [
+          "match",
+          [
+            "length",
+            [
+              "get",
+              "name"
+            ]
+          ],
+          2,
+          [
+            "get",
+            "name"
+          ],
+          3,
+          [
+            "slice",
+            [
+              "get",
+              "name"
+            ],
+            0,
+            2
+          ],
+          4,
+          [
+            "slice",
+            [
+              "get",
+              "name"
+            ],
+            0,
+            3
+          ],
+          5,
+          [
+            "slice",
+            [
+              "get",
+              "name"
+            ],
+            0,
+            4
+          ],
+          [
+            "get",
+            "name"
+          ]
+        ],
+        "text-offset": [
+          0.6,
+          0.6
+        ],
+        "text-size": {
+          "stops": [
+            [
+              5,
+              13
+            ],
+            [
+              8,
+              17
+            ]
+          ]
+        },
+        "text-max-width": 9
+      },
+      "paint": {
+        "text-halo-blur": 0.5,
+        "text-color": "#888888",
+        "text-halo-width": 1,
+        "text-halo-color": "rgba(44,44,44,0.9)",
+        "icon-opacity": 0.5
+      }
+    },
+    {
+      "id": "oc-label-country",
+      "type": "symbol",
+      "source": "oceanus",
+      "source-layer": "oc-label",
+      "maxzoom": 7,
+      "filter": [
+        "==",
+        [
+          "get",
+          "class"
+        ],
+        "country"
+      ],
+      "layout": {
+        "text-font": [
+          "Noto Sans CJK JP Bold"
+        ],
+        "text-size": {
+          "stops": [
+            [
+              0,
+              9
+            ],
+            [
+              8,
+              16
+            ]
+          ]
+        },
+        "text-field": "{name}",
+        "text-max-width": 8,
+        "visibility": "visible"
+      },
+      "paint": {
+        "text-color": "#888888",
+        "text-halo-width": 1.2,
+        "text-halo-color": "rgba(44,44,44,0.9)"
+      }
+    },
+    {
+      "id": "poi-z16",
+      "type": "symbol",
+      "source": "geolonia-gsi-custom",
+      "source-layer": "poi",
+      "minzoom": 16,
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "Point"
+        ],
+        [
+          "has",
+          "name"
+        ],
+        [
+          "!=",
+          "disputed",
+          "japan_northern_territories"
+        ]
+      ],
+      "layout": {
+        "text-padding": 2,
+        "text-font": [
+          "Noto Sans Regular"
+        ],
+        "text-anchor": "top",
+        "icon-anchor": "bottom",
+        "icon-image": "circle-stroked",
+        "icon-size": 0.6,
+        "text-field": "{name}",
+        "text-offset": [
+          0,
+          0.3
+        ],
+        "text-size": 12,
+        "text-max-width": 9
+      },
+      "paint": {
+        "text-halo-blur": 0.5,
+        "text-color": "#555555",
+        "text-halo-width": 1,
+        "text-halo-color": "rgba(44,44,44,0.9)",
+        "icon-opacity": 0.5
+      }
+    },
+    {
+      "id": "poi-z16-primary",
+      "type": "symbol",
+      "source": "geolonia-gsi-custom",
+      "source-layer": "poi",
+      "minzoom": 16,
+      "filter": [
+        "any",
+        [
+          "all",
+          [
+            "==",
+            "$type",
+            "Point"
+          ],
+          [
+            "has",
+            "name"
+          ],
+          [
+            "in",
+            "class",
+            "cemetery",
+            "restaurant",
+            "bar",
+            "cafe",
+            "sushi",
+            "restaurant_noodle",
+            "fast_food",
+            "ice_cream",
+            "restaurant_pizza",
+            "restaurant_seafood",
+            "beer",
+            "library",
+            "fuel",
+            "post",
+            "police",
+            "fire_station",
+            "entrance",
+            "bus",
+            "attraction",
+            "art_gallery"
+          ],
+          [
+            "!=",
+            "disputed",
+            "japan_northern_territories"
+          ]
+        ],
+        [
+          "all",
+          [
+            "in",
+            "subclass",
+            "community_centre"
+          ],
+          [
+            "!=",
+            "disputed",
+            "japan_northern_territories"
+          ]
+        ]
+      ],
+      "layout": {
+        "text-padding": 2,
+        "text-font": [
+          "Noto Sans Regular"
+        ],
+        "text-anchor": "top",
+        "icon-anchor": "bottom",
+        "icon-image": [
+          "coalesce",
+          [
+            "image",
+            [
+              "get",
+              "class"
+            ]
+          ],
+          [
+            "image",
+            "circle-stroked"
+          ]
+        ],
+        "text-field": "{name}",
+        "text-offset": [
+          0,
+          0.3
+        ],
+        "text-size": 12,
+        "text-max-width": 9
+      },
+      "paint": {
+        "text-halo-blur": 0.5,
+        "text-color": "#555555",
+        "text-halo-width": 1,
+        "text-halo-color": "rgba(44,44,44,0.9)",
+        "icon-opacity": 0.5
+      }
+    },
+    {
+      "id": "poi-z15",
+      "type": "symbol",
+      "source": "geolonia-gsi-custom",
+      "source-layer": "poi",
+      "minzoom": 15,
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "Point"
+        ],
+        [
+          "has",
+          "name"
+        ],
+        [
+          "in",
+          "class",
+          "bank",
+          "parking",
+          "grocery",
+          "shop",
+          "school",
+          "hospital"
+        ],
+        [
+          "!=",
+          "disputed",
+          "japan_northern_territories"
+        ]
+      ],
+      "layout": {
+        "text-padding": 2,
+        "text-font": [
+          "Noto Sans Regular"
+        ],
+        "text-anchor": "top",
+        "icon-anchor": "bottom",
+        "icon-image": [
+          "coalesce",
+          [
+            "image",
+            [
+              "get",
+              "class"
+            ]
+          ],
+          [
+            "image",
+            "circle-stroked"
+          ]
+        ],
+        "text-field": "{name}",
+        "text-offset": [
+          0,
+          0.3
+        ],
+        "text-size": 12,
+        "text-max-width": 9
+      },
+      "paint": {
+        "text-halo-blur": 0.5,
+        "text-color": "#555555",
+        "text-halo-width": 1,
+        "text-halo-color": "rgba(44,44,44,0.9)",
+        "icon-opacity": 0.5
+      }
+    },
+    {
+      "id": "poi-z14",
+      "type": "symbol",
+      "source": "geolonia-gsi-custom",
       "source-layer": "poi",
       "minzoom": 14,
       "filter": [
@@ -2318,13 +5857,25 @@
           "Point"
         ],
         [
-          "<=",
-          "rank",
-          25
-        ],
-        [
           "has",
           "name"
+        ],
+        [
+          "in",
+          "class",
+          "college",
+          "castle",
+          "aquarium",
+          "cinema",
+          "theatre",
+          "zoo",
+          "convenience",
+          "lodging"
+        ],
+        [
+          "!=",
+          "disputed",
+          "japan_northern_territories"
         ]
       ],
       "layout": {
@@ -2333,187 +5884,506 @@
           "Noto Sans Regular"
         ],
         "text-anchor": "top",
+        "icon-anchor": "bottom",
         "icon-image": [
           "coalesce",
           [
             "image",
             [
-              "concat",
-              [
-                "get",
-                "class"
-              ],
-              "-11"
+              "get",
+              "class"
             ]
           ],
           [
             "image",
-            "circle-11"
+            "circle-stroked"
           ]
         ],
         "text-field": "{name}",
         "text-offset": [
           0,
-          0.6
+          0.3
         ],
         "text-size": 12,
         "text-max-width": 9
       },
       "paint": {
         "text-halo-blur": 0.5,
-        "text-color": "#666666",
+        "text-color": "#555555",
         "text-halo-width": 1,
-        "text-halo-color": "rgba(44, 44, 44, 0.9)"
-      }
-    },
-    {
-      "id": "road_oneway",
-      "type": "symbol",
-      "source": "geolonia",
-      "source-layer": "transportation",
-      "minzoom": 15,
-      "filter": [
-        "all",
-        [
-          "==",
-          "oneway",
-          1
-        ],
-        [
-          "in",
-          "class",
-          "motorway",
-          "trunk",
-          "primary",
-          "secondary",
-          "tertiary",
-          "minor",
-          "service"
-        ]
-      ],
-      "layout": {
-        "symbol-placement": "line",
-        "icon-image": "oneway",
-        "symbol-spacing": 75,
-        "icon-padding": 2,
-        "icon-rotation-alignment": "map",
-        "icon-rotate": 90,
-        "icon-size": {
-          "stops": [
-            [
-              15,
-              0.5
-            ],
-            [
-              19,
-              1
-            ]
-          ]
-        }
-      },
-      "paint": {
+        "text-halo-color": "rgba(44,44,44,0.9)",
         "icon-opacity": 0.5
       }
     },
     {
-      "id": "road_oneway_opposite",
+      "id": "poi-z13",
       "type": "symbol",
-      "source": "geolonia",
-      "source-layer": "transportation",
-      "minzoom": 15,
+      "source": "geolonia-gsi-custom",
+      "source-layer": "poi",
+      "minzoom": 13,
       "filter": [
         "all",
         [
           "==",
-          "oneway",
-          -1
+          "$type",
+          "Point"
+        ],
+        [
+          "has",
+          "name"
         ],
         [
           "in",
           "class",
-          "motorway",
-          "trunk",
-          "primary",
-          "secondary",
-          "tertiary",
-          "minor",
-          "service"
-        ]
-      ],
-      "layout": {
-        "symbol-placement": "line",
-        "icon-image": "oneway",
-        "symbol-spacing": 75,
-        "icon-padding": 2,
-        "icon-rotation-alignment": "map",
-        "icon-rotate": -90,
-        "icon-size": {
-          "stops": [
-            [
-              15,
-              0.5
-            ],
-            [
-              19,
-              1
-            ]
-          ]
-        }
-      },
-      "paint": {
-        "icon-opacity": 0.5
-      }
-    },
-    {
-      "id": "road_shield",
-      "type": "symbol",
-      "metadata": {},
-      "source": "geolonia",
-      "source-layer": "transportation_name",
-      "minzoom": 7,
-      "filter": [
-        "all",
+          "stadium",
+          "landmark",
+          "monument",
+          "museum",
+          "town_hall",
+          "golf"
+        ],
         [
-          "<=",
-          "ref_length",
-          6
+          "!in",
+          "subclass",
+          "community_centre"
+        ],
+        [
+          "!=",
+          "disputed",
+          "japan_northern_territories"
         ]
       ],
       "layout": {
-        "icon-image": "default_{ref_length}",
-        "icon-rotation-alignment": "viewport",
-        "symbol-placement": {
-          "base": 1,
-          "stops": [
-            [
-              10,
-              "point"
-            ],
-            [
-              11,
-              "line"
-            ]
-          ]
-        },
-        "symbol-spacing": 500,
-        "text-field": "{ref}",
+        "text-padding": 2,
         "text-font": [
           "Noto Sans Regular"
         ],
+        "text-anchor": "top",
+        "icon-anchor": "bottom",
+        "icon-image": [
+          "coalesce",
+          [
+            "image",
+            [
+              "get",
+              "class"
+            ]
+          ],
+          [
+            "image",
+            "circle-stroked"
+          ]
+        ],
+        "text-field": "{name}",
         "text-offset": [
           0,
-          0
+          0.3
         ],
-        "text-rotation-alignment": "viewport",
-        "text-size": 10,
-        "icon-size": 1
+        "text-size": 12,
+        "text-max-width": 9
       },
-      "paint": {}
+      "paint": {
+        "text-halo-blur": 0.5,
+        "text-color": "#555555",
+        "text-halo-width": 1,
+        "text-halo-color": "rgba(44,44,44,0.9)",
+        "icon-opacity": 0.5
+      }
     },
     {
-      "id": "airport-label-major",
+      "id": "poi-worship",
       "type": "symbol",
-      "source": "geolonia",
+      "source": "geolonia-gsi-custom",
+      "source-layer": "poi",
+      "minzoom": 16,
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "Point"
+        ],
+        [
+          "has",
+          "name"
+        ],
+        [
+          "!has",
+          "wikidata"
+        ],
+        [
+          "in",
+          "class",
+          "place_of_worship"
+        ],
+        [
+          "!=",
+          "disputed",
+          "japan_northern_territories"
+        ]
+      ],
+      "layout": {
+        "text-padding": 2,
+        "text-font": [
+          "Noto Sans Regular"
+        ],
+        "text-anchor": "top",
+        "icon-anchor": "bottom",
+        "icon-image": [
+          "coalesce",
+          [
+            "image",
+            [
+              "get",
+              "class"
+            ]
+          ],
+          [
+            "image",
+            "circle-stroked"
+          ]
+        ],
+        "text-field": "{name}",
+        "text-offset": [
+          0,
+          0.3
+        ],
+        "text-size": 12,
+        "text-max-width": 9
+      },
+      "paint": {
+        "text-halo-blur": 0.5,
+        "text-color": "#555555",
+        "text-halo-width": 1,
+        "text-halo-color": "rgba(44,44,44,0.9)",
+        "icon-opacity": 0.5
+      }
+    },
+    {
+      "id": "poi-worship-primary",
+      "type": "symbol",
+      "source": "geolonia-gsi-custom",
+      "source-layer": "poi",
+      "minzoom": 14,
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "Point"
+        ],
+        [
+          "has",
+          "name"
+        ],
+        [
+          "has",
+          "wikidata"
+        ],
+        [
+          "in",
+          "class",
+          "place_of_worship"
+        ],
+        [
+          "!=",
+          "disputed",
+          "japan_northern_territories"
+        ]
+      ],
+      "layout": {
+        "text-padding": 2,
+        "text-font": [
+          "Noto Sans Regular"
+        ],
+        "text-anchor": "top",
+        "icon-anchor": "bottom",
+        "icon-image": [
+          "coalesce",
+          [
+            "image",
+            [
+              "get",
+              "class"
+            ]
+          ],
+          [
+            "image",
+            "circle-stroked"
+          ]
+        ],
+        "text-field": "{name}",
+        "icon-padding": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          11,
+          30,
+          15,
+          2
+        ],
+        "text-offset": [
+          0,
+          0.3
+        ],
+        "text-size": 12,
+        "text-max-width": 9
+      },
+      "paint": {
+        "text-halo-blur": 0.5,
+        "text-color": "#555555",
+        "text-halo-width": 1,
+        "text-halo-color": "rgba(44,44,44,0.9)",
+        "icon-opacity": 0.5
+      }
+    },
+    {
+      "id": "poi-park",
+      "type": "symbol",
+      "source": "geolonia-gsi-custom",
+      "source-layer": "poi",
+      "minzoom": 16,
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "Point"
+        ],
+        [
+          "has",
+          "name"
+        ],
+        [
+          "!has",
+          "wikidata"
+        ],
+        [
+          "in",
+          "class",
+          "park"
+        ],
+        [
+          "!=",
+          "disputed",
+          "japan_northern_territories"
+        ]
+      ],
+      "layout": {
+        "text-padding": 2,
+        "text-font": [
+          "Noto Sans Regular"
+        ],
+        "text-anchor": "top",
+        "icon-anchor": "bottom",
+        "icon-image": [
+          "coalesce",
+          [
+            "image",
+            [
+              "get",
+              "class"
+            ]
+          ],
+          [
+            "image",
+            "circle-stroked"
+          ]
+        ],
+        "text-field": "{name}",
+        "text-offset": [
+          0,
+          0.3
+        ],
+        "text-size": 12,
+        "text-max-width": 9
+      },
+      "paint": {
+        "text-halo-blur": 0.5,
+        "text-color": "#555555",
+        "text-halo-width": 1,
+        "text-halo-color": "rgba(44,44,44,0.9)",
+        "icon-opacity": 0.5
+      }
+    },
+    {
+      "id": "poi-park-primary",
+      "type": "symbol",
+      "source": "geolonia-gsi-custom",
+      "source-layer": "poi",
+      "minzoom": 13,
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "Point"
+        ],
+        [
+          "has",
+          "name"
+        ],
+        [
+          "has",
+          "wikidata"
+        ],
+        [
+          "in",
+          "class",
+          "park"
+        ],
+        [
+          "!=",
+          "disputed",
+          "japan_northern_territories"
+        ]
+      ],
+      "layout": {
+        "text-padding": 2,
+        "text-font": [
+          "Noto Sans Regular"
+        ],
+        "text-anchor": "top",
+        "icon-anchor": "bottom",
+        "icon-image": [
+          "coalesce",
+          [
+            "image",
+            [
+              "get",
+              "class"
+            ]
+          ],
+          [
+            "image",
+            "circle-stroked"
+          ]
+        ],
+        "icon-padding": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          11,
+          15,
+          15,
+          2
+        ],
+        "text-field": "{name}",
+        "text-offset": [
+          0,
+          0.3
+        ],
+        "text-size": 12,
+        "text-max-width": 9
+      },
+      "paint": {
+        "text-halo-blur": 0.5,
+        "text-color": "#555555",
+        "text-halo-width": 1,
+        "text-halo-color": "rgba(44,44,44,0.9)",
+        "icon-opacity": 0.5
+      }
+    },
+    {
+      "id": "poi-railway",
+      "type": "symbol",
+      "source": "geolonia-gsi-custom",
+      "source-layer": "poi",
+      "minzoom": 11,
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "Point"
+        ],
+        [
+          "has",
+          "name"
+        ],
+        [
+          "==",
+          "class",
+          "railway"
+        ],
+        [
+          "==",
+          "subclass",
+          "station"
+        ],
+        [
+          "!=",
+          "disputed",
+          "japan_northern_territories"
+        ]
+      ],
+      "layout": {
+        "text-padding": 2,
+        "text-font": [
+          "Noto Sans CJK JP Bold"
+        ],
+        "text-anchor": "top",
+        "icon-anchor": "bottom",
+        "icon-image": [
+          "coalesce",
+          [
+            "image",
+            "railway"
+          ],
+          [
+            "image",
+            "circle-stroked"
+          ]
+        ],
+        "icon-padding": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          11,
+          50,
+          13,
+          30,
+          15,
+          2
+        ],
+        "text-field": "{name}",
+        "text-offset": [
+          0,
+          0.3
+        ],
+        "text-size": 12,
+        "text-max-width": 9,
+        "icon-optional": false,
+        "icon-ignore-placement": false,
+        "icon-allow-overlap": false,
+        "text-ignore-placement": false,
+        "text-allow-overlap": false,
+        "text-optional": true
+      },
+      "paint": {
+        "text-halo-blur": 0.5,
+        "text-color": "#555555",
+        "text-halo-width": 2,
+        "text-halo-color": "rgba(44,44,44,0.9)",
+        "icon-opacity": 0.5
+      }
+    },
+    {
+      "id": "poi-airport-primary",
+      "type": "symbol",
+      "source": "geolonia-gsi-custom",
       "source-layer": "aerodrome_label",
       "minzoom": 10,
       "filter": [
@@ -2521,6 +6391,11 @@
         [
           "has",
           "iata"
+        ],
+        [
+          "!=",
+          "disputed",
+          "japan_northern_territories"
         ]
       ],
       "layout": {
@@ -2529,7 +6404,7 @@
           "Noto Sans Regular"
         ],
         "text-anchor": "top",
-        "icon-image": "airport-11",
+        "icon-image": "airport",
         "text-field": "{name}",
         "text-offset": [
           0,
@@ -2543,22 +6418,598 @@
       },
       "paint": {
         "text-halo-blur": 0.5,
-        "text-color": "#666666",
+        "text-color": "#555555",
         "text-halo-width": 1,
-        "text-halo-color": "rgba(44, 44, 44, 0.9)"
+        "text-halo-color": "rgba(44,44,44,0.9)",
+        "icon-opacity": 0.5
+      }
+    },
+    {
+      "id": "label-gsi",
+      "type": "symbol",
+      "source": "gsi-japan",
+      "source-layer": "label",
+      "minzoom": 10,
+      "maxzoom": 15,
+      "filter": [
+        "all",
+        [
+          "in",
+          "ftCode",
+          100,
+          50100
+        ],
+        [
+          "in",
+          "annoCtg",
+          311,
+          314,
+          315
+        ]
+      ],
+      "layout": {
+        "text-padding": 2,
+        "text-font": [
+          "Noto Sans Regular"
+        ],
+        "text-anchor": "top",
+        "icon-anchor": "bottom",
+        "icon-image": [
+          "coalesce",
+          [
+            "image",
+            "mountain"
+          ],
+          [
+            "image",
+            "circle-stroked"
+          ]
+        ],
+        "icon-padding": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          8,
+          50,
+          11,
+          100,
+          20,
+          2
+        ],
+        "text-field": "{knj}",
+        "text-offset": [
+          0,
+          0.3
+        ],
+        "text-size": 12,
+        "text-max-width": 9,
+        "visibility": "visible"
+      },
+      "paint": {
+        "text-halo-blur": 0.5,
+        "text-color": "#555555",
+        "text-halo-width": 1,
+        "text-halo-color": "rgba(44,44,44,0.9)",
+        "icon-opacity": 0.5
+      }
+    },
+    {
+      "id": "road_shield_national",
+      "type": "symbol",
+      "source": "gsi-japan",
+      "source-layer": "transp",
+      "minzoom": 9,
+      "maxzoom": 20,
+      "filter": [
+        "all",
+        [
+          "in",
+          "ftCode",
+          2901
+        ]
+      ],
+      "layout": {
+        "icon-image": [
+          "match",
+          [
+            "length",
+            [
+              "to-string",
+              [
+                "get",
+                "nRNo"
+              ]
+            ]
+          ],
+          1,
+          "national-JP_1",
+          2,
+          "national-JP_2",
+          3,
+          "national-JP_3",
+          "national-JP_3"
+        ],
+        "icon-padding": 13,
+        "text-field": [
+          "get",
+          "nRNo"
+        ],
+        "text-font": [
+          "Noto Sans CJK JP Bold"
+        ],
+        "text-offset": [
+          0,
+          -0.1
+        ],
+        "text-rotation-alignment": "viewport",
+        "text-size": 10,
+        "icon-size": 1
+      },
+      "paint": {
+        "text-color": "#555555",
+        "icon-opacity": 0.5
+      }
+    },
+    {
+      "id": "road_shield_highway",
+      "type": "symbol",
+      "source": "gsi-japan",
+      "source-layer": "transp",
+      "minzoom": 8,
+      "filter": [
+        "all",
+        [
+          "in",
+          "ftCode",
+          2903,
+          2904
+        ]
+      ],
+      "layout": {
+        "icon-image": [
+          "match",
+          [
+            "length",
+            [
+              "case",
+              [
+                "has",
+                "uRNo"
+              ],
+              [
+                "get",
+                "uRNo"
+              ],
+              [
+                "has",
+                "nRNo"
+              ],
+              [
+                "get",
+                "nRNo"
+              ],
+              ""
+            ]
+          ],
+          1,
+          "highway-JP_1",
+          2,
+          "highway-JP_2",
+          3,
+          "highway-JP_3",
+          "highway-JP_3"
+        ],
+        "icon-rotation-alignment": "viewport",
+        "icon-padding": 13,
+        "text-field": [
+          "case",
+          [
+            "has",
+            "uRNo"
+          ],
+          [
+            "get",
+            "uRNo"
+          ],
+          [
+            "has",
+            "nRNo"
+          ],
+          [
+            "get",
+            "nRNo"
+          ],
+          ""
+        ],
+        "text-font": [
+          "Noto Sans CJK JP Bold"
+        ],
+        "text-offset": [
+          0,
+          -0.1
+        ],
+        "text-rotation-alignment": "viewport",
+        "text-size": 10,
+        "icon-size": 1
+      },
+      "paint": {
+        "text-color": "#555555",
+        "icon-opacity": 0.5
+      }
+    },
+    {
+      "id": "railway-label",
+      "type": "symbol",
+      "source": "gsi-japan",
+      "source-layer": "label",
+      "minzoom": 10,
+      "maxzoom": 15,
+      "filter": [
+        "all",
+        [
+          "==",
+          "ftCode",
+          100
+        ],
+        [
+          "==",
+          "annoCtg",
+          421
+        ]
+      ],
+      "layout": {
+        "text-font": [
+          "Noto Sans Regular"
+        ],
+        "text-keep-upright": true,
+        "text-field": "{knj}",
+        "text-size": 12,
+        "text-allow-overlap": true,
+        "text-rotate": [
+          "case",
+          [
+            "==",
+            [
+              "get",
+              "arrng"
+            ],
+            2
+          ],
+          [
+            "*",
+            [
+              "+",
+              [
+                "to-number",
+                [
+                  "get",
+                  "arrngAgl"
+                ]
+              ],
+              90
+            ],
+            -1
+          ],
+          [
+            "*",
+            [
+              "to-number",
+              [
+                "get",
+                "arrngAgl"
+              ]
+            ],
+            -1
+          ]
+        ],
+        "text-anchor": [
+          "case",
+          [
+            "==",
+            [
+              "get",
+              "arrng"
+            ],
+            2
+          ],
+          [
+            "case",
+            [
+              "==",
+              [
+                "get",
+                "dspPos"
+              ],
+              "LC"
+            ],
+            "top",
+            "center"
+          ],
+          [
+            "case",
+            [
+              "==",
+              [
+                "get",
+                "dspPos"
+              ],
+              "LT"
+            ],
+            "top-left",
+            [
+              "==",
+              [
+                "get",
+                "dspPos"
+              ],
+              "CT"
+            ],
+            "top",
+            [
+              "==",
+              [
+                "get",
+                "dspPos"
+              ],
+              "RT"
+            ],
+            "top-right",
+            [
+              "==",
+              [
+                "get",
+                "dspPos"
+              ],
+              "LC"
+            ],
+            "left",
+            [
+              "==",
+              [
+                "get",
+                "dspPos"
+              ],
+              "CC"
+            ],
+            "center",
+            [
+              "==",
+              [
+                "get",
+                "dspPos"
+              ],
+              "RC"
+            ],
+            "right",
+            [
+              "==",
+              [
+                "get",
+                "dspPos"
+              ],
+              "LB"
+            ],
+            "bottom-left",
+            [
+              "==",
+              [
+                "get",
+                "dspPos"
+              ],
+              "CB"
+            ],
+            "bottom",
+            [
+              "==",
+              [
+                "get",
+                "dspPos"
+              ],
+              "RB"
+            ],
+            "bottom-right",
+            "center"
+          ]
+        ],
+        "text-pitch-alignment": "viewport",
+        "text-rotation-alignment": "viewport",
+        "icon-pitch-alignment": "auto",
+        "icon-rotation-alignment": "auto",
+        "text-offset": [
+          "case",
+          [
+            "any",
+            [
+              "==",
+              [
+                "get",
+                "dspPos"
+              ],
+              "LT"
+            ],
+            [
+              "==",
+              [
+                "get",
+                "dspPos"
+              ],
+              "LC"
+            ],
+            [
+              "==",
+              [
+                "get",
+                "dspPos"
+              ],
+              "LB"
+            ]
+          ],
+          [
+            "literal",
+            [
+              0.5,
+              0
+            ]
+          ],
+          [
+            "any",
+            [
+              "==",
+              [
+                "get",
+                "dspPos"
+              ],
+              "RT"
+            ],
+            [
+              "==",
+              [
+                "get",
+                "dspPos"
+              ],
+              "RC"
+            ],
+            [
+              "==",
+              [
+                "get",
+                "dspPos"
+              ],
+              "RB"
+            ]
+          ],
+          [
+            "literal",
+            [
+              -0.5,
+              0
+            ]
+          ],
+          [
+            "any",
+            [
+              "==",
+              [
+                "get",
+                "dspPos"
+              ],
+              "CT"
+            ]
+          ],
+          [
+            "literal",
+            [
+              0,
+              0.5
+            ]
+          ],
+          [
+            "any",
+            [
+              "==",
+              [
+                "get",
+                "dspPos"
+              ],
+              "CB"
+            ]
+          ],
+          [
+            "literal",
+            [
+              0,
+              -0.5
+            ]
+          ],
+          [
+            "literal",
+            [
+              0,
+              0
+            ]
+          ]
+        ],
+        "visibility": "visible"
+      },
+      "paint": {
+        "text-color": "#555555",
+        "text-halo-width": 1.2,
+        "text-halo-color": "rgba(44,44,44,0.9)"
+      }
+    },
+    {
+      "id": "airport-label-major",
+      "type": "symbol",
+      "source": "geolonia-gsi-custom",
+      "source-layer": "aerodrome_label",
+      "minzoom": 5,
+      "filter": [
+        "all",
+        [
+          "has",
+          "iata"
+        ],
+        [
+          "!=",
+          "disputed",
+          "japan_northern_territories"
+        ]
+      ],
+      "layout": {
+        "text-padding": 2,
+        "text-font": [
+          "Noto Sans Regular"
+        ],
+        "text-anchor": "top",
+        "icon-image": "airport",
+        "text-field": "{name}",
+        "text-offset": [
+          0,
+          0.6
+        ],
+        "text-size": 12,
+        "text-max-width": 9
+      },
+      "paint": {
+        "text-halo-blur": 0.5,
+        "text-color": "#555555",
+        "text-halo-width": 1,
+        "text-halo-color": "rgba(44,44,44,0.9)",
+        "icon-opacity": 0.5
       }
     },
     {
       "id": "place-village",
       "type": "symbol",
-      "source": "geolonia",
+      "source": "geolonia-gsi-custom",
       "source-layer": "place",
+      "minzoom": 9,
+      "maxzoom": 13,
       "filter": [
-        "==",
-        "class",
-        "village"
+        "all",
+        [
+          "==",
+          "class",
+          "village"
+        ],
+        [
+          "!=",
+          "disputed",
+          "japan_northern_territories"
+        ]
       ],
       "layout": {
+        "icon-image": "circle",
+        "icon-size": 0.3,
+        "text-anchor": "top",
+        "text-offset": [
+          0,
+          0.1
+        ],
         "text-font": [
           "Noto Sans Regular"
         ],
@@ -2580,26 +7031,104 @@
         "visibility": "visible"
       },
       "paint": {
+        "icon-color": "#000000",
+        "icon-opacity": 0.5,
         "text-color": "#666666",
         "text-halo-width": 1.2,
-        "text-halo-color": "rgba(44, 44, 44, 0.9)"
+        "text-halo-color": "rgba(44,44,44,0.9)"
       }
     },
     {
       "id": "place-town",
       "type": "symbol",
-      "source": "geolonia",
+      "source": "geolonia-gsi-custom",
+      "source-layer": "place",
+      "minzoom": 8.5,
+      "maxzoom": 13,
+      "filter": [
+        "all",
+        [
+          "==",
+          "class",
+          "town"
+        ],
+        [
+          "!=",
+          "disputed",
+          "japan_northern_territories"
+        ]
+      ],
+      "layout": {
+        "icon-image": "circle",
+        "icon-size": 0.3,
+        "text-anchor": "top",
+        "text-offset": [
+          0,
+          0.1
+        ],
+        "text-font": [
+          "Noto Sans Regular"
+        ],
+        "text-size": 12,
+        "text-field": "{name}",
+        "text-max-width": 8,
+        "visibility": "visible"
+      },
+      "paint": {
+        "icon-color": "#000000",
+        "icon-opacity": 0.5,
+        "text-color": "#666666",
+        "text-halo-width": 1.2,
+        "text-halo-color": "rgba(44,44,44,0.9)"
+      }
+    },
+    {
+      "id": "place-island-name",
+      "type": "symbol",
+      "source": "geolonia-gsi-custom",
       "source-layer": "place",
       "filter": [
-        "==",
-        "class",
-        "town"
+        "all",
+        [
+          "==",
+          [
+            "get",
+            "class"
+          ],
+          "island"
+        ],
+        [
+          "!=",
+          [
+            "get",
+            "disputed"
+          ],
+          "japan_northern_territories"
+        ],
+        [
+          "any",
+          [
+            "!=",
+            [
+              "get",
+              "subclass"
+            ],
+            "islet"
+          ],
+          [
+            ">=",
+            [
+              "zoom"
+            ],
+            16
+          ]
+        ]
       ],
       "layout": {
         "text-font": [
           "Noto Sans Regular"
         ],
-        "text-size": 14,
+        "text-size": 11,
         "text-field": "{name}",
         "text-max-width": 8,
         "visibility": "visible"
@@ -2607,17 +7136,16 @@
       "paint": {
         "text-color": "#666666",
         "text-halo-width": 1.2,
-        "text-halo-color": "rgba(44, 44, 44, 0.9)",
-        "icon-halo-color": "rgba(15, 15, 15, 0)",
-        "icon-color": "#666666"
+        "text-halo-color": "rgba(44,44,44,0.9)"
       }
     },
     {
-      "id": "place-city",
+      "id": "place-city-rank10",
       "type": "symbol",
-      "source": "geolonia",
+      "source": "geolonia-gsi-custom",
       "source-layer": "place",
       "minzoom": 8,
+      "maxzoom": 13,
       "filter": [
         "all",
         [
@@ -2629,9 +7157,26 @@
           "==",
           "class",
           "city"
+        ],
+        [
+          "==",
+          "rank",
+          10
+        ],
+        [
+          "!=",
+          "disputed",
+          "japan_northern_territories"
         ]
       ],
       "layout": {
+        "icon-image": "circle",
+        "icon-size": 0.3,
+        "text-anchor": "top",
+        "text-offset": [
+          0,
+          0.1
+        ],
         "text-font": [
           "Noto Sans Regular"
         ],
@@ -2641,16 +7186,451 @@
         "visibility": "visible"
       },
       "paint": {
-        "text-color": "#777777",
+        "icon-color": "#000000",
+        "icon-opacity": 0.5,
+        "text-color": "#888888",
         "text-halo-width": 1.2,
-        "text-halo-color": "rgba(44, 44, 44, 0.9)"
+        "text-halo-color": "rgba(44,44,44,0.9)"
+      }
+    },
+    {
+      "id": "place-city-rank9",
+      "type": "symbol",
+      "source": "geolonia-gsi-custom",
+      "source-layer": "place",
+      "minzoom": 8,
+      "maxzoom": 13,
+      "filter": [
+        "all",
+        [
+          "!=",
+          "capital",
+          2
+        ],
+        [
+          "==",
+          "class",
+          "city"
+        ],
+        [
+          "==",
+          "rank",
+          9
+        ],
+        [
+          "!=",
+          "disputed",
+          "japan_northern_territories"
+        ]
+      ],
+      "layout": {
+        "icon-image": "circle",
+        "icon-size": 0.3,
+        "text-anchor": "top",
+        "text-offset": [
+          0,
+          0.1
+        ],
+        "text-font": [
+          "Noto Sans Regular"
+        ],
+        "text-size": 14,
+        "text-field": "{name}",
+        "text-max-width": 8,
+        "visibility": "visible"
+      },
+      "paint": {
+        "icon-color": "#000000",
+        "icon-opacity": 0.5,
+        "text-color": "#888888",
+        "text-halo-width": 1.2,
+        "text-halo-color": "rgba(44,44,44,0.9)"
+      }
+    },
+    {
+      "id": "place-city-rank8",
+      "type": "symbol",
+      "source": "geolonia-gsi-custom",
+      "source-layer": "place",
+      "minzoom": 8,
+      "maxzoom": 13,
+      "filter": [
+        "all",
+        [
+          "!=",
+          "capital",
+          2
+        ],
+        [
+          "==",
+          "class",
+          "city"
+        ],
+        [
+          "==",
+          "rank",
+          8
+        ],
+        [
+          "!=",
+          "disputed",
+          "japan_northern_territories"
+        ]
+      ],
+      "layout": {
+        "icon-image": "circle",
+        "icon-size": 0.3,
+        "text-anchor": "top",
+        "text-offset": [
+          0,
+          0.1
+        ],
+        "text-font": [
+          "Noto Sans Regular"
+        ],
+        "text-size": 14,
+        "text-field": "{name}",
+        "text-max-width": 8,
+        "visibility": "visible"
+      },
+      "paint": {
+        "icon-color": "#000000",
+        "icon-opacity": 0.5,
+        "text-color": "#888888",
+        "text-halo-width": 1.2,
+        "text-halo-color": "rgba(44,44,44,0.9)"
+      }
+    },
+    {
+      "id": "place-city-rank7",
+      "type": "symbol",
+      "source": "geolonia-gsi-custom",
+      "source-layer": "place",
+      "minzoom": 8,
+      "maxzoom": 13,
+      "filter": [
+        "all",
+        [
+          "!=",
+          "capital",
+          2
+        ],
+        [
+          "==",
+          "class",
+          "city"
+        ],
+        [
+          "==",
+          "rank",
+          7
+        ],
+        [
+          "!=",
+          "disputed",
+          "japan_northern_territories"
+        ]
+      ],
+      "layout": {
+        "icon-image": "circle",
+        "icon-size": 0.3,
+        "text-anchor": "top",
+        "text-offset": [
+          0,
+          0.1
+        ],
+        "text-font": [
+          "Noto Sans Regular"
+        ],
+        "text-size": 14,
+        "text-field": "{name}",
+        "text-max-width": 8,
+        "visibility": "visible"
+      },
+      "paint": {
+        "icon-color": "#000000",
+        "icon-opacity": 0.5,
+        "text-color": "#888888",
+        "text-halo-width": 1.2,
+        "text-halo-color": "rgba(44,44,44,0.9)"
+      }
+    },
+    {
+      "id": "place-city-rank6",
+      "type": "symbol",
+      "source": "geolonia-gsi-custom",
+      "source-layer": "place",
+      "minzoom": 11,
+      "maxzoom": 13,
+      "filter": [
+        "all",
+        [
+          "!=",
+          "capital",
+          2
+        ],
+        [
+          "==",
+          "class",
+          "city"
+        ],
+        [
+          "==",
+          "rank",
+          6
+        ],
+        [
+          "!=",
+          "disputed",
+          "japan_northern_territories"
+        ]
+      ],
+      "layout": {
+        "icon-image": "circle",
+        "icon-size": 0.3,
+        "text-anchor": "top",
+        "text-offset": [
+          0,
+          0.1
+        ],
+        "text-font": [
+          "Noto Sans Regular"
+        ],
+        "text-size": 14,
+        "text-field": "{name}",
+        "text-max-width": 8,
+        "visibility": "visible"
+      },
+      "paint": {
+        "icon-color": "#000000",
+        "icon-opacity": 0.5,
+        "text-color": "#888888",
+        "text-halo-width": 1.2,
+        "text-halo-color": "rgba(44,44,44,0.9)"
+      }
+    },
+    {
+      "id": "place-city-rank5",
+      "type": "symbol",
+      "source": "geolonia-gsi-custom",
+      "source-layer": "place",
+      "minzoom": 10,
+      "maxzoom": 13,
+      "filter": [
+        "all",
+        [
+          "!=",
+          "capital",
+          2
+        ],
+        [
+          "==",
+          "class",
+          "city"
+        ],
+        [
+          "==",
+          "rank",
+          5
+        ],
+        [
+          "!=",
+          "disputed",
+          "japan_northern_territories"
+        ]
+      ],
+      "layout": {
+        "icon-image": "circle",
+        "icon-size": 0.3,
+        "text-anchor": "top",
+        "text-offset": [
+          0,
+          0.1
+        ],
+        "text-font": [
+          "Noto Sans Regular"
+        ],
+        "text-size": 14,
+        "text-field": "{name}",
+        "text-max-width": 8,
+        "visibility": "visible"
+      },
+      "paint": {
+        "icon-color": "#000000",
+        "icon-opacity": 0.5,
+        "text-color": "#888888",
+        "text-halo-width": 1.2,
+        "text-halo-color": "rgba(44,44,44,0.9)"
+      }
+    },
+    {
+      "id": "place-city-rank4",
+      "type": "symbol",
+      "source": "geolonia-gsi-custom",
+      "source-layer": "place",
+      "minzoom": 9,
+      "maxzoom": 13,
+      "filter": [
+        "all",
+        [
+          "!=",
+          "capital",
+          2
+        ],
+        [
+          "==",
+          "class",
+          "city"
+        ],
+        [
+          "==",
+          "rank",
+          4
+        ],
+        [
+          "!=",
+          "disputed",
+          "japan_northern_territories"
+        ]
+      ],
+      "layout": {
+        "icon-image": "circle",
+        "icon-size": 0.3,
+        "text-anchor": "top",
+        "text-offset": [
+          0,
+          0.1
+        ],
+        "text-font": [
+          "Noto Sans Regular"
+        ],
+        "text-size": 14,
+        "text-field": "{name}",
+        "text-max-width": 8,
+        "visibility": "visible"
+      },
+      "paint": {
+        "icon-color": "#000000",
+        "icon-opacity": 0.5,
+        "text-color": "#888888",
+        "text-halo-width": 1.2,
+        "text-halo-color": "rgba(44,44,44,0.9)"
+      }
+    },
+    {
+      "id": "place-city-rank3",
+      "type": "symbol",
+      "source": "geolonia-gsi-custom",
+      "source-layer": "place",
+      "minzoom": 8,
+      "maxzoom": 13,
+      "filter": [
+        "all",
+        [
+          "!=",
+          "capital",
+          2
+        ],
+        [
+          "==",
+          "class",
+          "city"
+        ],
+        [
+          "==",
+          "rank",
+          3
+        ],
+        [
+          "!=",
+          "disputed",
+          "japan_northern_territories"
+        ]
+      ],
+      "layout": {
+        "icon-image": "circle",
+        "icon-size": 0.4,
+        "text-anchor": "top",
+        "text-offset": [
+          0,
+          0.1
+        ],
+        "text-font": [
+          "Noto Sans Regular"
+        ],
+        "text-size": 16,
+        "text-field": "{name}",
+        "text-max-width": 8,
+        "visibility": "visible"
+      },
+      "paint": {
+        "icon-color": "#000000",
+        "icon-opacity": 0.5,
+        "text-color": "#888888",
+        "text-halo-width": 1.2,
+        "text-halo-color": "rgba(44,44,44,0.9)"
+      }
+    },
+    {
+      "id": "place-city-rank2",
+      "type": "symbol",
+      "source": "geolonia-gsi-custom",
+      "source-layer": "place",
+      "minzoom": 8,
+      "maxzoom": 13,
+      "filter": [
+        "all",
+        [
+          "!=",
+          "capital",
+          2
+        ],
+        [
+          "==",
+          "class",
+          "city"
+        ],
+        [
+          "==",
+          "rank",
+          2
+        ],
+        [
+          "!=",
+          "disputed",
+          "japan_northern_territories"
+        ]
+      ],
+      "layout": {
+        "icon-image": "circle-stroked",
+        "icon-size": 0.8,
+        "text-anchor": "top",
+        "text-offset": [
+          0,
+          0.2
+        ],
+        "text-font": [
+          "Noto Sans CJK JP Bold"
+        ],
+        "text-size": 17,
+        "text-field": "{name}",
+        "text-max-width": 8,
+        "visibility": "visible"
+      },
+      "paint": {
+        "icon-color": "#000000",
+        "icon-opacity": 0.5,
+        "text-color": "#888888",
+        "text-halo-width": 1.2,
+        "text-halo-color": "rgba(44,44,44,0.9)"
       }
     },
     {
       "id": "place-city-capital",
       "type": "symbol",
-      "source": "geolonia",
+      "source": "geolonia-gsi-custom",
       "source-layer": "place",
+      "maxzoom": 11,
       "filter": [
         "all",
         [
@@ -2662,97 +7642,34 @@
           "==",
           "class",
           "city"
+        ],
+        [
+          "!=",
+          "disputed",
+          "japan_northern_territories"
         ]
       ],
       "layout": {
         "text-font": [
-          "Noto Sans Regular"
+          "Noto Sans CJK JP Bold"
         ],
-        "text-size": 14,
+        "text-size": 18,
         "text-field": "{name}",
         "text-max-width": 8,
-        "icon-image": "star-11",
+        "icon-image": "star",
         "text-offset": [
           0.4,
-          0
+          -0.1
         ],
-        "icon-size": 0.8,
+        "icon-size": 1,
         "text-anchor": "left",
         "visibility": "visible"
       },
       "paint": {
-        "text-color": "#777777",
+        "text-color": "#888888",
         "text-halo-width": 1.2,
-        "text-halo-color": "rgba(44, 44, 44, 0.9)"
-      }
-    },
-    {
-      "id": "place-country",
-      "type": "symbol",
-      "source": "geolonia",
-      "source-layer": "place",
-      "filter": [
-        "all",
-        [
-          "==",
-          "class",
-          "country"
-        ]
-      ],
-      "layout": {
-        "text-font": [
-          "Noto Sans Regular"
-        ],
-        "text-field": "{name}",
-        "text-size": {
-          "stops": [
-            [
-              1,
-              11
-            ],
-            [
-              4,
-              17
-            ]
-          ]
-        },
-        "text-transform": "uppercase",
-        "text-max-width": 6.25,
-        "visibility": "visible"
-      },
-      "paint": {
-        "text-halo-blur": 1,
-        "text-color": "#777777",
-        "text-halo-width": 2,
-        "text-halo-color": "rgba(44, 44, 44, 0.9)"
-      }
-    },
-    {
-      "id": "place-continent",
-      "type": "symbol",
-      "source": "geolonia",
-      "source-layer": "place",
-      "maxzoom": 1,
-      "filter": [
-        "==",
-        "class",
-        "continent"
-      ],
-      "layout": {
-        "text-font": [
-          "Noto Sans Regular"
-        ],
-        "text-field": "{name}",
-        "text-size": 14,
-        "text-max-width": 6.25,
-        "text-transform": "uppercase",
-        "visibility": "visible"
-      },
-      "paint": {
-        "text-halo-blur": 1,
-        "text-color": "#777777",
-        "text-halo-width": 2,
-        "text-halo-color": "rgba(44, 44, 44, 0.9)"
+        "text-halo-color": "rgba(44,44,44,0.9)",
+        "icon-opacity": 0.5
       }
     }
   ]
