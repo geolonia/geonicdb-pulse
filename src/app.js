@@ -147,13 +147,19 @@ db.setCredentials({
 // SDK がトークンをリフレッシュした際に localStorage と同期する
 db.onTokenRefresh(function(creds) {
   auth.accessToken = creds.token;
-  auth.refreshToken = creds.refreshToken;
+  if (creds.refreshToken !== undefined) auth.refreshToken = creds.refreshToken;
+  if (creds.expiresIn !== undefined) auth.expiresIn = creds.expiresIn;
   storeAuth(auth);
 });
 
 // トークンリフレッシュ失敗時はセッション切れとしてログイン画面に戻す
 db.on('error', function(err) {
-  if (err && /token|unauthorized|expired|invalid/i.test(err.message)) {
+  if (!err) return;
+  var msg = err.message ? String(err.message) : '';
+  var isAuthError =
+    /unauthorized|invalid[_ ]token|token expired|expired token/i.test(msg) ||
+    err.status === 401 || err.status === 403;
+  if (isAuthError) {
     clearAuth();
     location.href = location.pathname;
   }
