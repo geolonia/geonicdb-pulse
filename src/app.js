@@ -11,6 +11,7 @@
  */
 
 import { storeAuth, clearAuth } from './auth.js';
+import mapStyle from './style.json';
 
 export function initApp(auth) {
 
@@ -78,7 +79,7 @@ if (ENTITY_TYPE === '__none__') {
 // ============================================================
 var map = new geolonia.Map({
   container: 'map',
-  style: 'geolonia/midnight',
+  style: mapStyle,
   center: [139.7414, 35.6581],
   zoom: 10,
   minZoom: 2,
