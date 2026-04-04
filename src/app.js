@@ -710,7 +710,11 @@ dataPromise && dataPromise
         }
       });
       if (!bounds.isEmpty()) {
-        map.fitBounds(bounds, { padding: { top: 80, bottom: 40, left: 300, right: 40 }, duration: 1000, maxZoom: 16 });
+        var isMobile = window.innerWidth <= 768;
+        var padding = isMobile
+          ? { top: 80, bottom: 60, left: 40, right: 40 }
+          : { top: 80, bottom: 40, left: 300, right: 40 };
+        map.fitBounds(bounds, { padding: padding, duration: 1000, maxZoom: 16 });
       }
     }
   })
