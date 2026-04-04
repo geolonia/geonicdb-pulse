@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite';
+import { ViteMinifyPlugin } from 'vite-plugin-minify';
 
 export default defineConfig({
   base: process.env.BASE_URL || '/',
@@ -20,5 +21,14 @@ export default defineConfig({
         return html.replace(/%VITE_GEOLONIA_API_KEY%/g, process.env.VITE_GEOLONIA_API_KEY || 'YOUR-API-KEY');
       },
     },
+    ViteMinifyPlugin({
+      collapseWhitespace: true,
+      removeComments: true,
+      removeRedundantAttributes: true,
+      removeScriptTypeAttributes: true,
+      removeStyleLinkTypeAttributes: true,
+      minifyCSS: true,
+      minifyJS: true,
+    }),
   ],
 });

@@ -222,6 +222,26 @@ db.connect = function() {
   });
 };
 
+// ── Visibility change reconnect ──
+// PWA がバックグラウンドから復帰した際、OS が WebSocket を切断している場合がある。
+// onclose イベントが発火しないケースもあるため、フォアグラウンド復帰時に接続状態を確認し、
+// 切断されていれば即座に再接続する。
+var wsReconnecting = false;
+db.on('connected', function() { wsReconnecting = false; });
+db.on('close', function() { wsReconnecting = false; });
+
+document.addEventListener('visibilitychange', function() {
+  if (document.visibilityState !== 'visible') return;
+  if (!db._ws) return;
+  if (db._ws.readyState === WebSocket.OPEN) return;
+  // onclose のバックオフ再接続と重複しないようガード
+  if (db._ws.readyState !== WebSocket.CONNECTING && !wsReconnecting) {
+    wsReconnecting = true;
+    db._emit('disconnected');
+    db._reconnect();
+  }
+});
+
 // ============================================================
 // エンティティデータの管理
 // ============================================================
