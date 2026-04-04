@@ -1,5 +1,7 @@
 # GeonicDB Monitor — サンプルアプリケーション
 
+![GeonicDB Monitor](screenshot.png)
+
 GeonicDB SDK を使った Vite ベースの Web アプリケーションのサンプルです。
 GeonicDB に保存されたエンティティを地図上にリアルタイム表示します。
 
