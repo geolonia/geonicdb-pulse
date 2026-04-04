@@ -44,22 +44,15 @@
   <div id="map" data-gesture-handling="off" data-marker="off" data-navigation-control="off"></div>
 
   <div class="header">
-    <a href="./" class="header-home" aria-label="ホームに戻る">
-      <svg width="32" height="22" viewBox="0 0 505.45 346.59"><defs><style>.cls-1{fill:#ee730d}.cls-2{fill:#ffa714}.cls-3{fill:#e84130}</style></defs><path d="M307.86 211.9H160.4l73.73 73.73z" class="cls-3"/><path d="M495.28 211.9H335.19L234.13 312.96l-100.5-100.5c-9.73 1.62-20.92 6.96-27 13.31L4.1 332.73c-7.31 7.62-4.58 13.86 6.07 13.86h356.02c10.64 0 25.33-6.24 32.64-13.86l102.53-106.97c7.31-7.62 4.58-13.86-6.07-13.86Z" class="cls-3"/><path d="M340.05 105.7h-55.26l-9.49 9.49c4.39 7.26 6.97 15.74 6.97 24.85 0 26.59-21.55 48.14-48.14 48.14s-48.14-21.55-48.14-48.14c0-13.45 5.53-25.61 14.43-34.34h-61.16c-4.16 0-8.93.97-13.64 2.59L91.2 142.71l97.69 97.7h90.46l97.69-97.7-37-37ZM74.38 153.2 4.1 226.54c-7.31 7.62-4.58 13.86 6.07 13.86h151.41l-87.19-87.19Z" class="cls-1"/><path d="M495.28 105.7h-127.9l37 37-97.7 97.7h59.5c10.64 0 25.33-6.24 32.64-13.86l102.53-106.97c7.31-7.62 4.58-13.86-6.07-13.86Z" class="cls-1"/><path d="M495.28 0H233.91L99.22 134.7h87.09c2.66-24.07 23.05-42.8 47.83-42.8 10.48 0 20.15 3.39 28.06 9.08l50.23-50.23 77.04 77.03c3.65-2.05 6.93-4.4 9.37-6.94L501.35 13.86C508.66 6.24 505.93 0 495.28 0M206.58 0h-67.32c-10.65 0-25.33 6.24-32.64 13.86L4.1 120.84c-7.31 7.62-4.58 13.86 6.07 13.86h61.72z" class="cls-2"/><path d="m368.87 134.52-56.44-56.44-37.12 37.12c3.52 5.81 5.79 12.43 6.59 19.51h84.29c.86 0 1.78-.1 2.68-.18Z" class="cls-2"/></svg>
-    </a>
-    <div>
-      <div style="display:flex;align-items:center;gap:10px">
-        <h1 id="app-title">リアルタイムモニター</h1>
-        <span class="ws-status"><span class="ws-dot" id="ws-dot"></span><span id="ws-label">CONNECTING</span></span>
-      </div>
-      <div class="subtitle">GEONICDB LIVE STREAM</div>
-    </div>
+    <span class="ws-badge" id="ws-badge"><span class="ws-dot" id="ws-dot"></span><span id="ws-label">CONNECTING</span></span>
+    <span class="header-sep"></span>
+    <select id="app-type-select" class="header-type-select"></select>
+    <button class="panel-toggle" id="panel-toggle" aria-label="サイドパネルを開閉">
+      <span id="panel-toggle-icon">&#9776;</span>
+    </button>
   </div>
 
   <div class="panel-overlay" id="panel-overlay"></div>
-  <button class="panel-toggle" id="panel-toggle" aria-label="サイドパネルを開閉">
-    <span id="panel-toggle-icon">&#9776;</span>
-  </button>
   <div class="side-panel" id="side-panel">
     <div class="panel-card feed-card">
       <div class="feed-header">
@@ -68,7 +61,6 @@
       </div>
       <div class="feed-list" id="feed-list"></div>
     </div>
-    <a href="./" class="change-type-btn">&#9664; エンティティタイプを変更</a>
   </div>
 
   <div class="toast" id="toast"></div>

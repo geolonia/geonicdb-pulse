@@ -70,8 +70,41 @@ var TEMPORAL = false;
 if (!ENTITY_TYPE) ENTITY_TYPE = '__none__';
 
 // UI のタイトル表示を更新
-document.getElementById('app-title').textContent = ENTITY_TYPE === '__none__' ? 'GeonicDB Pulse' : ENTITY_TYPE;
 document.title = (ENTITY_TYPE === '__none__' ? '' : ENTITY_TYPE + ' — ') + 'GeonicDB Pulse';
+
+// ヘッダーのエンティティタイプ切り替えプルダウン
+var appTypeSelect = document.getElementById('app-type-select');
+if (ENTITY_TYPE !== '__none__') {
+  // 現在のタイプを初期表示
+  var currentOpt = document.createElement('option');
+  currentOpt.value = ENTITY_TYPE;
+  currentOpt.textContent = ENTITY_TYPE;
+  currentOpt.selected = true;
+  appTypeSelect.appendChild(currentOpt);
+
+  // タイプ一覧を非同期で取得してプルダウンに追加
+  fetch(auth.url + '/ngsi-ld/v1/types', {
+    headers: { 'Authorization': 'Bearer ' + auth.accessToken }
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(types) {
+    appTypeSelect.innerHTML = '';
+    types.forEach(function(t) {
+      var name = t.typeName || t.id.split(':').pop();
+      var opt = document.createElement('option');
+      opt.value = name;
+      opt.textContent = name;
+      if (name === ENTITY_TYPE) opt.selected = true;
+      appTypeSelect.appendChild(opt);
+    });
+  })
+  .catch(function() {});
+
+  appTypeSelect.addEventListener('change', function() {
+    location.href = '?type=' + encodeURIComponent(appTypeSelect.value);
+  });
+}
+
 if (ENTITY_TYPE === '__none__') {
   document.querySelector('.header').style.display = 'none';
   document.querySelector('.side-panel').style.display = 'none';
@@ -721,7 +754,6 @@ var dataPromise = (ENTITY_TYPE !== '__none__')
   ? fetchTemporalEntities(ENTITY_TYPE).then(function(result) {
       if (result.length > 0) {
         TEMPORAL = true;
-        document.getElementById('app-title').textContent = ENTITY_TYPE + ' (Temporal)';
         document.title = ENTITY_TYPE + ' (Temporal) — GeonicDB Pulse';
         return result;
       }
@@ -860,28 +892,28 @@ if (ENTITY_TYPE !== '__none__') {
 }
 
 // 接続状態の UI 表示
-var wsStatus = wsDot.closest('.ws-status');
+var wsBadge = document.getElementById('ws-badge');
 
 db.on('connected', function() {
   wsDot.className = 'ws-dot connected';
   wsLabel.textContent = 'LIVE';
-  wsStatus.classList.remove('tappable');
+  wsBadge.classList.remove('tappable');
 });
 db.on('disconnected', function() {
   wsDot.className = 'ws-dot';
   wsLabel.textContent = 'OFFLINE';
-  wsStatus.classList.add('tappable');
+  wsBadge.classList.add('tappable');
 });
 db.on('reconnecting', function() {
   wsDot.className = 'ws-dot connecting';
   wsLabel.textContent = 'RECONNECTING';
-  wsStatus.classList.remove('tappable');
+  wsBadge.classList.remove('tappable');
 });
 
 // OFFLINE 表示をタップして手動再接続
-wsStatus.addEventListener('click', function() {
-  if (!wsStatus.classList.contains('tappable')) return;
-  wsStatus.classList.remove('tappable');
+wsBadge.addEventListener('click', function() {
+  if (!wsBadge.classList.contains('tappable')) return;
+  wsBadge.classList.remove('tappable');
   db.reconnect();
 });
 
