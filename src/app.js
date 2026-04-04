@@ -906,7 +906,7 @@ db.on('disconnected', function() {
 });
 db.on('reconnecting', function() {
   wsDot.className = 'ws-dot connecting';
-  wsLabel.textContent = 'RECONNECTING';
+  wsLabel.textContent = 'CONNECTING';
   wsBadge.classList.remove('tappable');
 });
 
