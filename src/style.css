@@ -454,6 +454,7 @@ body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; back
   display: flex;
   gap: 8px;
   margin-top: 8px;
+  padding: 0 8px;
 }
 .type-form-select {
   cursor: pointer;
