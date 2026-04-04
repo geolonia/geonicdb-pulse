@@ -1,4 +1,4 @@
-# GeonicDB Monitor
+# GeonicDB Pulse
 
 GeonicDB のエンティティをリアルタイムに地図上で可視化するモニターアプリ。
 

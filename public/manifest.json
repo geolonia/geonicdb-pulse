@@ -1,5 +1,5 @@
 {
-  "name": "GeonicDB Monitor",
+  "name": "GeonicDB Pulse",
   "short_name": "GeonicDB",
   "description": "GeonicDB のエンティティをリアルタイムに地図上で可視化するモニター",
   "start_url": "./",

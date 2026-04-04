@@ -70,8 +70,8 @@ var TEMPORAL = false;
 if (!ENTITY_TYPE) ENTITY_TYPE = '__none__';
 
 // UI のタイトル表示を更新
-document.getElementById('app-title').textContent = ENTITY_TYPE === '__none__' ? 'GeonicDB Monitor' : ENTITY_TYPE;
-document.title = (ENTITY_TYPE === '__none__' ? '' : ENTITY_TYPE + ' — ') + 'GeonicDB Monitor';
+document.getElementById('app-title').textContent = ENTITY_TYPE === '__none__' ? 'GeonicDB Pulse' : ENTITY_TYPE;
+document.title = (ENTITY_TYPE === '__none__' ? '' : ENTITY_TYPE + ' — ') + 'GeonicDB Pulse';
 if (ENTITY_TYPE === '__none__') {
   document.querySelector('.header').style.display = 'none';
   document.querySelector('.side-panel').style.display = 'none';
@@ -762,7 +762,7 @@ var dataPromise = (ENTITY_TYPE !== '__none__')
       if (result.length > 0) {
         TEMPORAL = true;
         document.getElementById('app-title').textContent = ENTITY_TYPE + ' (Temporal)';
-        document.title = ENTITY_TYPE + ' (Temporal) — GeonicDB Monitor';
+        document.title = ENTITY_TYPE + ' (Temporal) — GeonicDB Pulse';
         return result;
       }
       // Temporal データがなければ通常 API にフォールバック

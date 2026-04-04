@@ -1,4 +1,4 @@
-var CACHE_NAME = 'gdb-monitor-v1';
+var CACHE_NAME = 'gdb-pulse-v1';
 
 self.addEventListener('install', function() {
   self.skipWaiting();

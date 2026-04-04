@@ -6,7 +6,7 @@
  * マルチテナント環境では NGSILD-Tenant ヘッダーでテナントを指定する。
  */
 
-var AUTH_STORAGE_KEY = 'gdb-monitor-auth';
+var AUTH_STORAGE_KEY = 'gdb-pulse-auth';
 
 /** localStorage から認証情報を復元 */
 export function getStoredAuth() {
