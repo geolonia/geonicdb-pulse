@@ -68,7 +68,7 @@ window.handleLogout = handleLogout;
       var email = document.getElementById('login-email').value.trim();
       var password = document.getElementById('login-password').value;
       var tenant = document.getElementById('login-tenant').value.trim();
-      if (email && password) {
+      if (tenant && email && password) {
         handleLogin(email, password, tenant).then(function(auth) {
           return loadGeonicDBSDK(auth.url).then(function() {
             document.getElementById('login-overlay').classList.add('hidden');
