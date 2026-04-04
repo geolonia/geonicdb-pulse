@@ -12,10 +12,10 @@
       <div class="type-picker-icon">&#9673;</div>
       <h2>GeonicDB Monitor</h2>
       <p>ログインしてモニターを開始</p>
-      <form id="login-form">
-        <input id="login-tenant" class="login-field" type="text" placeholder="テナント名（省略可）" autocomplete="organization" />
-        <input id="login-email" class="login-field" type="email" placeholder="メールアドレス" required autocomplete="email" />
-        <input id="login-password" class="login-field" type="password" placeholder="パスワード" required autocomplete="current-password" />
+      <form id="login-form" autocomplete="off">
+        <input id="login-tenant" class="login-field" type="text" placeholder="テナント名（省略可）" autocomplete="off" />
+        <input id="login-email" class="login-field" type="email" placeholder="メールアドレス" required autocomplete="off" />
+        <input id="login-password" class="login-field" type="password" placeholder="パスワード" required autocomplete="off" />
         <button type="submit" class="login-btn" id="login-btn">ログイン</button>
         <div class="login-error" id="login-error"></div>
       </form>
