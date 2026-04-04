@@ -136,91 +136,28 @@ var db = new GeonicDB({
   tenant: auth.tenant
 });
 
-// Bearer JWT トークンを直接セット（DPoP フローをスキップ）
-db._token = auth.accessToken;
-// サーバーの expiresIn（秒）を使用し、少し余裕を持って期限を設定
-var expiresIn = auth.expiresIn - 60;
-db._tokenExpiry = Date.now() + expiresIn * 1000;
-db._tokenType = 'Bearer';
-db._refreshToken = auth.refreshToken;   // SDK がトークン期限切れ時に自動リフレッシュに使用
+// Bearer JWT トークンを SDK 公開 API でセット（DPoP フローをスキップ）
+db.setCredentials({
+  token: auth.accessToken,
+  tokenType: 'Bearer',
+  expiresIn: auth.expiresIn,
+  refreshToken: auth.refreshToken,
+});
 
-// SDK の _ensureToken をラップして、トークン更新時に localStorage と同期する。
-// SDK は内部で /auth/refresh を呼んでトークンをローテーションするため、
-// 新しいトークンをアプリ側でも保存しておく必要がある。
-var _origEnsureToken = GeonicDB.prototype._ensureToken.bind(db);
-db._ensureToken = function() {
-  return _origEnsureToken().then(function(token) {
-    // リフレッシュ後の新しいトークンを localStorage に同期
-    auth.accessToken = db._token;
-    auth.refreshToken = db._refreshToken;
-    storeAuth(auth);
-    return token;
-  }).catch(function(err) {
-    // リフレッシュ失敗 → セッション切れとしてログイン画面に戻す
+// SDK がトークンをリフレッシュした際に localStorage と同期する
+db.onTokenRefresh(function(creds) {
+  auth.accessToken = creds.token;
+  auth.refreshToken = creds.refreshToken;
+  storeAuth(auth);
+});
+
+// トークンリフレッシュ失敗時はセッション切れとしてログイン画面に戻す
+db.on('error', function(err) {
+  if (err && /token|unauthorized|expired|invalid/i.test(err.message)) {
     clearAuth();
     location.href = location.pathname;
-    throw err;
-  });
-};
-
-// ── WebSocket 接続のカスタマイズ ──
-// SDK デフォルトの connect() は DPoP + Proof of Work で WebSocket に接続するが、
-// Bearer JWT を WebSocket サブプロトコルとして渡すことで PoW の待ち時間をスキップする。
-// 参考: RFC 6455 のサブプロトコルを利用した認証パターン
-db.connect = function() {
-  var self = this;
-  self._wsIntentionalClose = false;
-  self._reconnectAttempts = 0;
-  return self._ensureToken().then(function(token) {
-    return self._discoverWsEndpoint().then(function(endpoint) {
-      return new Promise(function(resolve, reject) {
-        // テナント指定がある場合のみ tenant パラメータを付与
-        var wsUrl = endpoint;
-        if (self._tenant) {
-          wsUrl += (endpoint.indexOf('?') === -1 ? '?' : '&') +
-            'tenant=' + encodeURIComponent(self._tenant);
-        }
-        // サブプロトコルとして ['access_token', <JWT>] を渡す
-        var ws = new WebSocket(wsUrl, ['access_token', token]);
-        self._ws = ws;
-        ws.onopen = function() {
-          if (self._ws !== ws) return;
-          self._reconnectAttempts = 0;
-          // 事前に設定した subscribe 条件を WebSocket 接続時に送信
-          if (self._subscription) ws.send(JSON.stringify(self._subscription));
-          self._emit('open');
-          self._emit('connected');
-          resolve();
-        };
-        ws.onmessage = function(event) {
-          if (self._ws !== ws) return;
-          var msg;
-          try { msg = JSON.parse(event.data); } catch (e) { return; }
-          if (msg.type === 'pong') return;
-          if (msg.type === 'error') { self._emit('error', new Error(msg.message)); return; }
-          // entityCreated / entityUpdated などのイベントをアプリに通知
-          self._emit(msg.type, msg);
-          self._emit('message', msg);
-        };
-        ws.onclose = function(event) {
-          if (self._ws !== ws) return;
-          self._clearTimers();
-          if (self._wsIntentionalClose) { self._emit('close', event); return; }
-          self._emit('close', event);
-          self._emit('disconnected');
-          self._reconnect();   // 自動再接続（エクスポネンシャルバックオフ）
-        };
-        ws.onerror = function(err) {
-          if (self._ws !== ws) return;
-          self._emit('error', err);
-          if (ws.readyState !== WebSocket.OPEN) reject(new Error('WebSocket connection failed'));
-        };
-      });
-    });
-  }).catch(function(err) {
-    self._emit('error', err);
-  });
-};
+  }
+});
 
 // ── Visibility change reconnect ──
 // PWA がバックグラウンドから復帰した際、OS が WebSocket を切断している場合がある。
@@ -232,13 +169,10 @@ db.on('close', function() { wsReconnecting = false; });
 
 document.addEventListener('visibilitychange', function() {
   if (document.visibilityState !== 'visible') return;
-  if (!db._ws) return;
-  if (db._ws.readyState === WebSocket.OPEN) return;
-  // onclose のバックオフ再接続と重複しないようガード
-  if (db._ws.readyState !== WebSocket.CONNECTING && !wsReconnecting) {
+  if (db.isConnected()) return;
+  if (!wsReconnecting) {
     wsReconnecting = true;
-    db._emit('disconnected');
-    db._reconnect();
+    db.reconnect();
   }
 });
 
@@ -276,13 +210,13 @@ function flattenTemporal(te) {
 
 /**
  * NGSI-LD Temporal API からエンティティの時系列データを取得する。
- * SDK の _request() を使うことで認証ヘッダーが自動付与される。
+ * SDK の request() を使うことで認証ヘッダーが自動付与される。
  *
  * Temporal API は時系列属性のみ返すため、location や name などの
  * 静的属性は通常の entities API から取得してマージする。
  */
 function fetchTemporalEntities(type) {
-  var temporalPromise = db._request('GET', '/ngsi-ld/v1/temporal/entities?type=' + encodeURIComponent(type) + '&limit=1000')
+  var temporalPromise = db.request('GET', '/ngsi-ld/v1/temporal/entities?type=' + encodeURIComponent(type) + '&limit=1000')
     .then(function(res) {
       if (!res.ok) return res.json().then(function(e) { throw new Error(e.detail || 'Temporal query failed'); });
       return res.json();
@@ -931,13 +865,6 @@ db.on('disconnected', function() {
 db.on('reconnecting', function() {
   wsDot.className = 'ws-dot connecting';
   wsLabel.textContent = 'RECONNECTING';
-});
-// トークン関連のエラーはセッション切れとしてログイン画面に戻す
-db.on('error', function(err) {
-  if (err && /token|unauthorized|expired|invalid/i.test(err.message)) {
-    clearAuth();
-    location.href = location.pathname;
-  }
 });
 
 } // end initApp
