@@ -25,7 +25,7 @@
       "attribution": "<a href=\"https://www.gsi.go.jp/\" target=\"_blank\">&copy; GSI Japan</a>"
     }
   },
-  "sprite": "https://sprites.geolonia.com/basic-white",
+  "sprite": "https://geoloniamaps.github.io/gsi/gsi",
   "glyphs": "https://glyphs.geolonia.com/{fontstack}/{range}.pbf",
   "layers": [
     {
@@ -1474,592 +1474,6 @@
       }
     },
     {
-      "id": "highway-minor-bridge-casing-blur",
-      "type": "line",
-      "source": "gsi-japan",
-      "source-layer": "road",
-      "minzoom": 7,
-      "filter": [
-        "all",
-        [
-          "in",
-          "ftCode",
-          2702,
-          2703
-        ],
-        [
-          "!=",
-          "motorway",
-          1
-        ],
-        [
-          "!=",
-          "rdCtg",
-          0
-        ],
-        [
-          "!=",
-          "rdCtg",
-          1
-        ],
-        [
-          "!=",
-          "rdCtg",
-          2
-        ],
-        [
-          "!=",
-          "rdCtg",
-          3
-        ]
-      ],
-      "paint": {
-        "line-color": "rgba(0,0,0,0.3)",
-        "line-width": {
-          "base": 1.2,
-          "stops": [
-            [
-              15,
-              1.2
-            ],
-            [
-              20,
-              15
-            ]
-          ]
-        },
-        "line-translate": {
-          "stops": [
-            [
-              14,
-              [
-                0,
-                0
-              ]
-            ],
-            [
-              17,
-              [
-                5,
-                2
-              ]
-            ]
-          ]
-        },
-        "line-opacity": [
-          "interpolate",
-          [
-            "linear"
-          ],
-          [
-            "zoom"
-          ],
-          14,
-          0.2,
-          17,
-          0.8,
-          18,
-          0
-        ],
-        "line-blur": {
-          "stops": [
-            [
-              14,
-              20
-            ],
-            [
-              17,
-              25
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "id": "highway-secondary-bridge-casing-blur",
-      "type": "line",
-      "source": "gsi-japan",
-      "source-layer": "road",
-      "minzoom": 7,
-      "filter": [
-        "any",
-        [
-          "all",
-          [
-            "!=",
-            "rnkWidth",
-            0
-          ],
-          [
-            "!=",
-            "rnkWidth",
-            4
-          ],
-          [
-            "in",
-            "ftCode",
-            2702,
-            2703
-          ],
-          [
-            "!=",
-            "motorway",
-            1
-          ],
-          [
-            "in",
-            "rdCtg",
-            0,
-            1,
-            2
-          ]
-        ],
-        [
-          "all",
-          [
-            ">=",
-            "ftCode",
-            52700
-          ],
-          [
-            "<",
-            "ftCode",
-            52800
-          ],
-          [
-            "!=",
-            "ftCode",
-            52703
-          ]
-        ]
-      ],
-      "layout": {
-        "line-join": "round",
-        "line-cap": "round"
-      },
-      "paint": {
-        "line-color": "rgba(0,0,0,0.3)",
-        "line-translate": {
-          "stops": [
-            [
-              14,
-              [
-                0,
-                0
-              ]
-            ],
-            [
-              17,
-              [
-                5,
-                2
-              ]
-            ]
-          ]
-        },
-        "line-opacity": [
-          "interpolate",
-          [
-            "linear"
-          ],
-          [
-            "zoom"
-          ],
-          14,
-          0.2,
-          17,
-          0.8,
-          18,
-          0
-        ],
-        "line-blur": {
-          "stops": [
-            [
-              14,
-              20
-            ],
-            [
-              17,
-              25
-            ]
-          ]
-        },
-        "line-width": [
-          "interpolate",
-          [
-            "exponential",
-            0.9
-          ],
-          [
-            "zoom"
-          ],
-          8,
-          0,
-          9,
-          0.6,
-          12,
-          0.9,
-          14,
-          4,
-          16,
-          14,
-          18,
-          24,
-          19,
-          72,
-          20,
-          166
-        ]
-      }
-    },
-    {
-      "id": "highway-primary-bridge-casing-blur",
-      "type": "line",
-      "source": "gsi-japan",
-      "source-layer": "road",
-      "minzoom": 7,
-      "filter": [
-        "any",
-        [
-          "all",
-          [
-            "==",
-            "rnkWidth",
-            4
-          ],
-          [
-            "in",
-            "ftCode",
-            2702,
-            2703
-          ],
-          [
-            "!=",
-            "motorway",
-            1
-          ],
-          [
-            "in",
-            "rdCtg",
-            0,
-            1,
-            2
-          ]
-        ],
-        [
-          "all",
-          [
-            ">=",
-            "ftCode",
-            52700
-          ],
-          [
-            "<",
-            "ftCode",
-            52800
-          ],
-          [
-            "!=",
-            "ftCode",
-            52703
-          ]
-        ]
-      ],
-      "layout": {
-        "line-join": "round",
-        "line-cap": "round"
-      },
-      "paint": {
-        "line-color": "rgba(0,0,0,0.3)",
-        "line-width": [
-          "interpolate",
-          [
-            "exponential",
-            0.9
-          ],
-          [
-            "zoom"
-          ],
-          8,
-          0,
-          9,
-          0.6,
-          12,
-          0.9,
-          14,
-          4,
-          16,
-          14,
-          18,
-          24,
-          19,
-          72,
-          20,
-          166
-        ],
-        "line-translate": {
-          "stops": [
-            [
-              14,
-              [
-                0,
-                0
-              ]
-            ],
-            [
-              17,
-              [
-                5,
-                2
-              ]
-            ]
-          ]
-        },
-        "line-opacity": [
-          "interpolate",
-          [
-            "linear"
-          ],
-          [
-            "zoom"
-          ],
-          14,
-          0.2,
-          17,
-          0.8,
-          18,
-          0
-        ],
-        "line-blur": {
-          "stops": [
-            [
-              14,
-              20
-            ],
-            [
-              17,
-              25
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "id": "highway-motorway-bridge-casing-blur",
-      "type": "line",
-      "source": "gsi-japan",
-      "source-layer": "road",
-      "minzoom": 6,
-      "filter": [
-        "any",
-        [
-          "all",
-          [
-            "in",
-            "ftCode",
-            2702,
-            2703
-          ],
-          [
-            "any",
-            [
-              "==",
-              "motorway",
-              1
-            ],
-            [
-              "==",
-              "rdCtg",
-              3
-            ]
-          ]
-        ],
-        [
-          "==",
-          "ftCode",
-          52703
-        ]
-      ],
-      "layout": {
-        "line-join": "round",
-        "line-cap": "round"
-      },
-      "paint": {
-        "line-color": "rgba(0,0,0,0.3)",
-        "line-translate": {
-          "stops": [
-            [
-              14,
-              [
-                0,
-                0
-              ]
-            ],
-            [
-              17,
-              [
-                5,
-                2
-              ]
-            ]
-          ]
-        },
-        "line-opacity": {
-          "stops": [
-            [
-              14,
-              0.2
-            ],
-            [
-              17,
-              0.6
-            ]
-          ]
-        },
-        "line-blur": {
-          "stops": [
-            [
-              14,
-              20
-            ],
-            [
-              17,
-              30
-            ]
-          ]
-        },
-        "line-width": [
-          "interpolate",
-          [
-            "exponential",
-            0.9
-          ],
-          [
-            "zoom"
-          ],
-          8,
-          0,
-          9,
-          0.6,
-          12,
-          0.9,
-          14,
-          4,
-          16,
-          14,
-          18,
-          24,
-          19,
-          72,
-          20,
-          166
-        ]
-      }
-    },
-    {
-      "id": "highway-motorway-casing",
-      "type": "line",
-      "source": "gsi-japan",
-      "source-layer": "road",
-      "minzoom": 4,
-      "filter": [
-        "any",
-        [
-          "all",
-          [
-            ">=",
-            "ftCode",
-            2700
-          ],
-          [
-            "<",
-            "ftCode",
-            2800
-          ],
-          [
-            "!=",
-            "ftCode",
-            2702
-          ],
-          [
-            "!=",
-            "ftCode",
-            2703
-          ],
-          [
-            "!=",
-            "ftCode",
-            2704
-          ],
-          [
-            "any",
-            [
-              "==",
-              "motorway",
-              1
-            ],
-            [
-              "==",
-              "rdCtg",
-              3
-            ]
-          ]
-        ],
-        [
-          "==",
-          "ftCode",
-          52703
-        ]
-      ],
-      "layout": {
-        "line-cap": "butt",
-        "line-join": "round",
-        "visibility": "visible"
-      },
-      "paint": {
-        "line-color": "rgba(0,0,0,0.3)",
-        "line-width": [
-          "interpolate",
-          [
-            "exponential",
-            0.9
-          ],
-          [
-            "zoom"
-          ],
-          8,
-          0,
-          9,
-          0.6,
-          12,
-          0.9,
-          14,
-          4,
-          16,
-          14,
-          18,
-          24,
-          19,
-          72,
-          20,
-          166
-        ],
-        "line-opacity": [
-          "interpolate",
-          [
-            "linear"
-          ],
-          [
-            "zoom"
-          ],
-          8,
-          0.6,
-          11,
-          1
-        ]
-      }
-    },
-    {
       "id": "highway-minor",
       "type": "line",
       "source": "gsi-japan",
@@ -2087,7 +1501,7 @@
         "line-join": "bevel"
       },
       "paint": {
-        "line-color": "rgba(255,255,255,0.06)",
+        "line-color": "#3a3a3a",
         "line-width": [
           "interpolate",
           [
@@ -2100,11 +1514,11 @@
           13.5,
           0,
           14,
-          1.2,
+          0.6,
           16,
-          2.2,
+          1.2,
           20,
-          16
+          8
         ]
       }
     },
@@ -2177,7 +1591,7 @@
         "visibility": "visible"
       },
       "paint": {
-        "line-color": "rgba(255,255,255,0.12)",
+        "line-color": "#444444",
         "line-width": [
           "interpolate",
           [
@@ -2190,19 +1604,19 @@
           8,
           0,
           9,
-          0.5,
+          0.3,
           12,
-          0.8,
+          0.5,
           14,
-          3,
+          1.5,
           16,
-          10,
+          4,
           18,
-          20,
+          8,
           19,
-          68,
+          24,
           20,
-          160
+          60
         ]
       }
     },
@@ -2272,7 +1686,7 @@
         "line-join": "round"
       },
       "paint": {
-        "line-color": "rgba(255,255,255,0.18)",
+        "line-color": "#4e4e4e",
         "line-width": [
           "interpolate",
           [
@@ -2285,19 +1699,19 @@
           8,
           0,
           9,
-          0.5,
+          0.3,
           12,
-          0.8,
+          0.5,
           14,
-          3,
+          1.5,
           16,
-          10,
+          4,
           18,
-          20,
+          8,
           19,
-          68,
+          24,
           20,
-          160
+          60
         ]
       }
     },
@@ -2390,7 +1804,7 @@
         "line-join": "round"
       },
       "paint": {
-        "line-color": "rgba(255,255,255,0.25)",
+        "line-color": "#585858",
         "line-width": [
           "interpolate",
           [
@@ -2417,39 +1831,6 @@
       }
     },
     {
-      "id": "structurea-casing",
-      "type": "line",
-      "source": "gsi-japan",
-      "source-layer": "structurea",
-      "minzoom": 15,
-      "filter": [
-        "all",
-        [
-          "==",
-          "$type",
-          "Polygon"
-        ]
-      ],
-      "layout": {
-        "visibility": "visible"
-      },
-      "paint": {
-        "line-color": "rgba(0,0,0,0.3)",
-        "line-width": {
-          "stops": [
-            [
-              15,
-              1
-            ],
-            [
-              18,
-              3
-            ]
-          ]
-        }
-      }
-    },
-    {
       "id": "structurea",
       "type": "fill",
       "source": "gsi-japan",
@@ -2468,103 +1849,6 @@
       },
       "paint": {
         "fill-color": "rgba(255,255,255,0.06)"
-      }
-    },
-    {
-      "id": "highway-secondary-tunnel-casing",
-      "type": "line",
-      "source": "gsi-japan",
-      "source-layer": "road",
-      "minzoom": 4,
-      "filter": [
-        "any",
-        [
-          "all",
-          [
-            "==",
-            "ftCode",
-            2704
-          ],
-          [
-            "!=",
-            "motorway",
-            1
-          ],
-          [
-            "!=",
-            "rdCtg",
-            3
-          ],
-          [
-            "any",
-            [
-              "in",
-              "rdCtg",
-              0,
-              1,
-              2
-            ],
-            [
-              "==",
-              "rnkWidth",
-              4
-            ]
-          ]
-        ],
-        [
-          "all",
-          [
-            ">=",
-            "ftCode",
-            52700
-          ],
-          [
-            "<",
-            "ftCode",
-            52800
-          ],
-          [
-            "!=",
-            "ftCode",
-            52703
-          ]
-        ]
-      ],
-      "layout": {
-        "line-join": "round"
-      },
-      "paint": {
-        "line-color": "rgba(0,0,0,0.3)",
-        "line-dasharray": [
-          0.5,
-          0.25
-        ],
-        "line-width": [
-          "interpolate",
-          [
-            "exponential",
-            0.9
-          ],
-          [
-            "zoom"
-          ],
-          8,
-          0,
-          9,
-          0.6,
-          12,
-          0.9,
-          14,
-          4,
-          16,
-          14,
-          18,
-          24,
-          19,
-          72,
-          20,
-          166
-        ]
       }
     },
     {
@@ -2631,7 +1915,7 @@
         "line-join": "round"
       },
       "paint": {
-        "line-color": "rgba(255,255,255,0.12)",
+        "line-color": "#444444",
         "line-width": [
           "interpolate",
           [
@@ -2644,108 +1928,19 @@
           8,
           0,
           9,
-          0.5,
+          0.3,
           12,
-          0.8,
+          0.5,
           14,
-          3,
+          1.5,
           16,
-          10,
-          18,
-          20,
-          19,
-          68,
-          20,
-          160
-        ]
-      }
-    },
-    {
-      "id": "highway-primary-tunnel-casing",
-      "type": "line",
-      "source": "gsi-japan",
-      "source-layer": "road",
-      "minzoom": 7,
-      "filter": [
-        "any",
-        [
-          "all",
-          [
-            "==",
-            "rnkWidth",
-            4
-          ],
-          [
-            "in",
-            "ftCode",
-            2704
-          ],
-          [
-            "!=",
-            "motorway",
-            1
-          ],
-          [
-            "in",
-            "rdCtg",
-            0,
-            1,
-            2
-          ]
-        ],
-        [
-          "all",
-          [
-            ">=",
-            "ftCode",
-            52700
-          ],
-          [
-            "<",
-            "ftCode",
-            52800
-          ],
-          [
-            "!=",
-            "ftCode",
-            52703
-          ]
-        ]
-      ],
-      "layout": {
-        "line-join": "round"
-      },
-      "paint": {
-        "line-color": "rgba(0,0,0,0.3)",
-        "line-dasharray": [
-          0.5,
-          0.25
-        ],
-        "line-width": [
-          "interpolate",
-          [
-            "exponential",
-            0.9
-          ],
-          [
-            "zoom"
-          ],
-          8,
-          0,
-          9,
-          0.6,
-          12,
-          0.9,
-          14,
           4,
-          16,
-          14,
           18,
-          24,
+          8,
           19,
-          72,
+          24,
           20,
-          166
+          60
         ]
       }
     },
@@ -2806,7 +2001,7 @@
         "visibility": "visible"
       },
       "paint": {
-        "line-color": "rgba(255,255,255,0.18)",
+        "line-color": "#4e4e4e",
         "line-width": [
           "interpolate",
           [
@@ -2819,84 +2014,19 @@
           8,
           0,
           9,
-          0.5,
+          0.3,
           12,
-          0.8,
+          0.5,
           14,
-          3,
+          1.5,
           16,
-          10,
-          18,
-          20,
-          19,
-          68,
-          20,
-          160
-        ]
-      }
-    },
-    {
-      "id": "highway-motorway-tunnel-casing",
-      "type": "line",
-      "source": "gsi-japan",
-      "source-layer": "road",
-      "minzoom": 6,
-      "filter": [
-        "all",
-        [
-          "==",
-          "ftCode",
-          2704
-        ],
-        [
-          "any",
-          [
-            "==",
-            "motorway",
-            1
-          ],
-          [
-            "==",
-            "rdCtg",
-            3
-          ]
-        ]
-      ],
-      "layout": {
-        "line-join": "round",
-        "visibility": "visible"
-      },
-      "paint": {
-        "line-color": "rgba(0,0,0,0.3)",
-        "line-dasharray": [
-          0.5,
-          0.25
-        ],
-        "line-width": [
-          "interpolate",
-          [
-            "exponential",
-            0.9
-          ],
-          [
-            "zoom"
-          ],
-          8,
-          0,
-          9,
-          0.6,
-          12,
-          0.9,
-          14,
           4,
-          16,
-          14,
           18,
-          24,
+          8,
           19,
-          72,
+          24,
           20,
-          166
+          60
         ]
       }
     },
@@ -2932,7 +2062,7 @@
         "visibility": "visible"
       },
       "paint": {
-        "line-color": "rgba(255,255,255,0.25)",
+        "line-color": "#585858",
         "line-width": [
           "interpolate",
           [
@@ -2956,63 +2086,6 @@
           20,
           160
         ]
-      }
-    },
-    {
-      "id": "highway-minor-bridge-casing",
-      "type": "line",
-      "source": "gsi-japan",
-      "source-layer": "road",
-      "minzoom": 7,
-      "filter": [
-        "all",
-        [
-          "in",
-          "ftCode",
-          2702,
-          2703
-        ],
-        [
-          "!=",
-          "motorway",
-          1
-        ],
-        [
-          "!=",
-          "rdCtg",
-          0
-        ],
-        [
-          "!=",
-          "rdCtg",
-          1
-        ],
-        [
-          "!=",
-          "rdCtg",
-          2
-        ],
-        [
-          "!=",
-          "rdCtg",
-          3
-        ]
-      ],
-      "paint": {
-        "line-color": "rgba(0,0,0,0.3)",
-        "line-width": {
-          "base": 1.2,
-          "stops": [
-            [
-              15,
-              1.2
-            ],
-            [
-              20,
-              18
-            ]
-          ]
-        }
       }
     },
     {
@@ -3056,115 +2129,23 @@
         ]
       ],
       "paint": {
-        "line-color": "rgba(255,255,255,0.06)",
+        "line-color": "#3a3a3a",
         "line-width": {
           "base": 1.2,
           "stops": [
             [
               15,
-              1.2
+              0.6
             ],
             [
               20,
-              4
+              2
             ]
           ]
         },
         "line-dasharray": [
           1.5,
           0.75
-        ]
-      }
-    },
-    {
-      "id": "highway-secondary-bridge-casing",
-      "type": "line",
-      "source": "gsi-japan",
-      "source-layer": "road",
-      "minzoom": 7,
-      "filter": [
-        "any",
-        [
-          "all",
-          [
-            "!=",
-            "rnkWidth",
-            0
-          ],
-          [
-            "!=",
-            "rnkWidth",
-            4
-          ],
-          [
-            "in",
-            "ftCode",
-            2702,
-            2703
-          ],
-          [
-            "!=",
-            "motorway",
-            1
-          ],
-          [
-            "in",
-            "rdCtg",
-            0,
-            1,
-            2
-          ]
-        ],
-        [
-          "all",
-          [
-            ">=",
-            "ftCode",
-            52700
-          ],
-          [
-            "<",
-            "ftCode",
-            52800
-          ],
-          [
-            "!=",
-            "ftCode",
-            52703
-          ]
-        ]
-      ],
-      "layout": {
-        "line-join": "round"
-      },
-      "paint": {
-        "line-color": "rgba(0,0,0,0.3)",
-        "line-opacity": 1,
-        "line-width": [
-          "interpolate",
-          [
-            "exponential",
-            0.9
-          ],
-          [
-            "zoom"
-          ],
-          8,
-          0,
-          9,
-          0.6,
-          12,
-          0.9,
-          14,
-          4,
-          16,
-          14,
-          18,
-          24,
-          19,
-          72,
-          20,
-          166
         ]
       }
     },
@@ -3230,7 +2211,7 @@
         "line-join": "round"
       },
       "paint": {
-        "line-color": "rgba(255,255,255,0.12)",
+        "line-color": "#444444",
         "line-width": [
           "interpolate",
           [
@@ -3243,105 +2224,19 @@
           8,
           0,
           9,
+          0.3,
+          12,
           0.5,
-          12,
-          0.8,
           14,
-          3,
+          1.5,
           16,
-          10,
-          18,
-          20,
-          19,
-          68,
-          20,
-          160
-        ]
-      }
-    },
-    {
-      "id": "highway-primary-bridge-casing",
-      "type": "line",
-      "source": "gsi-japan",
-      "source-layer": "road",
-      "minzoom": 7,
-      "filter": [
-        "any",
-        [
-          "all",
-          [
-            "==",
-            "rnkWidth",
-            4
-          ],
-          [
-            "in",
-            "ftCode",
-            2702,
-            2703
-          ],
-          [
-            "!=",
-            "motorway",
-            1
-          ],
-          [
-            "in",
-            "rdCtg",
-            0,
-            1,
-            2
-          ]
-        ],
-        [
-          "all",
-          [
-            ">=",
-            "ftCode",
-            52700
-          ],
-          [
-            "<",
-            "ftCode",
-            52800
-          ],
-          [
-            "!=",
-            "ftCode",
-            52703
-          ]
-        ]
-      ],
-      "layout": {
-        "line-join": "round"
-      },
-      "paint": {
-        "line-color": "rgba(0,0,0,0.3)",
-        "line-width": [
-          "interpolate",
-          [
-            "exponential",
-            0.9
-          ],
-          [
-            "zoom"
-          ],
-          8,
-          0,
-          9,
-          0.6,
-          12,
-          0.9,
-          14,
           4,
-          16,
-          14,
           18,
-          24,
+          8,
           19,
-          72,
+          24,
           20,
-          166
+          60
         ]
       }
     },
@@ -3402,7 +2297,7 @@
         "line-join": "round"
       },
       "paint": {
-        "line-color": "rgba(255,255,255,0.18)",
+        "line-color": "#4e4e4e",
         "line-width": [
           "interpolate",
           [
@@ -3415,101 +2310,19 @@
           8,
           0,
           9,
+          0.3,
+          12,
           0.5,
-          12,
-          0.8,
           14,
-          3,
+          1.5,
           16,
-          10,
-          18,
-          20,
-          19,
-          68,
-          20,
-          160
-        ]
-      }
-    },
-    {
-      "id": "highway-motorway-bridge-casing",
-      "type": "line",
-      "source": "gsi-japan",
-      "source-layer": "road",
-      "minzoom": 6,
-      "filter": [
-        "any",
-        [
-          "all",
-          [
-            "in",
-            "ftCode",
-            2702,
-            2703
-          ],
-          [
-            "any",
-            [
-              "==",
-              "motorway",
-              1
-            ],
-            [
-              "==",
-              "rdCtg",
-              3
-            ]
-          ]
-        ],
-        [
-          "==",
-          "ftCode",
-          52703
-        ]
-      ],
-      "layout": {
-        "line-join": "round"
-      },
-      "paint": {
-        "line-color": "rgba(0,0,0,0.3)",
-        "line-opacity": [
-          "interpolate",
-          [
-            "linear"
-          ],
-          [
-            "zoom"
-          ],
-          8,
-          0,
-          11,
-          1
-        ],
-        "line-width": [
-          "interpolate",
-          [
-            "exponential",
-            0.9
-          ],
-          [
-            "zoom"
-          ],
-          8,
-          0,
-          9,
-          0.6,
-          12,
-          0.9,
-          14,
           4,
-          16,
-          14,
           18,
-          24,
+          8,
           19,
-          72,
+          24,
           20,
-          166
+          60
         ]
       }
     },
@@ -3553,7 +2366,7 @@
         "line-join": "round"
       },
       "paint": {
-        "line-color": "rgba(255,255,255,0.25)",
+        "line-color": "#585858",
         "line-width": [
           "interpolate",
           [
