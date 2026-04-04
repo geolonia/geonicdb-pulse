@@ -63,12 +63,16 @@ window.handleLogout = handleLogout;
     });
   } else {
     document.getElementById('login-overlay').classList.remove('hidden');
+    // 前回のテナント名を復元
+    if (auth && auth.tenant) {
+      document.getElementById('login-tenant').value = auth.tenant;
+    }
     document.getElementById('login-form').onsubmit = function(e) {
       e.preventDefault();
       var email = document.getElementById('login-email').value.trim();
       var password = document.getElementById('login-password').value;
       var tenant = document.getElementById('login-tenant').value.trim();
-      if (email && password) {
+      if (tenant && email && password) {
         handleLogin(email, password, tenant).then(function(auth) {
           return loadGeonicDBSDK(auth.url).then(function() {
             document.getElementById('login-overlay').classList.add('hidden');

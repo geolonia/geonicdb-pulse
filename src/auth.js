@@ -21,9 +21,14 @@ export function storeAuth(auth) {
   localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(auth));
 }
 
-/** 認証情報を削除 */
+/** 認証情報を削除（テナント名は保持して次回ログイン時に復元する） */
 export function clearAuth() {
-  localStorage.removeItem(AUTH_STORAGE_KEY);
+  var data = getStoredAuth();
+  if (data && data.tenant) {
+    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({ tenant: data.tenant }));
+  } else {
+    localStorage.removeItem(AUTH_STORAGE_KEY);
+  }
 }
 
 /** ログアウト — 認証クリア後にトップへリダイレクト */
