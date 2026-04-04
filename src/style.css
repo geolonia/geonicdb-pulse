@@ -547,7 +547,7 @@ body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; back
   width: 0; height: 0;
   border-left: 8px solid transparent;
   border-right: 8px solid transparent;
-  border-bottom: 16px solid #999999;
+  border-bottom: 16px solid #262626;
   position: absolute;
   top: 50%; left: 50%;
   transform: translate(-50%, -50%) rotate(45deg);
