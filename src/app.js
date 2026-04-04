@@ -35,7 +35,14 @@ if (!ENTITY_TYPE) {
   fetch(auth.url + '/ngsi-ld/v1/types', {
     headers: { 'Authorization': 'Bearer ' + auth.accessToken }
   })
-  .then(function(res) { return res.json(); })
+  .then(function(res) {
+    if (res.status === 401 || res.status === 403) {
+      clearAuth();
+      location.href = location.pathname;
+      throw new Error('Unauthorized');
+    }
+    return res.json();
+  })
   .then(function(types) {
     select.innerHTML = '<option value="" disabled selected>エンティティタイプを選択...</option>';
     types.forEach(function(t) {
@@ -47,7 +54,8 @@ if (!ENTITY_TYPE) {
       select.appendChild(opt);
     });
   })
-  .catch(function() {
+  .catch(function(err) {
+    if (err.message === 'Unauthorized') return;
     select.innerHTML = '<option value="" disabled selected>取得に失敗しました</option>';
   });
 }
