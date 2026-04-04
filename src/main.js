@@ -41,35 +41,42 @@ window.handleLogout = handleLogout;
 (function() {
   var auth = getStoredAuth();
 
+  /** ログインフォームをDOMから削除してiOSのパスワード自動入力ポップアップを防止 */
+  function removeLoginForm() {
+    var form = document.getElementById('login-form');
+    if (form) form.remove();
+  }
+
   if (auth && auth.accessToken) {
     document.getElementById('login-overlay').classList.add('hidden');
+    removeLoginForm();
     // GeonicDB SDK はサーバーから動的にロードする（CDN ではなくサーバー固有のバージョンを使用）
     loadGeonicDBSDK(auth.url).then(function() {
       initApp(auth);
     }).catch(function(err) {
       console.error(err);
       clearAuth();
-      document.getElementById('login-overlay').classList.remove('hidden');
-      document.getElementById('login-error').textContent = 'セッションが無効です。再度ログインしてください。';
+      // フォームは既にDOMから削除済みなのでリロードしてログイン画面を再構築
+      location.href = location.pathname;
     });
   } else {
     document.getElementById('login-overlay').classList.remove('hidden');
-  }
-
-  document.getElementById('login-form').onsubmit = function(e) {
-    e.preventDefault();
-    var email = document.getElementById('login-email').value.trim();
-    var password = document.getElementById('login-password').value;
-    var tenant = document.getElementById('login-tenant').value.trim();
-    if (email && password) {
-      handleLogin(email, password, tenant).then(function(auth) {
-        return loadGeonicDBSDK(auth.url).then(function() {
-          document.getElementById('login-overlay').classList.add('hidden');
-          initApp(auth);
+    document.getElementById('login-form').onsubmit = function(e) {
+      e.preventDefault();
+      var email = document.getElementById('login-email').value.trim();
+      var password = document.getElementById('login-password').value;
+      var tenant = document.getElementById('login-tenant').value.trim();
+      if (email && password) {
+        handleLogin(email, password, tenant).then(function(auth) {
+          return loadGeonicDBSDK(auth.url).then(function() {
+            document.getElementById('login-overlay').classList.add('hidden');
+            removeLoginForm();
+            initApp(auth);
+          });
+        }).catch(function() {
+          // エラーは handleLogin 内で UI に表示済み
         });
-      }).catch(function() {
-        // エラーは handleLogin 内で UI に表示済み
-      });
-    }
-  };
+      }
+    };
+  }
 })();
