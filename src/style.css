@@ -81,6 +81,8 @@ body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; back
   animation: glow-pulse 2s ease-in-out infinite;
 }
 .ws-dot.connecting { background: #ff9800; }
+.ws-status.tappable { cursor: pointer; }
+.ws-status.tappable:active { opacity: 0.7; }
 
 @keyframes glow-pulse {
   0%, 100% { box-shadow: 0 0 6px rgba(76,175,80,0.5); }
