@@ -25,7 +25,7 @@
       "attribution": "<a href=\"https://www.gsi.go.jp/\" target=\"_blank\">&copy; GSI Japan</a>"
     }
   },
-  "sprite": "https://geoloniamaps.github.io/gsi/gsi",
+  "sprite": "",
   "glyphs": "https://glyphs.geolonia.com/{fontstack}/{range}.pbf",
   "layers": [
     {
@@ -3901,8 +3901,7 @@
         "text-halo-blur": 0.5,
         "text-color": "#555555",
         "text-halo-width": 1,
-        "text-halo-color": "rgba(44,44,44,0.9)",
-        "icon-opacity": 0.5
+        "text-halo-color": "rgba(44,44,44,0.9)"
       }
     },
     {
@@ -3949,8 +3948,7 @@
         "text-halo-blur": 0.5,
         "text-color": "#666666",
         "text-halo-width": 1,
-        "text-halo-color": "rgba(44,44,44,0.9)",
-        "icon-opacity": 0.5
+        "text-halo-color": "rgba(44,44,44,0.9)"
       }
     },
     {
@@ -4051,8 +4049,7 @@
         "text-halo-blur": 0.5,
         "text-color": "#666666",
         "text-halo-width": 1,
-        "text-halo-color": "rgba(44,44,44,0.9)",
-        "icon-opacity": 0.5
+        "text-halo-color": "rgba(44,44,44,0.9)"
       }
     },
     {
@@ -4262,8 +4259,7 @@
         "text-halo-blur": 0.5,
         "text-color": "#888888",
         "text-halo-width": 1,
-        "text-halo-color": "rgba(44,44,44,0.9)",
-        "icon-opacity": 0.5
+        "text-halo-color": "rgba(44,44,44,0.9)"
       }
     },
     {
@@ -4394,8 +4390,7 @@
         "text-halo-blur": 0.5,
         "text-color": "#888888",
         "text-halo-width": 1,
-        "text-halo-color": "rgba(44,44,44,0.9)",
-        "icon-opacity": 0.5
+        "text-halo-color": "rgba(44,44,44,0.9)"
       }
     },
     {
@@ -4482,8 +4477,7 @@
         "text-halo-blur": 0.5,
         "text-color": "#555555",
         "text-halo-width": 1,
-        "text-halo-color": "rgba(44,44,44,0.9)",
-        "icon-opacity": 0.5
+        "text-halo-color": "rgba(44,44,44,0.9)"
       }
     },
     {
@@ -4582,8 +4576,7 @@
         "text-halo-blur": 0.5,
         "text-color": "#555555",
         "text-halo-width": 1,
-        "text-halo-color": "rgba(44,44,44,0.9)",
-        "icon-opacity": 0.5
+        "text-halo-color": "rgba(44,44,44,0.9)"
       }
     },
     {
@@ -4652,8 +4645,7 @@
         "text-halo-blur": 0.5,
         "text-color": "#555555",
         "text-halo-width": 1,
-        "text-halo-color": "rgba(44,44,44,0.9)",
-        "icon-opacity": 0.5
+        "text-halo-color": "rgba(44,44,44,0.9)"
       }
     },
     {
@@ -4724,8 +4716,7 @@
         "text-halo-blur": 0.5,
         "text-color": "#555555",
         "text-halo-width": 1,
-        "text-halo-color": "rgba(44,44,44,0.9)",
-        "icon-opacity": 0.5
+        "text-halo-color": "rgba(44,44,44,0.9)"
       }
     },
     {
@@ -4799,8 +4790,7 @@
         "text-halo-blur": 0.5,
         "text-color": "#555555",
         "text-halo-width": 1,
-        "text-halo-color": "rgba(44,44,44,0.9)",
-        "icon-opacity": 0.5
+        "text-halo-color": "rgba(44,44,44,0.9)"
       }
     },
     {
@@ -4868,8 +4858,7 @@
         "text-halo-blur": 0.5,
         "text-color": "#555555",
         "text-halo-width": 1,
-        "text-halo-color": "rgba(44,44,44,0.9)",
-        "icon-opacity": 0.5
+        "text-halo-color": "rgba(44,44,44,0.9)"
       }
     },
     {
@@ -4950,8 +4939,7 @@
         "text-halo-blur": 0.5,
         "text-color": "#555555",
         "text-halo-width": 1,
-        "text-halo-color": "rgba(44,44,44,0.9)",
-        "icon-opacity": 0.5
+        "text-halo-color": "rgba(44,44,44,0.9)"
       }
     },
     {
@@ -5019,8 +5007,7 @@
         "text-halo-blur": 0.5,
         "text-color": "#555555",
         "text-halo-width": 1,
-        "text-halo-color": "rgba(44,44,44,0.9)",
-        "icon-opacity": 0.5
+        "text-halo-color": "rgba(44,44,44,0.9)"
       }
     },
     {
@@ -5101,8 +5088,7 @@
         "text-halo-blur": 0.5,
         "text-color": "#555555",
         "text-halo-width": 1,
-        "text-halo-color": "rgba(44,44,44,0.9)",
-        "icon-opacity": 0.5
+        "text-halo-color": "rgba(44,44,44,0.9)"
       }
     },
     {
@@ -5189,8 +5175,7 @@
         "text-halo-blur": 0.5,
         "text-color": "#555555",
         "text-halo-width": 2,
-        "text-halo-color": "rgba(44,44,44,0.9)",
-        "icon-opacity": 0.5
+        "text-halo-color": "rgba(44,44,44,0.9)"
       }
     },
     {
@@ -5233,8 +5218,7 @@
         "text-halo-blur": 0.5,
         "text-color": "#555555",
         "text-halo-width": 1,
-        "text-halo-color": "rgba(44,44,44,0.9)",
-        "icon-opacity": 0.5
+        "text-halo-color": "rgba(44,44,44,0.9)"
       }
     },
     {
@@ -5306,8 +5290,7 @@
         "text-halo-blur": 0.5,
         "text-color": "#555555",
         "text-halo-width": 1,
-        "text-halo-color": "rgba(44,44,44,0.9)",
-        "icon-opacity": 0.5
+        "text-halo-color": "rgba(44,44,44,0.9)"
       }
     },
     {
@@ -5363,8 +5346,7 @@
         "icon-size": 1
       },
       "paint": {
-        "text-color": "#555555",
-        "icon-opacity": 0.5
+        "text-color": "#555555"
       }
     },
     {
@@ -5450,8 +5432,7 @@
         "icon-size": 1
       },
       "paint": {
-        "text-color": "#555555",
-        "icon-opacity": 0.5
+        "text-color": "#555555"
       }
     },
     {
@@ -5791,8 +5772,7 @@
         "text-halo-blur": 0.5,
         "text-color": "#555555",
         "text-halo-width": 1,
-        "text-halo-color": "rgba(44,44,44,0.9)",
-        "icon-opacity": 0.5
+        "text-halo-color": "rgba(44,44,44,0.9)"
       }
     },
     {
@@ -5845,7 +5825,6 @@
       },
       "paint": {
         "icon-color": "#000000",
-        "icon-opacity": 0.5,
         "text-color": "#666666",
         "text-halo-width": 1.2,
         "text-halo-color": "rgba(44,44,44,0.9)"
@@ -5889,7 +5868,6 @@
       },
       "paint": {
         "icon-color": "#000000",
-        "icon-opacity": 0.5,
         "text-color": "#666666",
         "text-halo-width": 1.2,
         "text-halo-color": "rgba(44,44,44,0.9)"
@@ -6000,7 +5978,6 @@
       },
       "paint": {
         "icon-color": "#000000",
-        "icon-opacity": 0.5,
         "text-color": "#888888",
         "text-halo-width": 1.2,
         "text-halo-color": "rgba(44,44,44,0.9)"
@@ -6054,7 +6031,6 @@
       },
       "paint": {
         "icon-color": "#000000",
-        "icon-opacity": 0.5,
         "text-color": "#888888",
         "text-halo-width": 1.2,
         "text-halo-color": "rgba(44,44,44,0.9)"
@@ -6108,7 +6084,6 @@
       },
       "paint": {
         "icon-color": "#000000",
-        "icon-opacity": 0.5,
         "text-color": "#888888",
         "text-halo-width": 1.2,
         "text-halo-color": "rgba(44,44,44,0.9)"
@@ -6162,7 +6137,6 @@
       },
       "paint": {
         "icon-color": "#000000",
-        "icon-opacity": 0.5,
         "text-color": "#888888",
         "text-halo-width": 1.2,
         "text-halo-color": "rgba(44,44,44,0.9)"
@@ -6216,7 +6190,6 @@
       },
       "paint": {
         "icon-color": "#000000",
-        "icon-opacity": 0.5,
         "text-color": "#888888",
         "text-halo-width": 1.2,
         "text-halo-color": "rgba(44,44,44,0.9)"
@@ -6270,7 +6243,6 @@
       },
       "paint": {
         "icon-color": "#000000",
-        "icon-opacity": 0.5,
         "text-color": "#888888",
         "text-halo-width": 1.2,
         "text-halo-color": "rgba(44,44,44,0.9)"
@@ -6324,7 +6296,6 @@
       },
       "paint": {
         "icon-color": "#000000",
-        "icon-opacity": 0.5,
         "text-color": "#888888",
         "text-halo-width": 1.2,
         "text-halo-color": "rgba(44,44,44,0.9)"
@@ -6378,7 +6349,6 @@
       },
       "paint": {
         "icon-color": "#000000",
-        "icon-opacity": 0.5,
         "text-color": "#888888",
         "text-halo-width": 1.2,
         "text-halo-color": "rgba(44,44,44,0.9)"
@@ -6432,7 +6402,6 @@
       },
       "paint": {
         "icon-color": "#000000",
-        "icon-opacity": 0.5,
         "text-color": "#888888",
         "text-halo-width": 1.2,
         "text-halo-color": "rgba(44,44,44,0.9)"
@@ -6481,8 +6450,7 @@
       "paint": {
         "text-color": "#888888",
         "text-halo-width": 1.2,
-        "text-halo-color": "rgba(44,44,44,0.9)",
-        "icon-opacity": 0.5
+        "text-halo-color": "rgba(44,44,44,0.9)"
       }
     }
   ]

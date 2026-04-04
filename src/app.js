@@ -13,6 +13,9 @@
 import { storeAuth, clearAuth } from './auth.js';
 import mapStyle from './style.json';
 
+// スプライトURLをデプロイ先に合わせて動的に設定
+mapStyle.sprite = location.origin + import.meta.env.BASE_URL + 'sprites/gsi';
+
 export function initApp(auth) {
 
 // ============================================================
@@ -86,6 +89,11 @@ var map = new geolonia.Map({
   maxZoom: 16,
   renderWorldCopies: false
 });
+
+map.addControl(new geolonia.GeolocateControl({
+  positionOptions: { enableHighAccuracy: true },
+  trackUserLocation: true
+}));
 
 // ユーザーが手動でズームした場合、そのレベルを記憶して flyTo で使う
 var userZoom = null;
