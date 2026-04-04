@@ -710,7 +710,7 @@ function openPopupForEntity(entityId) {
   }
   var html =
     '<div style="min-width:220px">' +
-    '<div style="font-size:15px;font-weight:600;color:#00e5ff;margin-bottom:4px">' + name + '</div>' +
+    '<div style="font-size:15px;font-weight:600;color:#ffffff;margin-bottom:4px">' + name + '</div>' +
     '<div style="font-size:10px;color:rgba(255,255,255,0.25);margin-bottom:10px;font-family:JetBrains Mono,monospace;word-break:break-all">' + entityId + '</div>' +
     (contentHtml ? '<div>' + contentHtml + '</div>' : '') +
     '</div>';
