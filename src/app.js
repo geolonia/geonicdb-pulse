@@ -93,7 +93,7 @@ var map = new geolonia.Map({
 map.addControl(new geolonia.GeolocateControl({
   positionOptions: { enableHighAccuracy: true },
   trackUserLocation: true
-}));
+}), 'bottom-right');
 
 // ユーザーが手動でズームした場合、そのレベルを記憶して flyTo で使う
 var userZoom = null;
