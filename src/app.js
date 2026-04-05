@@ -10,40 +10,13 @@
  * - Bearer JWT 認証とトークンの自動リフレッシュ
  */
 
-import { storeAuth, clearAuth } from './auth.js';
+import { clearAuth } from './auth.js';
 import mapStyle from './style.json';
 
 // スプライトURLをデプロイ先に合わせて動的に設定
 mapStyle.sprite = location.origin + import.meta.env.BASE_URL + 'sprites/gsi';
 
-export function initApp(auth) {
-
-// ============================================================
-// GeonicDB クライアント初期化
-// ============================================================
-// GeonicDB SDK のインスタンスを作成し、Bearer JWT トークンをセットする。
-// SDK はデフォルトで DPoP (Proof of Work) 認証を使うが、
-// ログイン API で取得した Bearer トークンを直接セットすることで DPoP をスキップできる。
-var db = new GeonicDB({
-  baseUrl: auth.url,
-  tenant: auth.tenant
-});
-
-// Bearer JWT トークンを SDK 公開 API でセット（DPoP フローをスキップ）
-db.setCredentials({
-  token: auth.accessToken,
-  tokenType: 'Bearer',
-  expiresIn: auth.expiresIn,
-  refreshToken: auth.refreshToken,
-});
-
-// SDK がトークンをリフレッシュした際に localStorage と同期する
-db.on('tokenRefresh', function(creds) {
-  auth.accessToken = creds.token;
-  if (creds.refreshToken !== undefined) auth.refreshToken = creds.refreshToken;
-  if (creds.expiresIn !== undefined) auth.expiresIn = creds.expiresIn;
-  storeAuth(auth);
-});
+export function initApp(db, auth) {
 
 // ============================================================
 // エンティティタイプの選択
@@ -180,6 +153,7 @@ db.on('error', function(err) {
     /unauthorized|invalid[_ ]token|token expired|expired token/i.test(msg) ||
     err.status === 401 || err.status === 403;
   if (isAuthError) {
+    db.off('tokenRefresh');
     clearAuth();
     location.href = location.pathname;
   }

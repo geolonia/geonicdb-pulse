@@ -1,9 +1,8 @@
 /**
- * auth.js — 認証管理
+ * auth.js — 認証情報の永続化
  *
- * GeonicDB は Bearer JWT 認証をサポートしている。
- * /auth/login に email + password を POST すると accessToken と refreshToken が返る。
- * マルチテナント環境では NGSILD-Tenant ヘッダーでテナントを指定する。
+ * GeonicDB SDK の認証情報を localStorage で永続化するためのヘルパー。
+ * ログインやトークンリフレッシュは SDK が担当する。
  */
 
 var AUTH_STORAGE_KEY = 'gdb-pulse-auth';
@@ -49,86 +48,5 @@ export function loadGeonicDBSDK(url) {
     script.onload = resolve;
     script.onerror = function() { reject(new Error('GeonicDB SDK の読み込みに失敗しました')); };
     document.head.appendChild(script);
-  });
-}
-
-/**
- * リフレッシュトークンを使ってアクセストークンを更新する。
- * ページリロード時に呼び出して常に新鮮なトークンでアプリを起動する。
- */
-export function refreshAuth(auth) {
-  var headers = { 'Content-Type': 'application/json' };
-  if (auth.tenant) headers['NGSILD-Tenant'] = auth.tenant;
-
-  return fetch(auth.url + '/auth/refresh', {
-    method: 'POST',
-    headers: headers,
-    body: JSON.stringify({ refreshToken: auth.refreshToken })
-  })
-  .then(function(res) {
-    if (!res.ok) throw new Error('Token refresh failed');
-    return res.json();
-  })
-  .then(function(data) {
-    auth.accessToken = data.accessToken;
-    auth.refreshToken = data.refreshToken;
-    auth.expiresIn = data.expiresIn;
-    storeAuth(auth);
-    return auth;
-  });
-}
-
-/**
- * GeonicDB /auth/login API を呼び出してログイン
- *
- * レスポンス例:
- *   { accessToken: "eyJ...", refreshToken: "eyJ...", expiresIn: 3600 }
- */
-export function handleLogin(email, password, tenant) {
-  var geonicdbUrl = import.meta.env.VITE_GEONICDB_URL;
-  var loginBtn = document.getElementById('login-btn');
-  var errorEl = document.getElementById('login-error');
-  loginBtn.disabled = true;
-  loginBtn.textContent = 'ログイン中...';
-  errorEl.textContent = '';
-
-  var headers = { 'Content-Type': 'application/json' };
-  // マルチテナントの場合、NGSILD-Tenant ヘッダーでテナントを指定
-  if (tenant) headers['NGSILD-Tenant'] = tenant;
-
-  return fetch(geonicdbUrl + '/auth/login', {
-    method: 'POST',
-    headers: headers,
-    body: JSON.stringify({ email: email, password: password })
-  })
-  .then(function(res) {
-    if (!res.ok) {
-      return res.json().then(function(body) {
-        throw new Error(body.message || body.description || body.detail || 'ログインに失敗しました');
-      }).catch(function(e) {
-        if (e.message && e.message !== 'ログインに失敗しました') throw e;
-        throw new Error('ログインに失敗しました（' + res.status + '）');
-      });
-    }
-    return res.json();
-  })
-  .then(function(data) {
-    var auth = {
-      email: email,
-      accessToken: data.accessToken,
-      refreshToken: data.refreshToken,
-      expiresIn: data.expiresIn,
-      tenant: tenant || '',
-      url: geonicdbUrl
-    };
-    if (!auth.accessToken) throw new Error('認証レスポンスにアクセストークンが含まれていません');
-    storeAuth(auth);
-    return auth;
-  })
-  .catch(function(err) {
-    errorEl.textContent = err.message;
-    loginBtn.disabled = false;
-    loginBtn.textContent = 'ログイン';
-    throw err;
   });
 }

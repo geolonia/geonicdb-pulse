@@ -2,17 +2,23 @@
  * main.js — エントリポイント
  *
  * 認証フロー:
- *   1. localStorage に保存済みの認証情報があれば復元
- *   2. GeonicDB SDK を動的にロード（サーバーから /sdk/v1/geonicdb.js を取得）
- *   3. initApp() でアプリを起動
- *   未認証の場合はログインフォームを表示する
+ *   1. GeonicDB SDK を動的にロード（サーバーから /sdk/v1/geonicdb.js を取得）
+ *   2. 保存済みトークンがあれば db.setCredentials() で復元
+ *   3. なければログインフォームで db.login() を呼び出す
+ *   4. initApp(db, auth) でアプリを起動
  */
 
 import './style.css';
-import { getStoredAuth, clearAuth, refreshAuth, handleLogin, handleLogout, loadGeonicDBSDK } from './auth.js';
+import { getStoredAuth, storeAuth, clearAuth, handleLogout, loadGeonicDBSDK } from './auth.js';
 import { initApp } from './app.js';
 
 window.handleLogout = handleLogout;
+
+var geonicdbUrl = import.meta.env.VITE_GEONICDB_URL;
+if (!geonicdbUrl) {
+  document.getElementById('login-error').textContent = 'VITE_GEONICDB_URL が設定されていません';
+  throw new Error('VITE_GEONICDB_URL is not configured');
+}
 
 // サイドパネルのモバイル用トグル
 (function() {
@@ -38,51 +44,94 @@ window.handleLogout = handleLogout;
   overlay.onclick = closePanel;
 })();
 
-(function() {
+/** ログインフォームをDOMから削除してiOSのパスワード自動入力ポップアップを防止 */
+function removeLoginForm() {
+  var form = document.getElementById('login-form');
+  if (form) form.remove();
+}
+
+// SDK をロードしてから認証フローを開始
+loadGeonicDBSDK(geonicdbUrl).then(function() {
   var auth = getStoredAuth();
 
-  /** ログインフォームをDOMから削除してiOSのパスワード自動入力ポップアップを防止 */
-  function removeLoginForm() {
-    var form = document.getElementById('login-form');
-    if (form) form.remove();
-  }
-
   if (auth && auth.accessToken) {
+    // ── 保存済みトークンで復元 ──
+    // 環境変数が変更された場合に備え、常に現在の URL を使用する
+    auth.url = geonicdbUrl;
+
+    var db = new GeonicDB({ baseUrl: geonicdbUrl, tenant: auth.tenant });
+
+    // SDK にトークンをセットすれば、期限切れ時に自動でリフレッシュされる
+    db.setCredentials({
+      token: auth.accessToken,
+      tokenType: 'Bearer',
+      expiresIn: auth.expiresIn,
+      refreshToken: auth.refreshToken,
+    });
+
+    // SDK がトークンをリフレッシュした際に localStorage と同期する
+    db.on('tokenRefresh', function(creds) {
+      auth.accessToken = creds.token;
+      if (creds.refreshToken !== undefined) auth.refreshToken = creds.refreshToken;
+      if (creds.expiresIn !== undefined) auth.expiresIn = creds.expiresIn;
+      storeAuth(auth);
+    });
+
     document.getElementById('login-overlay').classList.add('hidden');
     removeLoginForm();
-    // リロード時にトークンをリフレッシュしてから SDK をロード・アプリを起動
-    refreshAuth(auth).then(function() {
-      return loadGeonicDBSDK(auth.url).then(function() {
-        initApp(auth);
-      });
-    }).catch(function(err) {
-      console.error(err);
-      clearAuth();
-      // フォームは既にDOMから削除済みなのでリロードしてログイン画面を再構築
-      location.href = location.pathname;
-    });
+    initApp(db, auth);
   } else {
+    // ── ログインフォームを表示 ──
     document.getElementById('login-overlay').classList.remove('hidden');
-    // 前回のテナント名を復元
     if (auth && auth.tenant) {
       document.getElementById('login-tenant').value = auth.tenant;
     }
+
     document.getElementById('login-form').onsubmit = function(e) {
       e.preventDefault();
       var email = document.getElementById('login-email').value.trim();
       var password = document.getElementById('login-password').value;
       var tenant = document.getElementById('login-tenant').value.trim();
-      if (tenant && email && password) {
-        handleLogin(email, password, tenant).then(function(auth) {
-          return loadGeonicDBSDK(auth.url).then(function() {
-            document.getElementById('login-overlay').classList.add('hidden');
-            removeLoginForm();
-            initApp(auth);
-          });
-        }).catch(function() {
-          // エラーは handleLogin 内で UI に表示済み
+      if (!tenant || !email || !password) return;
+
+      var loginBtn = document.getElementById('login-btn');
+      var errorEl = document.getElementById('login-error');
+      loginBtn.disabled = true;
+      loginBtn.textContent = 'ログイン中...';
+      errorEl.textContent = '';
+
+      // SDK の db.login() でログイン
+      var db = new GeonicDB({ baseUrl: geonicdbUrl, tenant: tenant });
+      db.login(email, password).then(function(data) {
+        var auth = {
+          email: email,
+          accessToken: data.accessToken,
+          refreshToken: data.refreshToken,
+          expiresIn: data.expiresIn,
+          tenant: tenant,
+          url: geonicdbUrl,
+        };
+        storeAuth(auth);
+
+        // SDK がトークンをリフレッシュした際に localStorage と同期する
+        db.on('tokenRefresh', function(creds) {
+          auth.accessToken = creds.token;
+          if (creds.refreshToken !== undefined) auth.refreshToken = creds.refreshToken;
+          if (creds.expiresIn !== undefined) auth.expiresIn = creds.expiresIn;
+          storeAuth(auth);
         });
-      }
+
+        document.getElementById('login-overlay').classList.add('hidden');
+        removeLoginForm();
+        initApp(db, auth);
+      }).catch(function(err) {
+        errorEl.textContent = err.message || 'ログインに失敗しました';
+        loginBtn.disabled = false;
+        loginBtn.textContent = 'ログイン';
+      });
     };
   }
-})();
+}).catch(function(err) {
+  console.error(err);
+  document.getElementById('login-error').textContent = err.message;
+});
