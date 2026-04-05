@@ -420,6 +420,7 @@ function addFeedItem(entity, isNew) {
     '<div class="feed-info">' +
       '<div class="feed-name">' + name + '</div>' +
       '<div class="feed-meta">' + time + '</div>' +
+      (entity['@context'] ? '<div class="feed-context">' + (Array.isArray(entity['@context']) ? entity['@context'].join(', ') : entity['@context']) + '</div>' : '') +
     '</div>';
   item.onclick = function() {
     var geo = findGeoProperty(entity);
@@ -449,6 +450,7 @@ function initFeed(list) {
       '<div class="feed-info">' +
         '<div class="feed-name">' + name + '</div>' +
         '<div class="feed-meta">' + e.id + '</div>' +
+        (e['@context'] ? '<div class="feed-context">' + (Array.isArray(e['@context']) ? e['@context'].join(', ') : e['@context']) + '</div>' : '') +
       '</div>';
     item.onclick = (function(ent) {
       return function() {
