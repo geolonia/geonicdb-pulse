@@ -19,6 +19,33 @@ mapStyle.sprite = location.origin + import.meta.env.BASE_URL + 'sprites/gsi';
 export function initApp(auth) {
 
 // ============================================================
+// GeonicDB クライアント初期化
+// ============================================================
+// GeonicDB SDK のインスタンスを作成し、Bearer JWT トークンをセットする。
+// SDK はデフォルトで DPoP (Proof of Work) 認証を使うが、
+// ログイン API で取得した Bearer トークンを直接セットすることで DPoP をスキップできる。
+var db = new GeonicDB({
+  baseUrl: auth.url,
+  tenant: auth.tenant
+});
+
+// Bearer JWT トークンを SDK 公開 API でセット（DPoP フローをスキップ）
+db.setCredentials({
+  token: auth.accessToken,
+  tokenType: 'Bearer',
+  expiresIn: auth.expiresIn,
+  refreshToken: auth.refreshToken,
+});
+
+// SDK がトークンをリフレッシュした際に localStorage と同期する
+db.on('tokenRefresh', function(creds) {
+  auth.accessToken = creds.token;
+  if (creds.refreshToken !== undefined) auth.refreshToken = creds.refreshToken;
+  if (creds.expiresIn !== undefined) auth.expiresIn = creds.expiresIn;
+  storeAuth(auth);
+});
+
+// ============================================================
 // エンティティタイプの選択
 // ============================================================
 // URL の ?type= パラメータでモニター対象のエンティティタイプを指定する。
@@ -34,19 +61,9 @@ if (!ENTITY_TYPE) {
     var val = document.getElementById('type-input').value;
     if (val) location.href = '?type=' + encodeURIComponent(val);
   };
-  // NGSI-LD /types API でエンティティタイプ一覧を取得
+  // NGSI-LD /types API でエンティティタイプ一覧を取得（SDK経由で認証ヘッダー自動付与）
   var select = document.getElementById('type-input');
-  fetch(auth.url + '/ngsi-ld/v1/types', {
-    headers: { 'Authorization': 'Bearer ' + auth.accessToken }
-  })
-  .then(function(res) {
-    if (res.status === 401 || res.status === 403) {
-      clearAuth();
-      location.href = location.pathname;
-      throw new Error('Unauthorized');
-    }
-    return res.json();
-  })
+  db.request('GET', '/ngsi-ld/v1/types')
   .then(function(types) {
     select.innerHTML = '<option value="" disabled selected>エンティティタイプを選択...</option>';
     types.forEach(function(t) {
@@ -82,11 +99,8 @@ if (ENTITY_TYPE !== '__none__') {
   currentOpt.selected = true;
   appTypeSelect.appendChild(currentOpt);
 
-  // タイプ一覧を非同期で取得してプルダウンに追加
-  fetch(auth.url + '/ngsi-ld/v1/types', {
-    headers: { 'Authorization': 'Bearer ' + auth.accessToken }
-  })
-  .then(function(res) { return res.json(); })
+  // タイプ一覧を非同期で取得してプルダウンに追加（SDK経由で認証ヘッダー自動付与）
+  db.request('GET', '/ngsi-ld/v1/types')
   .then(function(types) {
     appTypeSelect.innerHTML = '';
     types.forEach(function(t) {
@@ -157,33 +171,6 @@ map.on('dragstart', function() { selectEntity(null); popup.remove(); });
 function getFlyZoom(defaultZoom) {
   return userZoom !== null ? userZoom : defaultZoom;
 }
-
-// ============================================================
-// GeonicDB クライアント初期化
-// ============================================================
-// GeonicDB SDK のインスタンスを作成し、Bearer JWT トークンをセットする。
-// SDK はデフォルトで DPoP (Proof of Work) 認証を使うが、
-// ログイン API で取得した Bearer トークンを直接セットすることで DPoP をスキップできる。
-var db = new GeonicDB({
-  baseUrl: auth.url,
-  tenant: auth.tenant
-});
-
-// Bearer JWT トークンを SDK 公開 API でセット（DPoP フローをスキップ）
-db.setCredentials({
-  token: auth.accessToken,
-  tokenType: 'Bearer',
-  expiresIn: auth.expiresIn,
-  refreshToken: auth.refreshToken,
-});
-
-// SDK がトークンをリフレッシュした際に localStorage と同期する
-db.onTokenRefresh(function(creds) {
-  auth.accessToken = creds.token;
-  if (creds.refreshToken !== undefined) auth.refreshToken = creds.refreshToken;
-  if (creds.expiresIn !== undefined) auth.expiresIn = creds.expiresIn;
-  storeAuth(auth);
-});
 
 // トークンリフレッシュ失敗時はセッション切れとしてログイン画面に戻す
 db.on('error', function(err) {
@@ -256,10 +243,6 @@ function flattenTemporal(te) {
  */
 function fetchTemporalEntities(type) {
   var temporalPromise = db.request('GET', '/ngsi-ld/v1/temporal/entities?type=' + encodeURIComponent(type) + '&limit=1000')
-    .then(function(res) {
-      if (!res.ok) return res.json().then(function(e) { throw new Error(e.detail || 'Temporal query failed'); });
-      return res.json();
-    })
     .then(function(rawEntities) {
       if (!Array.isArray(rawEntities)) rawEntities = [];
       rawEntities.forEach(function(te) { temporalRaw[te.id] = te; });
