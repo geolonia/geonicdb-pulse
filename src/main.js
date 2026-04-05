@@ -15,6 +15,9 @@ import { initApp } from './app.js';
 window.handleLogout = handleLogout;
 
 var geonicdbUrl = import.meta.env.VITE_GEONICDB_URL;
+if (!geonicdbUrl) {
+  throw new Error('VITE_GEONICDB_URL が設定されていません。.env ファイルを確認してください。');
+}
 
 // サイドパネルのモバイル用トグル
 (function() {
@@ -66,7 +69,7 @@ loadGeonicDBSDK(geonicdbUrl).then(function() {
   if (auth && auth.accessToken) {
     // ── 保存済みトークンで復元 ──
     // SDK にトークンをセットすれば、期限切れ時に自動でリフレッシュされる
-    var db = new GeonicDB({ baseUrl: auth.url, tenant: auth.tenant });
+    var db = new GeonicDB({ baseUrl: geonicdbUrl, tenant: auth.tenant });
     db.setCredentials({
       token: auth.accessToken,
       tokenType: 'Bearer',
@@ -83,6 +86,8 @@ loadGeonicDBSDK(geonicdbUrl).then(function() {
     if (auth && auth.tenant) {
       document.getElementById('login-tenant').value = auth.tenant;
     }
+    var db = null;
+    var lastTenant = null;
     document.getElementById('login-form').onsubmit = function(e) {
       e.preventDefault();
       var email = document.getElementById('login-email').value.trim();
@@ -96,8 +101,11 @@ loadGeonicDBSDK(geonicdbUrl).then(function() {
       loginBtn.textContent = 'ログイン中...';
       errorEl.textContent = '';
 
-      // SDK の login() でログイン（認証ヘッダーやトークン管理は SDK が担当）
-      var db = new GeonicDB({ baseUrl: geonicdbUrl, tenant: tenant });
+      // テナントが変わった場合のみ新しいインスタンスを作成
+      if (!db || tenant !== lastTenant) {
+        db = new GeonicDB({ baseUrl: geonicdbUrl, tenant: tenant });
+        lastTenant = tenant;
+      }
       db.login(email, password).then(function(data) {
         var auth = {
           email: email,

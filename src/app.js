@@ -153,6 +153,7 @@ db.on('error', function(err) {
     /unauthorized|invalid[_ ]token|token expired|expired token/i.test(msg) ||
     err.status === 401 || err.status === 403;
   if (isAuthError) {
+    db.off('tokenRefresh');
     clearAuth();
     location.href = location.pathname;
   }

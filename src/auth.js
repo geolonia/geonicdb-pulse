@@ -12,7 +12,10 @@ export function getStoredAuth() {
   try {
     var data = localStorage.getItem(AUTH_STORAGE_KEY);
     return data ? JSON.parse(data) : null;
-  } catch (e) { return null; }
+  } catch (e) {
+    console.warn('認証情報の復元に失敗しました:', e);
+    return null;
+  }
 }
 
 /** 認証情報を localStorage に保存 */
