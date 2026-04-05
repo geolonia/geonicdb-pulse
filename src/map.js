@@ -106,6 +106,7 @@ export function initMap(ctx) {
 
   // マップ準備完了ハンドラ
   function onMapReady() {
+    if (mapReady) return;
     mapReady = true;
     if (map.getLayer('road_shield')) {
       map.setLayoutProperty('road_shield', 'visibility', 'none');
