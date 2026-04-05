@@ -94,7 +94,7 @@ export function initMap(ctx) {
 
   // ユーザーが手動でズームした場合、そのレベルを記憶して flyTo で使う
   map.on('zoomend', function() {
-    if (!map.isMoving || !map._zooming) {
+    if (!map.isMoving()) {
       userZoom = Math.round(map.getZoom());
     }
   });
