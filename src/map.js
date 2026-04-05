@@ -154,6 +154,7 @@ export function initMap(ctx) {
       map.getSource('entities').setData(buildGeoJSON(ctx.entities));
     }
     var feedList = document.getElementById('feed-list');
+    if (!feedList) return;
     var items = feedList.querySelectorAll('.feed-item');
     for (var i = 0; i < items.length; i++) {
       if (id && items[i].getAttribute('data-id') === id) {
