@@ -5,29 +5,42 @@
 GeonicDB SDK を使った Vite ベースの Web アプリケーションのサンプルです。
 GeonicDB に保存されたエンティティを地図上にリアルタイム表示します。
 
-## 利用している GeonicDB の機能
+## 利用している GeonicDB SDK の機能
 
-| 機能 | 説明 |
-|------|------|
-| **Bearer JWT 認証** | メール + パスワードでログインし、アクセストークンとリフレッシュトークンを取得 |
-| **マルチテナント** | `NGSILD-Tenant` ヘッダーによるテナント切り替え |
-| **NGSI-LD エンティティ取得** | `GET /ngsi-ld/v1/entities` でエンティティ一覧を取得 |
-| **Temporal API** | `GET /ngsi-ld/v1/temporal/entities` で時系列データを取得し、スパークラインで可視化 |
-| **WebSocket リアルタイム通知** | `subscribe()` + `connect()` でエンティティの作成・更新をリアルタイム受信 |
-| **エンティティタイプ一覧** | `GET /ngsi-ld/v1/types` で登録済みタイプを取得 |
+| SDK API | 説明 |
+|---------|------|
+| `new GeonicDB({ baseUrl, tenant })` | SDK インスタンスの作成 |
+| `db.login(email, password)` | メール + パスワードでログイン（Bearer JWT） |
+| `db.setCredentials({ token, ... })` | 保存済みトークンからセッションを復元 |
+| `db.on('tokenRefresh', callback)` | トークン自動リフレッシュ時の通知 |
+| `db.getEntities({ type, limit })` | NGSI-LD エンティティの一覧取得 |
+| `db.request('GET', path)` | 汎用 REST API 呼び出し（パース済み JSON を返す） |
+| `db.subscribe({ entityTypes })` | WebSocket でエンティティの変更を購読 |
+| `db.connect()` / `db.reconnect()` | WebSocket 接続の開始・再接続 |
+| `db.on('entityCreated', callback)` | エンティティ作成イベントの受信 |
+| `db.on('entityUpdated', callback)` | エンティティ更新イベントの受信 |
+| `db.on('connected', callback)` | WebSocket 接続状態の監視 |
 
 ## ファイル構成
 
 ```
 index.html          HTML マークアップ
 src/
-  main.js           エントリポイント（認証フロー・起動）
-  auth.js           認証管理（ログイン、トークン保存、SDK ロード）
-  app.js            アプリ本体（地図、データ取得、WebSocket、UI）
+  main.js           エントリポイント（SDK ロード・認証フロー）
+  auth.js           認証情報の永続化（localStorage ヘルパー・SDK ローダー）
+  app.js            SDK 呼び出しのオーケストレーション（データ取得・WebSocket・エラー処理）
+  map.js            地図の初期化・レイヤー描画・ポップアップ・コンパスボタン
+  feed.js           サイドパネルのライブフィード
+  entity.js         NGSI-LD エンティティのユーティリティ関数
+  sparkline.js      SVG スパークライン生成
   style.css         スタイル
 vite.config.js      Vite 設定
 .env.example        環境変数のテンプレート
 ```
+
+### SDK の使い方を知りたい場合
+
+`main.js` と `app.js` を読んでください。SDK の API（`db.login()`, `db.getEntities()`, `db.subscribe()` など）がラッパーなしで直接呼び出されています。
 
 ## セットアップ
 
@@ -102,9 +115,10 @@ npm run preview   # ビルド結果のプレビュー
 1. ログイン画面でメールアドレス・パスワード（・テナント名）を入力
 2. エンティティタイプを選択して「Open」
 3. 地図上のマーカーをクリックするとプロパティ詳細をポップアップ表示
-4. 左側の Live Feed をクリックするとエンティティにフォーカス
+4. 左側の Live Feed をクリック（またはキーボード操作）するとエンティティにフォーカス
 5. WebSocket 接続中はリアルタイムでエンティティの追加・更新が反映
 6. 時系列データがある場合はスパークラインチャートで自動表示
+7. 地図を回転させるとコンパスボタンが表示され、タップで北向きに戻る
 
 ## ライセンス
 
