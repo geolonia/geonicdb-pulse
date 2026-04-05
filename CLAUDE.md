@@ -2,6 +2,20 @@
 
 GeonicDB のエンティティをリアルタイムに地図上で可視化するモニターアプリ。
 
+## プロジェクトの趣旨
+
+このアプリは **GeonicDB SDK のサンプルプロジェクト**である。主な目的は2つ:
+
+1. **開発者向けリファレンス実装** — GeonicDB SDK を使ったアプリケーションの作り方を、実動するコードで示す。SDK の API（認証、エンティティ取得、WebSocket、Temporal API など）がコード上で直接見える形を維持する。ヘルパー関数やラッパーで SDK 呼び出しを隠さない。
+2. **SDK へのフィードバック** — サンプルアプリを実際に開発・運用する中で発見した SDK の不足・改善点を `geolonia/geonicdb` に issue としてフィードバックする。SDK の使いにくさやAPIの欠落はサンプル側で回避するのではなく、SDK 側の改善を促す。
+
+### コードを書く際の判断基準
+
+- **サンプルとしての明快さ** > プロダクション品質の堅牢性
+- SDK の API がそのまま読めることを最優先する
+- bot レビュー（CodeRabbit 等）の指摘はプロジェクトの趣旨に照らして取捨選択する
+- SDK に不足しているメソッドやイベントを見つけたら `geolonia/geonicdb` に issue を立てる
+
 - **技術スタック**: Vanilla JS + Vite + Geolonia Maps (MapLibre GL) + GeonicDB SDK
 - **認証**: Bearer JWT（email/password でログイン → accessToken + refreshToken）
 - **リアルタイム**: WebSocket で entityCreated / entityUpdated イベントを受信
