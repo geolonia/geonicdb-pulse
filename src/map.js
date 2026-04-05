@@ -65,6 +65,35 @@ export function initMap(ctx) {
     trackUserLocation: true
   }), 'bottom-right');
 
+  // コンパスボタン — 現在の回転角度を表示し、タップで北向き（0度）に戻す
+  // GeolocateControl の後に追加することで、その上に配置される
+  var compassBtn = document.createElement('button');
+  compassBtn.className = 'compass-btn';
+  compassBtn.setAttribute('aria-label', '北向きに戻す');
+  compassBtn.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20"><polygon points="12,2 16,14 12,11 8,14" fill="#e84130"/><polygon points="12,22 8,14 12,17 16,14" fill="#666"/></svg>';
+  compassBtn.style.display = 'none';
+  compassBtn.onclick = function() {
+    map.easeTo({ bearing: 0, duration: 300 });
+  };
+  map.on('rotate', function() {
+    var bearing = map.getBearing();
+    if (Math.abs(bearing) < 0.5) {
+      compassBtn.style.display = 'none';
+    } else {
+      compassBtn.style.display = 'flex';
+      compassBtn.querySelector('svg').style.transform = 'rotate(' + (-bearing) + 'deg)';
+    }
+  });
+  map.addControl({
+    onAdd: function() {
+      var container = document.createElement('div');
+      container.className = 'maplibregl-ctrl maplibregl-ctrl-group';
+      container.appendChild(compassBtn);
+      return container;
+    },
+    onRemove: function() {}
+  }, 'bottom-right');
+
   // ユーザーが手動でズームした場合、そのレベルを記憶して flyTo で使う
   map.on('zoomend', function() {
     if (!map.isMoving || !map._zooming) {
