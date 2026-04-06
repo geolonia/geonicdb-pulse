@@ -215,6 +215,7 @@ body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; back
   color: rgba(255,255,255,0.35);
   font-family: 'JetBrains Mono', monospace;
   margin-top: 2px;
+  white-space: pre-line;
 }
 
 /* ── タイプ選択オーバーレイ ── */

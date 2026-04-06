@@ -575,9 +575,9 @@
         "text-letter-spacing": 0.2
       },
       "paint": {
-        "text-color": "#555555",
+        "text-color": "#ffffff",
         "text-halo-width": 1.5,
-        "text-halo-color": "rgba(255,255,255,0.7)"
+        "text-halo-color": "rgba(44,44,44,0.9)"
       }
     },
     {
@@ -614,9 +614,9 @@
         "text-letter-spacing": 0.2
       },
       "paint": {
-        "text-color": "#555555",
+        "text-color": "#ffffff",
         "text-halo-width": 1.5,
-        "text-halo-color": "rgba(255,255,255,0.7)"
+        "text-halo-color": "rgba(44,44,44,0.9)"
       }
     },
     {
@@ -889,7 +889,7 @@
         "text-letter-spacing": 0.2
       },
       "paint": {
-        "text-color": "#555555",
+        "text-color": "#ffffff",
         "text-halo-width": 1.5,
         "text-halo-color": "rgba(44,44,44,0.9)"
       }
@@ -940,7 +940,7 @@
         "visibility": "visible"
       },
       "paint": {
-        "text-color": "#555555",
+        "text-color": "#ffffff",
         "text-halo-width": 1.5,
         "text-halo-color": "rgba(44,44,44,0.9)"
       }
@@ -1006,7 +1006,7 @@
         "text-letter-spacing": 0.2
       },
       "paint": {
-        "text-color": "#555555",
+        "text-color": "#ffffff",
         "text-halo-width": 1.5,
         "text-halo-color": "rgba(44,44,44,0.9)"
       }
@@ -1038,7 +1038,7 @@
         "text-letter-spacing": 0.2
       },
       "paint": {
-        "text-color": "#555555",
+        "text-color": "#ffffff",
         "text-halo-width": 1.5,
         "text-halo-color": "rgba(44,44,44,0.9)"
       }
@@ -1332,9 +1332,9 @@
         "symbol-spacing": 350
       },
       "paint": {
-        "text-color": "#555555",
+        "text-color": "#ffffff",
         "text-halo-width": 1.5,
-        "text-halo-color": "rgba(255,255,255,0.7)"
+        "text-halo-color": "rgba(44,44,44,0.9)"
       }
     },
     {
@@ -1368,7 +1368,7 @@
         "text-letter-spacing": 0.2
       },
       "paint": {
-        "text-color": "#555555",
+        "text-color": "#ffffff",
         "text-halo-width": 1.5,
         "text-halo-color": "rgba(44,44,44,0.9)"
       }
@@ -1409,7 +1409,7 @@
         "text-letter-spacing": 0.2
       },
       "paint": {
-        "text-color": "#555555",
+        "text-color": "#ffffff",
         "text-halo-width": 1.5,
         "text-halo-color": "rgba(44,44,44,0.9)"
       }
@@ -1467,7 +1467,7 @@
         "visibility": "visible"
       },
       "paint": {
-        "text-color": "#555555",
+        "text-color": "#ffffff",
         "text-halo-width": 1.5,
         "text-halo-color": "rgba(44,44,44,0.9)"
       }
@@ -3898,7 +3898,7 @@
       },
       "paint": {
         "text-halo-blur": 0.5,
-        "text-color": "#555555",
+        "text-color": "#ffffff",
         "text-halo-width": 1,
         "text-halo-color": "rgba(44,44,44,0.9)"
       }
@@ -4474,7 +4474,7 @@
       },
       "paint": {
         "text-halo-blur": 0.5,
-        "text-color": "#555555",
+        "text-color": "#ffffff",
         "text-halo-width": 1,
         "text-halo-color": "rgba(44,44,44,0.9)"
       }
@@ -4573,7 +4573,7 @@
       },
       "paint": {
         "text-halo-blur": 0.5,
-        "text-color": "#555555",
+        "text-color": "#ffffff",
         "text-halo-width": 1,
         "text-halo-color": "rgba(44,44,44,0.9)"
       }
@@ -4642,7 +4642,7 @@
       },
       "paint": {
         "text-halo-blur": 0.5,
-        "text-color": "#555555",
+        "text-color": "#ffffff",
         "text-halo-width": 1,
         "text-halo-color": "rgba(44,44,44,0.9)"
       }
@@ -4713,7 +4713,7 @@
       },
       "paint": {
         "text-halo-blur": 0.5,
-        "text-color": "#555555",
+        "text-color": "#ffffff",
         "text-halo-width": 1,
         "text-halo-color": "rgba(44,44,44,0.9)"
       }
@@ -4787,7 +4787,7 @@
       },
       "paint": {
         "text-halo-blur": 0.5,
-        "text-color": "#555555",
+        "text-color": "#ffffff",
         "text-halo-width": 1,
         "text-halo-color": "rgba(44,44,44,0.9)"
       }
@@ -4855,7 +4855,7 @@
       },
       "paint": {
         "text-halo-blur": 0.5,
-        "text-color": "#555555",
+        "text-color": "#ffffff",
         "text-halo-width": 1,
         "text-halo-color": "rgba(44,44,44,0.9)"
       }
@@ -4936,7 +4936,7 @@
       },
       "paint": {
         "text-halo-blur": 0.5,
-        "text-color": "#555555",
+        "text-color": "#ffffff",
         "text-halo-width": 1,
         "text-halo-color": "rgba(44,44,44,0.9)"
       }
@@ -5004,7 +5004,7 @@
       },
       "paint": {
         "text-halo-blur": 0.5,
-        "text-color": "#555555",
+        "text-color": "#ffffff",
         "text-halo-width": 1,
         "text-halo-color": "rgba(44,44,44,0.9)"
       }
@@ -5085,7 +5085,7 @@
       },
       "paint": {
         "text-halo-blur": 0.5,
-        "text-color": "#555555",
+        "text-color": "#ffffff",
         "text-halo-width": 1,
         "text-halo-color": "rgba(44,44,44,0.9)"
       }
@@ -5172,7 +5172,7 @@
       },
       "paint": {
         "text-halo-blur": 0.5,
-        "text-color": "#555555",
+        "text-color": "#ffffff",
         "text-halo-width": 2,
         "text-halo-color": "rgba(44,44,44,0.9)"
       }
@@ -5215,7 +5215,7 @@
       },
       "paint": {
         "text-halo-blur": 0.5,
-        "text-color": "#555555",
+        "text-color": "#ffffff",
         "text-halo-width": 1,
         "text-halo-color": "rgba(44,44,44,0.9)"
       }
@@ -5287,7 +5287,7 @@
       },
       "paint": {
         "text-halo-blur": 0.5,
-        "text-color": "#555555",
+        "text-color": "#ffffff",
         "text-halo-width": 1,
         "text-halo-color": "rgba(44,44,44,0.9)"
       }
@@ -5345,7 +5345,7 @@
         "icon-size": 1
       },
       "paint": {
-        "text-color": "#555555"
+        "text-color": "#ffffff"
       }
     },
     {
@@ -5431,7 +5431,7 @@
         "icon-size": 1
       },
       "paint": {
-        "text-color": "#555555"
+        "text-color": "#ffffff"
       }
     },
     {
@@ -5729,7 +5729,7 @@
         "visibility": "visible"
       },
       "paint": {
-        "text-color": "#555555",
+        "text-color": "#ffffff",
         "text-halo-width": 1.2,
         "text-halo-color": "rgba(44,44,44,0.9)"
       }
@@ -5769,7 +5769,7 @@
       },
       "paint": {
         "text-halo-blur": 0.5,
-        "text-color": "#555555",
+        "text-color": "#ffffff",
         "text-halo-width": 1,
         "text-halo-color": "rgba(44,44,44,0.9)"
       }

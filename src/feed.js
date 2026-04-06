@@ -71,10 +71,7 @@ export function addFeedItem(entity, isNew, deps) {
   var list = getFeedList();
   var name = getEntityName(entity);
   var time = formatTime(new Date().toISOString());
-  var dates = '';
-  if (entity.createdAt || entity.modifiedAt) {
-    dates = '作成: ' + formatDateTime(entity.createdAt) + ' / 更新: ' + formatDateTime(entity.modifiedAt);
-  }
+  var dates = entity.modifiedAt ? 'modifiedAt: ' + formatDateTime(entity.modifiedAt) : '';
   var item = buildFeedItem(name, time, dates);
   item.setAttribute('data-id', entity.id);
   if (isNew) item.classList.add('new');
@@ -106,10 +103,7 @@ export function initFeed(entities, deps) {
   // modifiedAt 降順でソート済みなので先頭20件を表示
   entities.slice(0, 20).forEach(function(e) {
     var name = getEntityName(e);
-    var dates = '';
-    if (e.createdAt || e.modifiedAt) {
-      dates = '作成: ' + formatDateTime(e.createdAt) + ' / 更新: ' + formatDateTime(e.modifiedAt);
-    }
+    var dates = e.modifiedAt ? 'modifiedAt: ' + formatDateTime(e.modifiedAt) : '';
     var item = buildFeedItem(name, e.id, dates);
     item.setAttribute('data-id', e.id);
 

@@ -14,15 +14,20 @@ export function formatTime(isoString) {
     String(d.getSeconds()).padStart(2, '0');
 }
 
-/** ISO 8601 文字列を YYYY/MM/DD HH:MM 形式に変換 */
+/** ISO 8601 文字列を YYYY/MM/DD HH:MM (JST) 形式に変換 */
 export function formatDateTime(isoString) {
   if (!isoString) return '-';
   var d = new Date(isoString);
+  var offset = d.getTimezoneOffset();
+  var abs = Math.abs(offset);
+  var hours = Math.floor(abs / 60);
+  var minutes = abs % 60;
+  var tz = offset === -540 ? ' JST' : ' (UTC' + (offset <= 0 ? '+' : '-') + String(hours).padStart(2, '0') + ':' + String(minutes).padStart(2, '0') + ')';
   return d.getFullYear() + '/' +
     String(d.getMonth() + 1).padStart(2, '0') + '/' +
     String(d.getDate()).padStart(2, '0') + ' ' +
     String(d.getHours()).padStart(2, '0') + ':' +
-    String(d.getMinutes()).padStart(2, '0');
+    String(d.getMinutes()).padStart(2, '0') + tz;
 }
 
 /** 画面右下にトースト通知を表示 */
