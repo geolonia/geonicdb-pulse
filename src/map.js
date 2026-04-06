@@ -6,7 +6,7 @@
  * ポップアップ表示、選択状態の管理を行う。
  */
 
-import { findGeoProperty, getEntityName, getDisplayProperties } from './entity.js';
+import { findGeoProperty, getEntityName, getDisplayProperties, formatDateTime } from './entity.js';
 import { buildSparkline } from './sparkline.js';
 import mapStyle from './style.json';
 
@@ -335,7 +335,14 @@ export function initMap(ctx) {
 
     var container = el('div', 'min-width:220px');
     container.appendChild(el('div', 'font-size:15px;font-weight:600;color:#ffffff;margin-bottom:4px', name));
-    container.appendChild(el('div', 'font-size:10px;color:rgba(255,255,255,0.25);margin-bottom:10px;font-family:JetBrains Mono,monospace;word-break:break-all', entityId));
+    container.appendChild(el('div', 'font-size:10px;color:rgba(255,255,255,0.25);margin-bottom:6px;font-family:JetBrains Mono,monospace;word-break:break-all', entityId));
+
+    if (entity.createdAt || entity.modifiedAt) {
+      var datesRow = el('div', 'font-size:10px;color:rgba(255,255,255,0.35);font-family:JetBrains Mono,monospace;margin-bottom:10px;line-height:1.6');
+      datesRow.textContent = '作成: ' + formatDateTime(entity.createdAt) + '\n更新: ' + formatDateTime(entity.modifiedAt);
+      datesRow.style.whiteSpace = 'pre-line';
+      container.appendChild(datesRow);
+    }
 
     if (ctx.TEMPORAL && ctx.temporalRaw[entityId]) {
       // Temporal モード: 各属性の時系列データをスパークラインで表示

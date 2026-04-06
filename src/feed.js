@@ -73,7 +73,7 @@ export function addFeedItem(entity, isNew, deps) {
   var time = formatTime(new Date().toISOString());
   var dates = '';
   if (entity.createdAt || entity.modifiedAt) {
-    dates = '作成: ' + formatDateTime(entity.createdAt) + ' / 更新: ' + formatDateTime(entity.modifiedAt);
+    dates = '作成: ' + formatDateTime(entity.createdAt) + '\n更新: ' + formatDateTime(entity.modifiedAt);
   }
   var item = buildFeedItem(name, time, dates);
   item.setAttribute('data-id', entity.id);
@@ -108,7 +108,7 @@ export function initFeed(entities, deps) {
     var name = getEntityName(e);
     var dates = '';
     if (e.createdAt || e.modifiedAt) {
-      dates = '作成: ' + formatDateTime(e.createdAt) + ' / 更新: ' + formatDateTime(e.modifiedAt);
+      dates = '作成: ' + formatDateTime(e.createdAt) + '\n更新: ' + formatDateTime(e.modifiedAt);
     }
     var item = buildFeedItem(name, e.id, dates);
     item.setAttribute('data-id', e.id);
