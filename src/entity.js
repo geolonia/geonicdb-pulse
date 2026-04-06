@@ -14,6 +14,17 @@ export function formatTime(isoString) {
     String(d.getSeconds()).padStart(2, '0');
 }
 
+/** ISO 8601 文字列を YYYY/MM/DD HH:MM 形式に変換 */
+export function formatDateTime(isoString) {
+  if (!isoString) return '-';
+  var d = new Date(isoString);
+  return d.getFullYear() + '/' +
+    String(d.getMonth() + 1).padStart(2, '0') + '/' +
+    String(d.getDate()).padStart(2, '0') + ' ' +
+    String(d.getHours()).padStart(2, '0') + ':' +
+    String(d.getMinutes()).padStart(2, '0');
+}
+
 /** 画面右下にトースト通知を表示 */
 export function showToast(message) {
   var toast = document.getElementById('toast');
@@ -57,7 +68,7 @@ export function findGeoProperty(e) {
  * GeoProperty やメタ属性（id, type, @context）は除外する。
  */
 export function getDisplayProperties(e) {
-  var skip = ['id', 'type', '@context', 'location', 'position', 'geo', 'coordinates', 'place'];
+  var skip = ['id', 'type', '@context', 'location', 'position', 'geo', 'coordinates', 'place', 'createdAt', 'modifiedAt'];
   var props = [];
   Object.keys(e).forEach(function(key) {
     if (skip.indexOf(key) !== -1) return;

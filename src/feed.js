@@ -5,7 +5,7 @@
  * 各アイテムをクリック（またはキーボード操作）すると地図上の該当エンティティにフライ＆ポップアップ表示する。
  */
 
-import { getEntityName, findGeoProperty, formatTime } from './entity.js';
+import { getEntityName, findGeoProperty, formatTime, formatDateTime } from './entity.js';
 
 var feedList = null;
 
@@ -16,7 +16,7 @@ function getFeedList() {
 }
 
 /** フィード項目の DOM を組み立てる（textContent でエスケープ） */
-function buildFeedItem(name, meta, context) {
+function buildFeedItem(name, meta, dates) {
   var item = document.createElement('div');
   item.className = 'feed-item';
   item.setAttribute('role', 'button');
@@ -39,11 +39,11 @@ function buildFeedItem(name, meta, context) {
   metaEl.textContent = meta;
   info.appendChild(metaEl);
 
-  if (context) {
-    var ctxEl = document.createElement('div');
-    ctxEl.className = 'feed-context';
-    ctxEl.textContent = context;
-    info.appendChild(ctxEl);
+  if (dates) {
+    var datesEl = document.createElement('div');
+    datesEl.className = 'feed-dates';
+    datesEl.textContent = dates;
+    info.appendChild(datesEl);
   }
 
   item.appendChild(info);
@@ -71,10 +71,11 @@ export function addFeedItem(entity, isNew, deps) {
   var list = getFeedList();
   var name = getEntityName(entity);
   var time = formatTime(new Date().toISOString());
-  var context = entity['@context']
-    ? (Array.isArray(entity['@context']) ? entity['@context'].join(', ') : entity['@context'])
-    : '';
-  var item = buildFeedItem(name, time, context);
+  var dates = '';
+  if (entity.createdAt || entity.modifiedAt) {
+    dates = '作成: ' + formatDateTime(entity.createdAt) + ' / 更新: ' + formatDateTime(entity.modifiedAt);
+  }
+  var item = buildFeedItem(name, time, dates);
   item.setAttribute('data-id', entity.id);
   if (isNew) item.classList.add('new');
 
@@ -102,12 +103,14 @@ export function addFeedItem(entity, isNew, deps) {
 export function initFeed(entities, deps) {
   var list = getFeedList();
   list.innerHTML = '';
-  entities.slice(-20).reverse().forEach(function(e) {
+  // modifiedAt 降順でソート済みなので先頭20件を表示
+  entities.slice(0, 20).forEach(function(e) {
     var name = getEntityName(e);
-    var context = e['@context']
-      ? (Array.isArray(e['@context']) ? e['@context'].join(', ') : e['@context'])
-      : '';
-    var item = buildFeedItem(name, e.id, context);
+    var dates = '';
+    if (e.createdAt || e.modifiedAt) {
+      dates = '作成: ' + formatDateTime(e.createdAt) + ' / 更新: ' + formatDateTime(e.modifiedAt);
+    }
+    var item = buildFeedItem(name, e.id, dates);
     item.setAttribute('data-id', e.id);
 
     onActivate(item, function() {

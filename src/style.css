@@ -210,6 +210,12 @@ body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; back
   margin-top: 1px;
   word-break: break-all;
 }
+.feed-dates {
+  font-size: 10px;
+  color: rgba(255,255,255,0.35);
+  font-family: 'JetBrains Mono', monospace;
+  margin-top: 2px;
+}
 
 /* ── タイプ選択オーバーレイ ── */
 .type-overlay {

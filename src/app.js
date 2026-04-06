@@ -182,7 +182,8 @@ function fetchTemporalEntities(type) {
       return rawEntities;
     });
 
-  var entitiesPromise = db.getEntities({ type: type, limit: 1000 });
+  // sysAttrs を指定して createdAt/modifiedAt を取得する
+  var entitiesPromise = db.request('GET', '/ngsi-ld/v1/entities?type=' + encodeURIComponent(type) + '&limit=1000&options=sysAttrs');
 
   return Promise.all([temporalPromise, entitiesPromise])
     .then(function(results) {
@@ -214,7 +215,7 @@ function fetchTemporalEntities(type) {
 // ============================================================
 // まず Temporal API を試し、時系列データがあればそれを使う。
 // なければ通常の NGSI-LD entities API にフォールバックする。
-// SDK の db.getEntities() は内部で認証ヘッダーを自動付与する。
+// options=sysAttrs を付けて createdAt/modifiedAt を取得し、更新日時の降順でソートする。
 
 var dataPromise = (ENTITY_TYPE !== '__none__')
   ? fetchTemporalEntities(ENTITY_TYPE).then(function(result) {
@@ -224,15 +225,21 @@ var dataPromise = (ENTITY_TYPE !== '__none__')
         document.title = ENTITY_TYPE + ' (Temporal) — GeonicDB Pulse';
         return result;
       }
-      // Temporal データがなければ通常 API にフォールバック
-      return db.getEntities({ type: ENTITY_TYPE, limit: 1000 });
+      // Temporal データがなければ通常 API にフォールバック（sysAttrs 付き）
+      return db.request('GET', '/ngsi-ld/v1/entities?type=' + encodeURIComponent(ENTITY_TYPE) + '&limit=1000&options=sysAttrs');
     }).catch(function() {
-      return db.getEntities({ type: ENTITY_TYPE, limit: 1000 });
+      return db.request('GET', '/ngsi-ld/v1/entities?type=' + encodeURIComponent(ENTITY_TYPE) + '&limit=1000&options=sysAttrs');
     })
   : null;
 
 dataPromise && dataPromise
   .then(function(result) {
+    // modifiedAt の降順でソート（sysAttrs で取得した日時を利用）
+    result.sort(function(a, b) {
+      var ma = a.modifiedAt || '';
+      var mb = b.modifiedAt || '';
+      return ma > mb ? -1 : ma < mb ? 1 : 0;
+    });
     // entities 配列を直接更新（ctx.entities と同一参照）
     entities.length = 0;
     result.forEach(function(e) { entities.push(e); });
