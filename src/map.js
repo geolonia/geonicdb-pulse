@@ -337,13 +337,6 @@ export function initMap(ctx) {
     container.appendChild(el('div', 'font-size:15px;font-weight:600;color:#ffffff;margin-bottom:4px', name));
     container.appendChild(el('div', 'font-size:10px;color:rgba(255,255,255,0.25);margin-bottom:6px;font-family:JetBrains Mono,monospace;word-break:break-all', entityId));
 
-    if (entity.createdAt || entity.modifiedAt) {
-      var datesRow = el('div', 'font-size:10px;color:rgba(255,255,255,0.35);font-family:JetBrains Mono,monospace;margin-bottom:10px;line-height:1.6');
-      datesRow.textContent = '作成: ' + formatDateTime(entity.createdAt) + '\n更新: ' + formatDateTime(entity.modifiedAt);
-      datesRow.style.whiteSpace = 'pre-line';
-      container.appendChild(datesRow);
-    }
-
     if (ctx.TEMPORAL && ctx.temporalRaw[entityId]) {
       // Temporal モード: 各属性の時系列データをスパークラインで表示
       var raw = ctx.temporalRaw[entityId];
@@ -370,9 +363,21 @@ export function initMap(ctx) {
         }
         container.appendChild(row);
       });
+      // Temporal モードでも sysAttrs を表示
+      [['createdAt', entity.createdAt], ['modifiedAt', entity.modifiedAt]].forEach(function(pair) {
+        if (!pair[1]) return;
+        var dateRow = el('div', 'display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.05)');
+        dateRow.appendChild(el('span', 'color:rgba(255,255,255,0.4);font-size:11px;flex-shrink:0;white-space:nowrap', pair[0]));
+        dateRow.appendChild(el('span', 'color:#e0f7fa;font-size:11px;font-family:JetBrains Mono,monospace;text-align:right', formatDateTime(pair[1])));
+        container.appendChild(dateRow);
+      });
     } else {
       // 通常モード: プロパティのキー・バリュー一覧
-      getDisplayProperties(entity).forEach(function(prop) {
+      // sysAttrs（createdAt/modifiedAt）をプロパティ一覧に含める
+      var sysAttrsProps = [];
+      if (entity.createdAt) sysAttrsProps.push({ key: 'createdAt', value: formatDateTime(entity.createdAt), unit: '' });
+      if (entity.modifiedAt) sysAttrsProps.push({ key: 'modifiedAt', value: formatDateTime(entity.modifiedAt), unit: '' });
+      getDisplayProperties(entity).concat(sysAttrsProps).forEach(function(prop) {
         var valStr = String(prop.value);
         var isLong = valStr.length > 20;
         var row = el('div', 'display:flex;' + (isLong ? 'flex-direction:column;gap:2px' : 'justify-content:space-between;align-items:baseline;gap:12px') + ';padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.05)');
