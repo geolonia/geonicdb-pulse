@@ -5,21 +5,15 @@
 GeonicDB SDK を使った Vite ベースの Web アプリケーションのサンプルです。
 GeonicDB に保存されたエンティティを地図上にリアルタイム表示します。
 
-## 利用している GeonicDB SDK の機能
+## 利用している GeonicDB の機能
 
-| SDK API | 説明 |
-|---------|------|
-| `new GeonicDB({ baseUrl, tenant })` | SDK インスタンスの作成 |
-| `db.login(email, password)` | メール + パスワードでログイン（Bearer JWT） |
-| `db.setCredentials({ token, ... })` | 保存済みトークンからセッションを復元 |
-| `db.on('tokenRefresh', callback)` | トークン自動リフレッシュ時の通知 |
-| `db.getEntities({ type, limit })` | NGSI-LD エンティティの一覧取得 |
-| `db.request('GET', path)` | 汎用 REST API 呼び出し（パース済み JSON を返す） |
-| `db.subscribe({ entityTypes })` | WebSocket でエンティティの変更を購読 |
-| `db.connect()` / `db.reconnect()` | WebSocket 接続の開始・再接続 |
-| `db.on('entityCreated', callback)` | エンティティ作成イベントの受信 |
-| `db.on('entityUpdated', callback)` | エンティティ更新イベントの受信 |
-| `db.on('connected', callback)` | WebSocket 接続状態の監視 |
+| 機能 | 説明 | 関連ファイル |
+|------|------|-------------|
+| Bearer JWT 認証 | メール + パスワードでログインし、トークンの自動リフレッシュでセッションを維持 | `main.js` |
+| NGSI-LD エンティティ API | エンティティの一覧取得、タイプ一覧の取得（`/types`）、システム属性（`sysAttrs`） | `app.js` |
+| NGSI-LD Temporal API | エンティティの属性値の時系列データを取得し、スパークラインで可視化 | `app.js` |
+| WebSocket リアルタイム通知 | エンティティの作成・更新イベントをリアルタイムに受信して地図とフィードに反映 | `app.js` |
+| SDK の動的配信 | GeonicDB サーバーが `/sdk/v1/geonicdb.js` で SDK を配信 | `main.js`, `auth.js` |
 
 ## ファイル構成
 
