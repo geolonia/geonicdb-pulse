@@ -62,10 +62,15 @@ loadGeonicDBSDK(geonicdbUrl).then(function() {
     var db = new GeonicDB({ baseUrl: geonicdbUrl, tenant: auth.tenant });
 
     // SDK にトークンをセットすれば、期限切れ時に自動でリフレッシュされる
+    // expiresAt（絶対時刻）から残り秒数を算出して SDK に渡す。
+    // 既に期限切れの場合は expiresIn: 0 で即座にリフレッシュさせる。
+    var remainingSec = auth.expiresAt
+      ? Math.max(0, Math.floor((auth.expiresAt - Date.now()) / 1000))
+      : 0;
     db.setCredentials({
       token: auth.accessToken,
       tokenType: 'Bearer',
-      expiresIn: auth.expiresIn,
+      expiresIn: remainingSec,
       refreshToken: auth.refreshToken,
     });
 
@@ -73,7 +78,7 @@ loadGeonicDBSDK(geonicdbUrl).then(function() {
     db.on('tokenRefresh', function(creds) {
       auth.accessToken = creds.token;
       if (creds.refreshToken !== undefined) auth.refreshToken = creds.refreshToken;
-      if (creds.expiresIn !== undefined) auth.expiresIn = creds.expiresIn;
+      if (creds.expiresIn !== undefined) auth.expiresAt = Date.now() + creds.expiresIn * 1000;
       storeAuth(auth);
     });
 
@@ -107,7 +112,7 @@ loadGeonicDBSDK(geonicdbUrl).then(function() {
           email: email,
           accessToken: data.accessToken,
           refreshToken: data.refreshToken,
-          expiresIn: data.expiresIn,
+          expiresAt: Date.now() + data.expiresIn * 1000,
           tenant: tenant,
           url: geonicdbUrl,
         };
@@ -117,7 +122,7 @@ loadGeonicDBSDK(geonicdbUrl).then(function() {
         db.on('tokenRefresh', function(creds) {
           auth.accessToken = creds.token;
           if (creds.refreshToken !== undefined) auth.refreshToken = creds.refreshToken;
-          if (creds.expiresIn !== undefined) auth.expiresIn = creds.expiresIn;
+          if (creds.expiresIn !== undefined) auth.expiresAt = Date.now() + creds.expiresIn * 1000;
           storeAuth(auth);
         });
 
