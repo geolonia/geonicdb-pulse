@@ -271,7 +271,7 @@ dataPromise && dataPromise
         var padding = isMobile
           ? { top: 80, bottom: 60, left: 40, right: 40 }
           : { top: 80, bottom: 40, left: 300, right: 40 };
-        map.fitBounds(bounds, { padding: padding, duration: 1000, maxZoom: 16 });
+        map.fitBounds(bounds, { padding: padding, duration: 1000, maxZoom: 18 });
       }
     }
   })
