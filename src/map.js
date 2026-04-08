@@ -41,7 +41,7 @@ export function initMap(ctx) {
     center: [139.7414, 35.6581],
     zoom: 10,
     minZoom: 2,
-    maxZoom: 16,
+    maxZoom: 18,
     renderWorldCopies: false,
     pitchWithRotate: false
   });
@@ -237,7 +237,7 @@ export function initMap(ctx) {
         source: 'entities',
         filter: ['!', ['has', 'point_count']],
         paint: {
-          'circle-radius': ['case', ['==', ['get', 'selected'], 1], 32, 24],
+          'circle-radius': ['case', ['==', ['get', 'selected'], 1], 38, 30],
           'circle-color': ['case', ['==', ['get', 'selected'], 1], '#ff1744', '#00b0ff'],
           'circle-opacity': ['case', ['==', ['get', 'selected'], 1], 0.15, 0.08],
           'circle-blur': 1
@@ -250,7 +250,7 @@ export function initMap(ctx) {
         source: 'entities',
         filter: ['!', ['has', 'point_count']],
         paint: {
-          'circle-radius': ['case', ['==', ['get', 'selected'], 1], 18, 14],
+          'circle-radius': ['case', ['==', ['get', 'selected'], 1], 22, 18],
           'circle-color': ['case', ['==', ['get', 'selected'], 1], '#ff1744', '#00b0ff'],
           'circle-opacity': ['case', ['==', ['get', 'selected'], 1], 0.2, 0.12]
         }
@@ -262,7 +262,7 @@ export function initMap(ctx) {
         source: 'entities',
         filter: ['!', ['has', 'point_count']],
         paint: {
-          'circle-radius': ['case', ['==', ['get', 'selected'], 1], 8, 6],
+          'circle-radius': ['case', ['==', ['get', 'selected'], 1], 10, 8],
           'circle-color': ['case', ['==', ['get', 'selected'], 1], '#ff5252', '#00e5ff'],
           'circle-opacity': 0.9,
           'circle-stroke-width': 1.5,
