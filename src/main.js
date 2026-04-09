@@ -53,7 +53,7 @@ function removeLoginForm() {
 // 認証フローを開始
 var auth = getStoredAuth();
 
-if (auth && auth.accessToken) {
+if (auth && auth.accessToken && auth.tenant) {
   // ── 保存済みトークンで復元 ──
   // 環境変数が変更された場合に備え、常に現在の URL を使用する
   auth.url = geonicdbUrl;
