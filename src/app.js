@@ -218,7 +218,7 @@ function fetchTemporalEntities(type) {
 // サイドバーのスクロールをトリガーに追加ページを取得し、地図とフィードの
 // 表示件数を常に一致させる。
 
-var PAGE_SIZE = 20;
+var PAGE_SIZE = 100;
 var hasMore = true;
 var paginationOffset = 0; // ページネーション専用の offset（WebSocket 追加分を含まない）
 
