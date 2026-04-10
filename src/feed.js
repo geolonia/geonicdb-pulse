@@ -9,6 +9,13 @@ import { getEntityName, findGeoProperty, formatTime, formatDateTime } from './en
 
 var feedList = null;
 
+// 無限スクロール用の状態
+var feedState = {
+  deps: null,
+  onLoadMore: null,
+  loading: false
+};
+
 /** feedList 要素を取得（初回呼び出し時にキャッシュ） */
 function getFeedList() {
   if (!feedList) feedList = document.getElementById('feed-list');
@@ -61,8 +68,43 @@ function onActivate(el, callback) {
   };
 }
 
+/** エンティティ1件分のフィード項目を作成して返す */
+function createEntityFeedItem(e, deps) {
+  var name = getEntityName(e);
+  var dates = e.createdAt ? 'createdAt: ' + formatDateTime(e.createdAt) : '';
+  var item = buildFeedItem(name, e.id, dates);
+  item.setAttribute('data-id', e.id);
+
+  onActivate(item, function() {
+    var geo = findGeoProperty(e);
+    if (geo && geo.value) {
+      deps.selectEntity(e.id);
+      deps.map.flyTo({ center: geo.value.coordinates, zoom: 16, duration: 1200 });
+      setTimeout(function() { deps.openPopupForEntity(e.id); }, 1300);
+    }
+  });
+
+  return item;
+}
+
+/** スクロールイベントハンドラ — 底付近で次ページの API 取得をトリガー */
+function onFeedScroll() {
+  var list = getFeedList();
+  if (feedState.loading) return;
+  if (list.scrollTop + list.clientHeight >= list.scrollHeight - 100) {
+    if (feedState.onLoadMore) {
+      feedState.loading = true;
+      feedState.onLoadMore().then(function() {
+        feedState.loading = false;
+      }).catch(function() {
+        feedState.loading = false;
+      });
+    }
+  }
+}
+
 /**
- * WebSocket から受信したエンティティをフィードに追加（最新が上、最大50件）。
+ * WebSocket から受信したエンティティをフィードに追加（最新が上）。
  * @param {object} entity - NGSI-LD エンティティ
  * @param {boolean} isNew - 新規作成の場合 true
  * @param {object} deps - { map, selectEntity, getFlyZoom, openPopupForEntity }
@@ -86,36 +128,34 @@ export function addFeedItem(entity, isNew, deps) {
   });
 
   list.insertBefore(item, list.firstChild);
-  while (list.children.length > 50) {
-    list.removeChild(list.lastChild);
-  }
   setTimeout(function() { item.classList.remove('new'); }, 2000);
 }
 
 /**
- * 初期データ（REST API から取得）でフィードを初期化（直近20件を表示）。
- * @param {Array} entities - エンティティの配列
- * @param {object} deps - { map, selectEntity, getFlyZoom, openPopupForEntity }
+ * 取得済みエンティティをフィード末尾に追加する。
+ * API から新しいページが取得されるたびに app.js から呼ばれる。
+ * @param {Array} newEntities - 追加するエンティティの配列
  */
-export function initFeed(entities, deps) {
+export function appendFeedItems(newEntities) {
+  var list = getFeedList();
+  newEntities.forEach(function(e) {
+    list.appendChild(createEntityFeedItem(e, feedState.deps));
+  });
+}
+
+/**
+ * フィードを初期化する。
+ * @param {object} deps - { map, selectEntity, getFlyZoom, openPopupForEntity }
+ * @param {Function} onLoadMore - 次ページを取得する関数（Promise を返す）
+ */
+export function initFeed(deps, onLoadMore) {
   var list = getFeedList();
   list.innerHTML = '';
-  // modifiedAt 降順でソート済みなので先頭20件を表示
-  entities.slice(0, 20).forEach(function(e) {
-    var name = getEntityName(e);
-    var dates = e.modifiedAt ? 'modifiedAt: ' + formatDateTime(e.modifiedAt) : '';
-    var item = buildFeedItem(name, e.id, dates);
-    item.setAttribute('data-id', e.id);
+  list.removeEventListener('scroll', onFeedScroll);
 
-    onActivate(item, function() {
-      var geo = findGeoProperty(e);
-      if (geo && geo.value) {
-        deps.selectEntity(e.id);
-        deps.map.flyTo({ center: geo.value.coordinates, zoom: 16, duration: 1200 });
-        setTimeout(function() { deps.openPopupForEntity(e.id); }, 1300);
-      }
-    });
+  feedState.deps = deps;
+  feedState.onLoadMore = onLoadMore;
+  feedState.loading = false;
 
-    list.appendChild(item);
-  });
+  list.addEventListener('scroll', onFeedScroll);
 }

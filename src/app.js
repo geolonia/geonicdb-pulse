@@ -16,7 +16,7 @@
 import { clearAuth } from './auth.js';
 import { flattenTemporal, findGeoProperty, getEntityName, showToast } from './entity.js';
 import { initMap } from './map.js';
-import { addFeedItem, initFeed } from './feed.js';
+import { addFeedItem, initFeed, appendFeedItems } from './feed.js';
 
 export function initApp(db, auth) {
 
@@ -211,36 +211,98 @@ function fetchTemporalEntities(type) {
 }
 
 // ============================================================
-// データ取得
+// データ取得（ページネーション対応）
 // ============================================================
-// まず Temporal API を試し、時系列データがあればそれを使う。
-// なければ通常の NGSI-LD entities API にフォールバックする。
-// options=sysAttrs を付けて createdAt/modifiedAt を取得し、更新日時の降順でソートする。
+// GeonicDB はデフォルトで最大 1,000 件を返す。それ以上のデータがある場合は
+// offset パラメータで次のページを取得する。
+// サイドバーのスクロールをトリガーに追加ページを取得し、地図とフィードの
+// 表示件数を常に一致させる。
 
+var PAGE_SIZE = 20;
+var hasMore = true;
+
+/** createdAt の降順でソート */
+function sortByCreatedAt(arr) {
+  arr.sort(function(a, b) {
+    var ca = a.createdAt || '';
+    var cb = b.createdAt || '';
+    return ca > cb ? -1 : ca < cb ? 1 : 0;
+  });
+}
+
+/** 全 entities が収まるように地図のビューを調整する */
+function fitBoundsToEntities() {
+  if (!entities.length) return;
+  var bounds = new geolonia.LngLatBounds();
+  entities.forEach(function(e) {
+    var geo = findGeoProperty(e);
+    if (geo && geo.value && geo.value.coordinates) {
+      bounds.extend(geo.value.coordinates);
+    }
+  });
+  if (!bounds.isEmpty()) {
+    var isMobile = window.innerWidth <= 768;
+    var padding = isMobile
+      ? { top: 80, bottom: 60, left: 40, right: 40 }
+      : { top: 80, bottom: 40, left: 300, right: 40 };
+    map.fitBounds(bounds, { padding: padding, duration: 1000, maxZoom: 18 });
+  }
+}
+
+/** 通常 entities API から1ページ取得する */
+function fetchEntitiesPage(type, offset, limit) {
+  return db.request('GET', '/ngsi-ld/v1/entities?type=' + encodeURIComponent(type)
+    + '&limit=' + limit + '&offset=' + offset + '&options=sysAttrs');
+}
+
+/**
+ * 次のページを API から取得し、entities 配列・地図・フィードを更新する。
+ * サイドバーの無限スクロールから呼ばれるコールバック。
+ */
+function loadNextPage() {
+  if (!hasMore) return Promise.resolve();
+  return fetchEntitiesPage(ENTITY_TYPE, entities.length, PAGE_SIZE)
+    .then(function(result) {
+      if (!Array.isArray(result) || result.length === 0) {
+        hasMore = false;
+        return;
+      }
+      if (result.length < PAGE_SIZE) hasMore = false;
+      sortByCreatedAt(result);
+      result.forEach(function(e) { entities.push(e); });
+      appendFeedItems(result);
+      if (mapApi.isMapReady()) mapApi.renderEntities(entities);
+      // 追加分を含めて地図のビューを自動調整
+      fitBoundsToEntities();
+    });
+}
+
+// まず Temporal API を試し、時系列データがあればそれを使う。
+// なければ通常の NGSI-LD entities API にページネーションでフォールバックする。
 var dataPromise = (ENTITY_TYPE !== '__none__')
   ? fetchTemporalEntities(ENTITY_TYPE).then(function(result) {
       if (result.length > 0) {
         TEMPORAL = true;
         ctx.TEMPORAL = true;
         document.title = ENTITY_TYPE + ' (Temporal) — GeonicDB Pulse';
+        // Temporal データはページネーション対象外（一括取得済み）
+        hasMore = false;
         return result;
       }
-      // Temporal データがなければ通常 API にフォールバック（sysAttrs 付き）
-      return db.request('GET', '/ngsi-ld/v1/entities?type=' + encodeURIComponent(ENTITY_TYPE) + '&limit=1000&options=sysAttrs');
+      // Temporal データがなければ通常 API の最初のページを取得
+      return fetchEntitiesPage(ENTITY_TYPE, 0, PAGE_SIZE);
     }).catch(function() {
-      return db.request('GET', '/ngsi-ld/v1/entities?type=' + encodeURIComponent(ENTITY_TYPE) + '&limit=1000&options=sysAttrs');
+      return fetchEntitiesPage(ENTITY_TYPE, 0, PAGE_SIZE);
     })
   : null;
 
 dataPromise && dataPromise
   .then(function(result) {
-    // modifiedAt の降順でソート（sysAttrs で取得した日時を利用）
-    result.sort(function(a, b) {
-      var ma = a.modifiedAt || '';
-      var mb = b.modifiedAt || '';
-      return ma > mb ? -1 : ma < mb ? 1 : 0;
-    });
-    // entities 配列を直接更新（ctx.entities と同一参照）
+    if (!Array.isArray(result)) result = [];
+    sortByCreatedAt(result);
+    // Temporal 以外の場合、返却件数が PAGE_SIZE 未満ならデータ終端
+    if (!TEMPORAL && result.length < PAGE_SIZE) hasMore = false;
+
     entities.length = 0;
     result.forEach(function(e) { entities.push(e); });
 
@@ -251,33 +313,17 @@ dataPromise && dataPromise
       );
       return;
     }
-    initFeed(entities, feedDeps);
+    initFeed(feedDeps, loadNextPage);
+    appendFeedItems(entities);
     if (mapApi.isMapReady()) { mapApi.renderEntities(entities); }
     else { mapApi.setPendingRender(entities); }
     // 初期データ取得完了後に WebSocket 接続を開始し、REST スナップショットとの競合を防ぐ
     db.subscribe({ entityTypes: [ENTITY_TYPE] });
     db.connect();
-    // 全エンティティが収まるように地図のビューを自動調整
-    if (entities.length) {
-      var bounds = new geolonia.LngLatBounds();
-      entities.forEach(function(e) {
-        var geo = findGeoProperty(e);
-        if (geo && geo.value && geo.value.coordinates) {
-          bounds.extend(geo.value.coordinates);
-        }
-      });
-      if (!bounds.isEmpty()) {
-        var isMobile = window.innerWidth <= 768;
-        var padding = isMobile
-          ? { top: 80, bottom: 60, left: 40, right: 40 }
-          : { top: 80, bottom: 40, left: 300, right: 40 };
-        map.fitBounds(bounds, { padding: padding, duration: 1000, maxZoom: 18 });
-      }
-    }
+    fitBoundsToEntities();
   })
   .catch(function(err) {
     console.error('データ取得エラー:', err);
-    // 認証エラーの場合はログイン画面に戻す
     if (isAuthError(err)) {
       clearAuth();
       location.href = location.pathname;
