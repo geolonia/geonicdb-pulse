@@ -221,6 +221,31 @@ function fetchTemporalEntities(type) {
 var PAGE_SIZE = 100;
 var hasMore = true;
 var paginationOffset = 0; // ページネーション専用の offset（WebSocket 追加分を含まない）
+var totalCount = null;
+var entityCountEl = document.getElementById('entity-count');
+
+/** 画面下部の件数インジケーターを更新する */
+function updateEntityCount() {
+  if (!entityCountEl || totalCount === null) return;
+  entityCountEl.textContent = entities.length + ' / ' + totalCount;
+  entityCountEl.classList.add('visible');
+}
+
+/**
+ * エンティティ総数を count=true&limit=0 で取得する。
+ * db.request() はレスポンスヘッダーにアクセスできないため直接 fetch する。
+ * ref: geolonia/geonicdb#907
+ */
+function fetchTotalCount(type) {
+  var url = auth.url + '/ngsi-ld/v1/entities?type=' + encodeURIComponent(type) + '&count=true&limit=0';
+  return fetch(url, {
+    headers: { 'Authorization': 'Bearer ' + auth.accessToken }
+  }).then(function(res) {
+    var count = res.headers.get('NGSILD-Results-Count');
+    if (count !== null) totalCount = parseInt(count, 10);
+    updateEntityCount();
+  }).catch(function() {});
+}
 
 /** createdAt の降順でソート */
 function sortByCreatedAt(arr) {
@@ -273,6 +298,7 @@ function loadNextPage() {
       sortByCreatedAt(result);
       result.forEach(function(e) { entities.push(e); });
       appendFeedItems(result);
+      updateEntityCount();
       if (mapApi.isMapReady()) mapApi.renderEntities(entities);
       // 追加分を含めて地図のビューを自動調整
       fitBoundsToEntities();
@@ -318,6 +344,8 @@ dataPromise && dataPromise
     }
     initFeed(feedDeps, loadNextPage);
     appendFeedItems(entities);
+    updateEntityCount();
+    fetchTotalCount(ENTITY_TYPE);
     if (mapApi.isMapReady()) { mapApi.renderEntities(entities); }
     else { mapApi.setPendingRender(entities); }
     // 初期データ取得完了後に WebSocket 接続を開始し、REST スナップショットとの競合を防ぐ
@@ -394,6 +422,7 @@ function handleEntity(msg, isNew) {
 
   addFeedItem(entity, isNew, feedDeps);
   showToast(getEntityName(entity));
+  updateEntityCount();
 
   // 更新されたエンティティの位置にカメラを移動
   var geo = findGeoProperty(entity);
