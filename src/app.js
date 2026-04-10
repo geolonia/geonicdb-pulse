@@ -220,6 +220,7 @@ function fetchTemporalEntities(type) {
 
 var PAGE_SIZE = 20;
 var hasMore = true;
+var paginationOffset = 0; // ページネーション専用の offset（WebSocket 追加分を含まない）
 
 /** createdAt の降順でソート */
 function sortByCreatedAt(arr) {
@@ -261,13 +262,14 @@ function fetchEntitiesPage(type, offset, limit) {
  */
 function loadNextPage() {
   if (!hasMore) return Promise.resolve();
-  return fetchEntitiesPage(ENTITY_TYPE, entities.length, PAGE_SIZE)
+  return fetchEntitiesPage(ENTITY_TYPE, paginationOffset, PAGE_SIZE)
     .then(function(result) {
       if (!Array.isArray(result) || result.length === 0) {
         hasMore = false;
         return;
       }
       if (result.length < PAGE_SIZE) hasMore = false;
+      paginationOffset += result.length;
       sortByCreatedAt(result);
       result.forEach(function(e) { entities.push(e); });
       appendFeedItems(result);
@@ -305,6 +307,7 @@ dataPromise && dataPromise
 
     entities.length = 0;
     result.forEach(function(e) { entities.push(e); });
+    paginationOffset = result.length;
 
     if (entities.length === 0) {
       mapApi.showError(
