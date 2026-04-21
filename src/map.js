@@ -18,7 +18,6 @@ mapStyle.sprite = location.origin + import.meta.env.BASE_URL + 'sprites/gsi';
 // ============================================================
 
 var map = null;
-var popup = null;
 var selectedEntityId = null;
 var mapReady = false;
 var pendingRender = null;
@@ -99,10 +98,30 @@ export function initMap(ctx) {
     }
   });
   map.on('wheel', function() { setTimeout(function() { userZoom = Math.round(map.getZoom()); }, 300); });
-  map.on('dragstart', function() { selectEntity(null); popup.remove(); });
+  map.on('dragstart', function() { closeBottomSheet(); });
 
-  popup = new geolonia.Popup({ offset: 15, closeButton: true, closeOnClick: false, maxWidth: '420px' });
-  popup.on('close', function() { selectEntity(null); });
+  // ボトムシート要素の参照
+  var sheetEl = document.getElementById('bottom-sheet');
+  var sheetHeader = document.getElementById('bottom-sheet-header');
+  var sheetBody = document.getElementById('bottom-sheet-body');
+  var sheetOverlay = document.getElementById('bottom-sheet-overlay');
+  document.getElementById('bottom-sheet-close').addEventListener('click', closeBottomSheet);
+  sheetOverlay.addEventListener('click', closeBottomSheet);
+
+  function openBottomSheet(header, body) {
+    sheetHeader.innerHTML = '';
+    sheetHeader.appendChild(header);
+    sheetBody.innerHTML = '';
+    sheetBody.appendChild(body);
+    sheetEl.classList.add('open');
+    sheetOverlay.classList.add('visible');
+  }
+  function closeBottomSheet() {
+    sheetEl.classList.remove('open');
+    sheetOverlay.classList.remove('visible');
+    selectEntity(null);
+    map.easeTo({ padding: { bottom: 0 }, duration: 300 });
+  }
 
   // マップ準備完了ハンドラ
   function onMapReady() {
@@ -333,9 +352,13 @@ export function initMap(ctx) {
     var coords = geo.value.coordinates;
     var name = getEntityName(entity);
 
-    var container = el('div', 'min-width:220px');
-    container.appendChild(el('div', 'font-size:15px;font-weight:600;color:#ffffff;margin-bottom:4px', name));
-    container.appendChild(el('div', 'font-size:10px;color:rgba(255,255,255,0.25);margin-bottom:6px;font-family:JetBrains Mono,monospace;word-break:break-all', entityId));
+    // ヘッダー（固定表示）: エンティティ名 + ID
+    var headerEl = el('div', '');
+    headerEl.appendChild(el('div', 'font-size:15px;font-weight:600;color:#ffffff;margin-bottom:4px', name));
+    headerEl.appendChild(el('div', 'font-size:10px;color:rgba(255,255,255,0.25);font-family:JetBrains Mono,monospace;word-break:break-all', entityId));
+
+    // ボディ（スクロール領域）: プロパティ一覧
+    var bodyEl = el('div', '');
 
     if (ctx.TEMPORAL && ctx.temporalRaw[entityId]) {
       // Temporal モード: 各属性の時系列データをスパークラインで表示
@@ -349,11 +372,11 @@ export function initMap(ctx) {
         var color = sparkColors[ci % sparkColors.length]; ci++;
         var unit = arr[0].unitCode || '';
         var row = el('div', 'margin-bottom:8px');
-        var header = el('div', 'display:flex;justify-content:space-between;align-items:center;margin-bottom:2px', [
+        var rowHeader = el('div', 'display:flex;justify-content:space-between;align-items:center;margin-bottom:2px', [
           el('span', 'color:rgba(255,255,255,0.5);font-size:11px;font-weight:500', key),
           unit ? el('span', 'color:rgba(255,255,255,0.25);font-size:9px;font-family:JetBrains Mono,monospace', unit) : null
         ]);
-        row.appendChild(header);
+        row.appendChild(rowHeader);
         // スパークライン SVG は数値データから生成されるため安全
         var svgHtml = buildSparkline(arr, color);
         if (svgHtml) {
@@ -361,7 +384,7 @@ export function initMap(ctx) {
           svgWrapper.innerHTML = svgHtml;
           row.appendChild(svgWrapper);
         }
-        container.appendChild(row);
+        bodyEl.appendChild(row);
       });
       // Temporal モードでも sysAttrs を表示
       [['createdAt', entity.createdAt], ['modifiedAt', entity.modifiedAt]].forEach(function(pair) {
@@ -369,7 +392,7 @@ export function initMap(ctx) {
         var dateRow = el('div', 'display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.05)');
         dateRow.appendChild(el('span', 'color:rgba(255,255,255,0.4);font-size:11px;flex-shrink:0;white-space:nowrap', pair[0]));
         dateRow.appendChild(el('span', 'color:#e0f7fa;font-size:11px;font-family:JetBrains Mono,monospace;text-align:right', formatDateTime(pair[1])));
-        container.appendChild(dateRow);
+        bodyEl.appendChild(dateRow);
       });
     } else {
       // 通常モード: プロパティのキー・バリュー一覧
@@ -389,12 +412,15 @@ export function initMap(ctx) {
           valEl.appendChild(unitEl);
         }
         row.appendChild(valEl);
-        container.appendChild(row);
+        bodyEl.appendChild(row);
       });
     }
 
-    popup.setLngLat(coords).setDOMContent(container).addTo(map);
+    openBottomSheet(headerEl, bodyEl);
     selectEntity(entityId);
+    // ボトムシートの高さ分パディングして、見えている地図領域の中央にポイントを配置
+    var sheetHeight = sheetEl.offsetHeight || 0;
+    map.easeTo({ center: coords, padding: { bottom: sheetHeight }, duration: 400 });
   }
 
   function showPopup(ev) {
