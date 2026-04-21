@@ -117,6 +117,7 @@ export function initMap(ctx) {
     sheetOverlay.classList.add('visible');
   }
   function closeBottomSheet() {
+    if (!sheetEl.classList.contains('open')) return;
     sheetEl.classList.remove('open');
     sheetOverlay.classList.remove('visible');
     selectEntity(null);
