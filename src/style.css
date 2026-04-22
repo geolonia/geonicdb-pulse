@@ -320,7 +320,7 @@ body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; back
 /* ── ボトムシート ── */
 .bottom-sheet {
   position: fixed;
-  bottom: 0; left: 0; right: 0;
+  bottom: 0; left: 304px; right: 0;
   z-index: 30;
   background: #2a2a2a;
   border-top-left-radius: 16px;
@@ -699,6 +699,10 @@ body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; back
   .panel-overlay.visible {
     opacity: 1;
     pointer-events: auto;
+  }
+
+  .bottom-sheet {
+    left: 0;
   }
 
   .toast {
