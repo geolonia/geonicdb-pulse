@@ -290,6 +290,10 @@ function loadNextPage() {
     });
 }
 
+// ローディングインジケーター
+var loadingEl = document.getElementById('loading-indicator');
+if (ENTITY_TYPE !== '__none__') loadingEl.classList.add('visible');
+
 // まず Temporal API を試し、時系列データがあればそれを使う。
 // なければ通常の NGSI-LD entities API にページネーションでフォールバックする。
 var dataPromise = (ENTITY_TYPE !== '__none__')
@@ -311,6 +315,7 @@ var dataPromise = (ENTITY_TYPE !== '__none__')
 
 dataPromise && dataPromise
   .then(function(result) {
+    loadingEl.classList.remove('visible');
     if (!Array.isArray(result)) result = [];
     sortByCreatedAt(result);
     // Temporal 以外の場合、返却件数が PAGE_SIZE 未満ならデータ終端
@@ -342,6 +347,7 @@ dataPromise && dataPromise
     fitBoundsToEntities();
   })
   .catch(function(err) {
+    loadingEl.classList.remove('visible');
     console.error('データ取得エラー:', err);
     if (isAuthError(err)) {
       clearAuth();
