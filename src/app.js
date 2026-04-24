@@ -125,7 +125,13 @@ var feedDeps = {
 // 認証エラー判定
 // ============================================================
 
-/** エラーが認証エラー（401/403）かどうかを判定する */
+/**
+ * エラーが認証エラー（401/403）かどうかを判定する。
+ *
+ * NOTE: SDK がすべて汎用 Error を投げるため、メッセージの文字列パターンで判定している。
+ * SDK に型付きエラークラスが導入されれば instanceof で判定できるようになる。
+ * → https://github.com/geolonia/geonicdb/issues/1008
+ */
 function isAuthError(err) {
   if (!err) return false;
   var msg = err.message ? String(err.message) : '';
@@ -371,13 +377,17 @@ var wsLabel = document.getElementById('ws-label');
 wsDot.classList.add('connecting');
 
 /**
- * WebSocket メッセージからエンティティオブジェクトを構築する。
- * メッセージ形式は SDK バージョンによって異なるため、両方に対応する。
+ * WebSocket メッセージ（EntityEvent）から NGSI-LD エンティティオブジェクトを構築する。
+ *
+ * 現在の SDK は EntityEvent.data に属性差分のみを含み、完全な NGSI-LD エンティティを
+ * 提供しないため、アプリ側でエンティティを再構築する必要がある。
+ * SDK に entity フィールドが追加されればこの関数は不要になる。
+ * → https://github.com/geolonia/geonicdb/issues/1009
  */
 function parseWsEntity(msg) {
-  // 形式1: { entity: {...} } — エンティティが直接含まれる
+  // SDK が完全なエンティティを提供する場合はそのまま返す（将来対応）
   if (msg.entity) return msg.entity;
-  // 形式2: { entityId, entityType, data: {...} } — 属性差分のみ
+  // 現行 SDK: EntityEvent { entityId, entityType, data } から再構築
   if (msg.data && msg.entityId) {
     var d = msg.data;
     var entity = { id: msg.entityId, type: msg.entityType };
