@@ -13,6 +13,7 @@
  * - Bearer JWT 認証とトークンの自動リフレッシュ
  */
 
+import { AuthenticationError, AuthorizationError } from '@geolonia/geonicdb-sdk';
 import { clearAuth } from './auth.js';
 import { flattenTemporal, findGeoProperty, getEntityName, showToast } from './entity.js';
 import { initMap } from './map.js';
@@ -126,18 +127,9 @@ var feedDeps = {
 // 認証エラー判定
 // ============================================================
 
-/**
- * エラーが認証エラー（401/403）かどうかを判定する。
- *
- * NOTE: SDK がすべて汎用 Error を投げるため、メッセージの文字列パターンで判定している。
- * SDK に型付きエラークラスが導入されれば instanceof で判定できるようになる。
- * → https://github.com/geolonia/geonicdb/issues/1008
- */
+/** エラーが認証エラー（401/403）かどうかを判定する。SDK v0.3.0 の型付きエラークラスを使用。 */
 function isAuthError(err) {
-  if (!err) return false;
-  var msg = err.message ? String(err.message) : '';
-  return /unauthorized|invalid[_ ]token|token expired|expired token|Access denied/i.test(msg) ||
-    err.status === 401 || err.status === 403;
+  return err instanceof AuthenticationError || err instanceof AuthorizationError;
 }
 
 // トークンリフレッシュ失敗時はセッション切れとしてログイン画面に戻す
@@ -377,41 +369,10 @@ var wsDot = document.getElementById('ws-dot');
 var wsLabel = document.getElementById('ws-label');
 wsDot.classList.add('connecting');
 
-/**
- * WebSocket メッセージ（EntityEvent）から NGSI-LD エンティティオブジェクトを構築する。
- *
- * 現在の SDK は EntityEvent.data に属性差分のみを含み、完全な NGSI-LD エンティティを
- * 提供しないため、アプリ側でエンティティを再構築する必要がある。
- * SDK に entity フィールドが追加されればこの関数は不要になる。
- * → https://github.com/geolonia/geonicdb/issues/1009
- */
-function parseWsEntity(msg) {
-  // SDK が完全なエンティティを提供する場合はそのまま返す（将来対応）
-  if (msg.entity) return msg.entity;
-  // 現行 SDK: EntityEvent { entityId, entityType, data } から再構築
-  if (msg.data && msg.entityId) {
-    var d = msg.data;
-    var entity = { id: msg.entityId, type: msg.entityType };
-    Object.keys(d).forEach(function(key) {
-      var attr = d[key];
-      if (attr.type === 'GeoProperty') {
-        entity[key] = { type: 'GeoProperty', value: attr.value };
-      } else {
-        entity[key] = { type: 'Property', value: attr.value };
-        if (attr.metadata) {
-          if (attr.metadata.observedAt) entity[key].observedAt = attr.metadata.observedAt.value;
-          if (attr.metadata.unitCode) entity[key].unitCode = attr.metadata.unitCode.value;
-        }
-      }
-    });
-    return entity;
-  }
-  return null;
-}
-
 /** エンティティの作成・更新イベントを処理し、UI を更新する */
 function handleEntity(msg, isNew) {
-  var entity = parseWsEntity(msg);
+  // SDK v0.3.0: WebSocket イベントに完全な NGSI-LD エンティティが含まれる
+  var entity = msg.entity;
   if (!entity || entity.type !== ENTITY_TYPE) return;
   // エンティティ一覧を更新（新規は追加、既存は上書き）
   if (isNew) {
