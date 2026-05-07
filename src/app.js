@@ -373,7 +373,8 @@ function loadType(newType) {
     }
     // Temporal データがなければ通常 API の最初のページを取得
     return fetchEntitiesPage(newType, 0, PAGE_SIZE);
-  }).catch(function() {
+  }).catch(function(err) {
+    console.warn('Temporal API 取得エラー、通常 entities API にフォールバックします:', err);
     if (ENTITY_TYPE !== newType) return [];
     return fetchEntitiesPage(newType, 0, PAGE_SIZE);
   });
