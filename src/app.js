@@ -361,6 +361,8 @@ function loadType(newType) {
   // まず Temporal API を試し、時系列データがあればそれを使う。
   // なければ通常の NGSI-LD entities API にページネーションでフォールバックする。
   var dataPromise = fetchTemporalEntities(newType).then(function(result) {
+    // 解決時点で別タイプに切替わっていれば、無駄な fallback fetch を回避して即中断
+    if (ENTITY_TYPE !== newType) return [];
     if (result.length > 0) {
       TEMPORAL = true;
       ctx.TEMPORAL = true;
@@ -372,6 +374,7 @@ function loadType(newType) {
     // Temporal データがなければ通常 API の最初のページを取得
     return fetchEntitiesPage(newType, 0, PAGE_SIZE);
   }).catch(function() {
+    if (ENTITY_TYPE !== newType) return [];
     return fetchEntitiesPage(newType, 0, PAGE_SIZE);
   });
 
