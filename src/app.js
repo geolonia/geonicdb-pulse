@@ -402,6 +402,11 @@ function loadType(newType) {
     result.forEach(function(e) { entities.push(e); });
     paginationOffset = result.length;
 
+    // 空タイプでも WebSocket 購読は新タイプに切替える（あとで新規作成された
+    // エンティティが届くようにするため、エラー表示時も含めて必ず subscribe する）
+    db.subscribe({ entityTypes: [newType] });
+    if (!db.isConnected()) db.connect();
+
     if (entities.length === 0) {
       mapApi.showError(
         '"' + newType + '" が見つかりません',
@@ -418,9 +423,6 @@ function loadType(newType) {
     }).catch(function() {});
     if (mapApi.isMapReady()) { mapApi.renderEntities(entities); }
     else { mapApi.setPendingRender(entities); }
-    // 初期データ取得完了後に WebSocket を接続/再購読する（subscribe は再呼出で購読を置き換える）
-    db.subscribe({ entityTypes: [newType] });
-    if (!db.isConnected()) db.connect();
     fitBoundsToEntities();
     // 残りのページを 100 件ずつ自動で順次取得する
     autoLoadAllPages().catch(function(err) { console.error('追加データ取得エラー:', err); });
