@@ -176,11 +176,16 @@ document.addEventListener('visibilitychange', function() {
  * 静的属性は通常の entities API から取得してマージする。
  */
 function fetchTemporalEntities(type) {
+  // 共有 temporalRaw への書き込みは Promise 解決時にまとめて行う。
+  // 解決時点で type が切替わっていればローカル結果ごと破棄して、古いレスポンスが
+  // 共有 state を再汚染しないようにする。
+  var localTemporalRaw = {};
+
   // db.request() はパース済み JSON を直接返す（Response オブジェクトではない）
   var temporalPromise = db.request('GET', '/ngsi-ld/v1/temporal/entities?type=' + encodeURIComponent(type) + '&limit=1000')
     .then(function(rawEntities) {
       if (!Array.isArray(rawEntities)) rawEntities = [];
-      rawEntities.forEach(function(te) { temporalRaw[te.id] = te; });
+      rawEntities.forEach(function(te) { localTemporalRaw[te.id] = te; });
       return rawEntities;
     });
 
@@ -189,8 +194,14 @@ function fetchTemporalEntities(type) {
 
   return Promise.all([temporalPromise, entitiesPromise])
     .then(function(results) {
+      // 解決した時点で別タイプに切替わっていれば、共有 state には反映せず空を返す
+      if (ENTITY_TYPE !== type) return [];
+
       var rawEntities = results[0];
       var currentEntities = results[1];
+
+      // ここで初めて共有 temporalRaw に commit する
+      Object.keys(localTemporalRaw).forEach(function(k) { temporalRaw[k] = localTemporalRaw[k]; });
 
       // 通常エンティティを ID でルックアップできるようにする
       var entityMap = {};
@@ -335,6 +346,10 @@ function loadType(newType) {
   document.getElementById('error-overlay').classList.add('hidden');
   document.querySelector('.header').style.display = '';
   document.querySelector('.side-panel').style.display = '';
+  // 旧タイプのエンティティ詳細やマーカーが一瞬残らないよう、開いている詳細 UI を閉じ
+  // 地図ロード前に登録された pendingRender も破棄する
+  mapApi.closeBottomSheet();
+  mapApi.setPendingRender(null);
   initFeed(feedDeps);
   if (mapApi.isMapReady()) mapApi.renderEntities([]);
   if (entityCountEl) {

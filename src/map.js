@@ -507,6 +507,7 @@ export function initMap(ctx) {
     renderEntities: renderEntities,
     selectEntity: selectEntity,
     openPopupForEntity: openPopupForEntity,
+    closeBottomSheet: closeBottomSheet,
     getFlyZoom: getFlyZoom,
     sidebarPadding: sidebarPadding,
     isMapReady: isMapReady,
