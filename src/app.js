@@ -111,6 +111,9 @@ if (ENTITY_TYPE === '__none__') {
 // ============================================================
 var entities = [];       // 現在のエンティティ一覧（REST API + WebSocket で更新）
 var temporalRaw = {};    // Temporal API の生レスポンスを保持（ポップアップのスパークライン表示用）
+// loadType 呼び出しごとに増えるトークン。A→B→A のような切替で、最初の A の遅延
+// レスポンスが二回目の A のロードに混ざらないよう、type 一致だけでなくトークン一致も検査する。
+var activeLoadToken = 0;
 
 // 地図の初期化（entities/temporalRaw/TEMPORAL への参照を渡す）
 var ctx = { entities: entities, temporalRaw: temporalRaw, TEMPORAL: TEMPORAL };
@@ -179,7 +182,9 @@ function fetchTemporalEntities(type) {
   // 共有 temporalRaw への書き込みは Promise 解決時にまとめて行う。
   // 解決時点で type が切替わっていればローカル結果ごと破棄して、古いレスポンスが
   // 共有 state を再汚染しないようにする。
+  // A→B→A の素早い切替対策として、type 一致だけでなく activeLoadToken の一致も検査する。
   var localTemporalRaw = {};
+  var thisLoadToken = activeLoadToken;
 
   // db.request() はパース済み JSON を直接返す（Response オブジェクトではない）
   var temporalPromise = db.request('GET', '/ngsi-ld/v1/temporal/entities?type=' + encodeURIComponent(type) + '&limit=1000')
@@ -194,8 +199,8 @@ function fetchTemporalEntities(type) {
 
   return Promise.all([temporalPromise, entitiesPromise])
     .then(function(results) {
-      // 解決した時点で別タイプに切替わっていれば、共有 state には反映せず空を返す
-      if (ENTITY_TYPE !== type) return [];
+      // 解決した時点で別タイプ／別 load に切替わっていれば、共有 state には反映せず空を返す
+      if (activeLoadToken !== thisLoadToken || ENTITY_TYPE !== type) return [];
 
       var rawEntities = results[0];
       var currentEntities = results[1];
@@ -295,9 +300,10 @@ function fetchEntitiesPage(type, offset, limit) {
 function loadNextPage() {
   if (!hasMore) return Promise.resolve();
   var thisType = ENTITY_TYPE;
+  var thisLoadToken = activeLoadToken;
   return fetchEntitiesPage(thisType, paginationOffset, PAGE_SIZE)
     .then(function(result) {
-      if (ENTITY_TYPE !== thisType) return;
+      if (activeLoadToken !== thisLoadToken || ENTITY_TYPE !== thisType) return;
       if (!Array.isArray(result) || result.length === 0) {
         hasMore = false;
         return;
@@ -316,8 +322,9 @@ function loadNextPage() {
 function autoLoadAllPages() {
   if (!hasMore) return Promise.resolve();
   var thisType = ENTITY_TYPE;
+  var thisLoadToken = activeLoadToken;
   return loadNextPage().then(function() {
-    if (ENTITY_TYPE !== thisType) return;
+    if (activeLoadToken !== thisLoadToken || ENTITY_TYPE !== thisType) return;
     return autoLoadAllPages();
   });
 }
@@ -331,6 +338,9 @@ var loadingEl = document.getElementById('loading-indicator');
  */
 function loadType(newType) {
   ENTITY_TYPE = newType;
+  // この loadType に紐づくトークンを発行。以降の async continuation はこのトークン
+  // と activeLoadToken の一致でも判定する（A→B→A race を防ぐ）
+  var thisLoadToken = ++activeLoadToken;
 
   // 状態リセット
   document.title = newType + ' — GeonicDB Pulse';
@@ -361,8 +371,8 @@ function loadType(newType) {
   // まず Temporal API を試し、時系列データがあればそれを使う。
   // なければ通常の NGSI-LD entities API にページネーションでフォールバックする。
   var dataPromise = fetchTemporalEntities(newType).then(function(result) {
-    // 解決時点で別タイプに切替わっていれば、無駄な fallback fetch を回避して即中断
-    if (ENTITY_TYPE !== newType) return [];
+    // 解決時点で別タイプ／別 load に切替わっていれば、無駄な fallback fetch を回避して即中断
+    if (activeLoadToken !== thisLoadToken || ENTITY_TYPE !== newType) return [];
     if (result.length > 0) {
       TEMPORAL = true;
       ctx.TEMPORAL = true;
@@ -375,13 +385,13 @@ function loadType(newType) {
     return fetchEntitiesPage(newType, 0, PAGE_SIZE);
   }).catch(function(err) {
     console.warn('Temporal API 取得エラー、通常 entities API にフォールバックします:', err);
-    if (ENTITY_TYPE !== newType) return [];
+    if (activeLoadToken !== thisLoadToken || ENTITY_TYPE !== newType) return [];
     return fetchEntitiesPage(newType, 0, PAGE_SIZE);
   });
 
   dataPromise.then(function(result) {
-    // 切替中に別タイプへ再切替された場合は古いレスポンスを破棄
-    if (ENTITY_TYPE !== newType) return;
+    // 切替中に別タイプ／別 load へ再切替された場合は古いレスポンスを破棄
+    if (activeLoadToken !== thisLoadToken || ENTITY_TYPE !== newType) return;
     loadingEl.classList.remove('visible');
     if (!Array.isArray(result)) result = [];
     sortByCreatedAt(result);
@@ -402,7 +412,7 @@ function loadType(newType) {
     appendFeedItems(entities);
     updateEntityCount();
     db.count({ type: newType }).then(function(count) {
-      if (ENTITY_TYPE !== newType) return;
+      if (activeLoadToken !== thisLoadToken || ENTITY_TYPE !== newType) return;
       totalCount = count;
       updateEntityCount();
     }).catch(function() {});
@@ -416,7 +426,7 @@ function loadType(newType) {
     autoLoadAllPages().catch(function(err) { console.error('追加データ取得エラー:', err); });
   })
   .catch(function(err) {
-    if (ENTITY_TYPE !== newType) return;
+    if (activeLoadToken !== thisLoadToken || ENTITY_TYPE !== newType) return;
     loadingEl.classList.remove('visible');
     console.error('データ取得エラー:', err);
     if (isAuthError(err)) {
