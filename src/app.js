@@ -94,7 +94,10 @@ if (ENTITY_TYPE !== '__none__') {
   .catch(function() {});
 
   appTypeSelect.addEventListener('change', function() {
-    location.href = '?type=' + encodeURIComponent(appTypeSelect.value);
+    // フルリロードせず in-place で type を切替える（地図はそのまま、データだけ入れ替え）
+    var newType = appTypeSelect.value;
+    history.replaceState(null, '', '?type=' + encodeURIComponent(newType));
+    loadType(newType);
   });
 }
 
@@ -276,11 +279,14 @@ function fetchEntitiesPage(type, offset, limit) {
 
 /**
  * 次のページを API から取得し、entities 配列・地図・フィードを更新する。
+ * 取得開始時の type を覚えておき、途中で別 type に切替えられたら結果は破棄する。
  */
 function loadNextPage() {
   if (!hasMore) return Promise.resolve();
-  return fetchEntitiesPage(ENTITY_TYPE, paginationOffset, PAGE_SIZE)
+  var thisType = ENTITY_TYPE;
+  return fetchEntitiesPage(thisType, paginationOffset, PAGE_SIZE)
     .then(function(result) {
+      if (ENTITY_TYPE !== thisType) return;
       if (!Array.isArray(result) || result.length === 0) {
         hasMore = false;
         return;
@@ -298,34 +304,65 @@ function loadNextPage() {
 /** 残りページを順次自動取得する（100件ずつ）。地図のフィットは初期表示時のみで、追加分では再ズームしない。 */
 function autoLoadAllPages() {
   if (!hasMore) return Promise.resolve();
-  return loadNextPage().then(autoLoadAllPages);
+  var thisType = ENTITY_TYPE;
+  return loadNextPage().then(function() {
+    if (ENTITY_TYPE !== thisType) return;
+    return autoLoadAllPages();
+  });
 }
 
 // ローディングインジケーター
 var loadingEl = document.getElementById('loading-indicator');
-if (ENTITY_TYPE !== '__none__') loadingEl.classList.add('visible');
 
-// まず Temporal API を試し、時系列データがあればそれを使う。
-// なければ通常の NGSI-LD entities API にページネーションでフォールバックする。
-var dataPromise = (ENTITY_TYPE !== '__none__')
-  ? fetchTemporalEntities(ENTITY_TYPE).then(function(result) {
-      if (result.length > 0) {
-        TEMPORAL = true;
-        ctx.TEMPORAL = true;
-        document.title = ENTITY_TYPE + ' (Temporal) — GeonicDB Pulse';
-        // Temporal データはページネーション対象外（一括取得済み）
-        hasMore = false;
-        return result;
-      }
-      // Temporal データがなければ通常 API の最初のページを取得
-      return fetchEntitiesPage(ENTITY_TYPE, 0, PAGE_SIZE);
-    }).catch(function() {
-      return fetchEntitiesPage(ENTITY_TYPE, 0, PAGE_SIZE);
-    })
-  : null;
+/**
+ * 指定タイプのデータをロードして UI に反映する。
+ * 初回ロード時とプルダウン切替時の両方から呼ばれる（後者は地図は維持したままデータだけ入れ替え）。
+ */
+function loadType(newType) {
+  ENTITY_TYPE = newType;
 
-dataPromise && dataPromise
-  .then(function(result) {
+  // 状態リセット
+  document.title = newType + ' — GeonicDB Pulse';
+  TEMPORAL = false;
+  ctx.TEMPORAL = false;
+  entities.length = 0;
+  Object.keys(temporalRaw).forEach(function(k) { delete temporalRaw[k]; });
+  paginationOffset = 0;
+  hasMore = true;
+  totalCount = null;
+
+  // UI リセット（前回 showError で隠していたヘッダー/サイドパネルを復帰）
+  document.getElementById('error-overlay').classList.add('hidden');
+  document.querySelector('.header').style.display = '';
+  document.querySelector('.side-panel').style.display = '';
+  initFeed(feedDeps);
+  if (mapApi.isMapReady()) mapApi.renderEntities([]);
+  if (entityCountEl) {
+    entityCountEl.classList.remove('visible');
+    entityCountEl.classList.remove('done');
+  }
+  loadingEl.classList.add('visible');
+
+  // まず Temporal API を試し、時系列データがあればそれを使う。
+  // なければ通常の NGSI-LD entities API にページネーションでフォールバックする。
+  var dataPromise = fetchTemporalEntities(newType).then(function(result) {
+    if (result.length > 0) {
+      TEMPORAL = true;
+      ctx.TEMPORAL = true;
+      document.title = newType + ' (Temporal) — GeonicDB Pulse';
+      // Temporal データはページネーション対象外（一括取得済み）
+      hasMore = false;
+      return result;
+    }
+    // Temporal データがなければ通常 API の最初のページを取得
+    return fetchEntitiesPage(newType, 0, PAGE_SIZE);
+  }).catch(function() {
+    return fetchEntitiesPage(newType, 0, PAGE_SIZE);
+  });
+
+  dataPromise.then(function(result) {
+    // 切替中に別タイプへ再切替された場合は古いレスポンスを破棄
+    if (ENTITY_TYPE !== newType) return;
     loadingEl.classList.remove('visible');
     if (!Array.isArray(result)) result = [];
     sortByCreatedAt(result);
@@ -338,28 +375,29 @@ dataPromise && dataPromise
 
     if (entities.length === 0) {
       mapApi.showError(
-        '"' + ENTITY_TYPE + '" が見つかりません',
+        '"' + newType + '" が見つかりません',
         'このエンティティタイプのデータが存在しないか、タイプ名が正しくありません。'
       );
       return;
     }
-    initFeed(feedDeps);
     appendFeedItems(entities);
     updateEntityCount();
-    db.count({ type: ENTITY_TYPE }).then(function(count) {
+    db.count({ type: newType }).then(function(count) {
+      if (ENTITY_TYPE !== newType) return;
       totalCount = count;
       updateEntityCount();
     }).catch(function() {});
     if (mapApi.isMapReady()) { mapApi.renderEntities(entities); }
     else { mapApi.setPendingRender(entities); }
-    // 初期データ取得完了後に WebSocket 接続を開始し、REST スナップショットとの競合を防ぐ
-    db.subscribe({ entityTypes: [ENTITY_TYPE] });
-    db.connect();
+    // 初期データ取得完了後に WebSocket を接続/再購読する（subscribe は再呼出で購読を置き換える）
+    db.subscribe({ entityTypes: [newType] });
+    if (!db.isConnected()) db.connect();
     fitBoundsToEntities();
     // 残りのページを 100 件ずつ自動で順次取得する
     autoLoadAllPages().catch(function(err) { console.error('追加データ取得エラー:', err); });
   })
   .catch(function(err) {
+    if (ENTITY_TYPE !== newType) return;
     loadingEl.classList.remove('visible');
     console.error('データ取得エラー:', err);
     if (isAuthError(err)) {
@@ -372,6 +410,10 @@ dataPromise && dataPromise
       err.message || '接続エラーが発生しました。API キーやテナント設定を確認してください。'
     );
   });
+}
+
+// 初回ロード（type が指定されていればその type をロード）
+if (ENTITY_TYPE !== '__none__') loadType(ENTITY_TYPE);
 
 // ============================================================
 // WebSocket リアルタイム更新

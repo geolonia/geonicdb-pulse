@@ -28,21 +28,40 @@ var sparkColors = ['#00e5ff', '#76ff03', '#ffab00', '#ff4081', '#7c4dff', '#00e6
 // 地図の初期化
 // ============================================================
 
+// エンティティタイプ切り替え時のページリロードを跨いで地図位置を保持する
+var VIEW_STORAGE_KEY = 'pulse:mapView';
+function loadSavedView() {
+  try {
+    var raw = sessionStorage.getItem(VIEW_STORAGE_KEY);
+    if (!raw) return null;
+    var v = JSON.parse(raw);
+    if (typeof v.lng !== 'number' || typeof v.lat !== 'number' || typeof v.zoom !== 'number') return null;
+    return v;
+  } catch (e) { return null; }
+}
+
 /**
  * 地図を初期化し、操作に必要な関数群を返す。
  * @param {object} ctx - { entities, temporalRaw, TEMPORAL } への参照を持つコンテキスト
  * @returns {object} 地図操作用の関数群
  */
 export function initMap(ctx) {
+  var savedView = loadSavedView();
   map = new geolonia.Map({
     container: 'map',
     style: mapStyle,
-    center: [139.7414, 35.6581],
-    zoom: 10,
+    center: savedView ? [savedView.lng, savedView.lat] : [139.7414, 35.6581],
+    zoom: savedView ? savedView.zoom : 10,
     minZoom: 2,
     maxZoom: 18,
     renderWorldCopies: false,
     pitchWithRotate: false
+  });
+
+  // 地図移動のたびに現在のビューを保存し、エンティティタイプ切り替え後も同じ位置から表示する
+  map.on('moveend', function() {
+    var c = map.getCenter();
+    sessionStorage.setItem(VIEW_STORAGE_KEY, JSON.stringify({ lng: c.lng, lat: c.lat, zoom: map.getZoom() }));
   });
 
   // モバイルではアトリビューションを畳む
