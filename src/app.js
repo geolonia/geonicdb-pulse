@@ -94,7 +94,10 @@ if (ENTITY_TYPE !== '__none__') {
   .catch(function() {});
 
   appTypeSelect.addEventListener('change', function() {
-    location.href = '?type=' + encodeURIComponent(appTypeSelect.value);
+    // フルリロードせず in-place で type を切替える（地図はそのまま、データだけ入れ替え）
+    var newType = appTypeSelect.value;
+    history.replaceState(null, '', '?type=' + encodeURIComponent(newType));
+    loadType(newType);
   });
 }
 
@@ -108,6 +111,9 @@ if (ENTITY_TYPE === '__none__') {
 // ============================================================
 var entities = [];       // 現在のエンティティ一覧（REST API + WebSocket で更新）
 var temporalRaw = {};    // Temporal API の生レスポンスを保持（ポップアップのスパークライン表示用）
+// loadType 呼び出しごとに増えるトークン。A→B→A のような切替で、最初の A の遅延
+// レスポンスが二回目の A のロードに混ざらないよう、type 一致だけでなくトークン一致も検査する。
+var activeLoadToken = 0;
 
 // 地図の初期化（entities/temporalRaw/TEMPORAL への参照を渡す）
 var ctx = { entities: entities, temporalRaw: temporalRaw, TEMPORAL: TEMPORAL };
@@ -173,11 +179,18 @@ document.addEventListener('visibilitychange', function() {
  * 静的属性は通常の entities API から取得してマージする。
  */
 function fetchTemporalEntities(type) {
+  // 共有 temporalRaw への書き込みは Promise 解決時にまとめて行う。
+  // 解決時点で type が切替わっていればローカル結果ごと破棄して、古いレスポンスが
+  // 共有 state を再汚染しないようにする。
+  // A→B→A の素早い切替対策として、type 一致だけでなく activeLoadToken の一致も検査する。
+  var localTemporalRaw = {};
+  var thisLoadToken = activeLoadToken;
+
   // db.request() はパース済み JSON を直接返す（Response オブジェクトではない）
   var temporalPromise = db.request('GET', '/ngsi-ld/v1/temporal/entities?type=' + encodeURIComponent(type) + '&limit=1000')
     .then(function(rawEntities) {
       if (!Array.isArray(rawEntities)) rawEntities = [];
-      rawEntities.forEach(function(te) { temporalRaw[te.id] = te; });
+      rawEntities.forEach(function(te) { localTemporalRaw[te.id] = te; });
       return rawEntities;
     });
 
@@ -186,8 +199,14 @@ function fetchTemporalEntities(type) {
 
   return Promise.all([temporalPromise, entitiesPromise])
     .then(function(results) {
+      // 解決した時点で別タイプ／別 load に切替わっていれば、共有 state には反映せず空を返す
+      if (activeLoadToken !== thisLoadToken || ENTITY_TYPE !== type) return [];
+
       var rawEntities = results[0];
       var currentEntities = results[1];
+
+      // ここで初めて共有 temporalRaw に commit する
+      Object.keys(localTemporalRaw).forEach(function(k) { temporalRaw[k] = localTemporalRaw[k]; });
 
       // 通常エンティティを ID でルックアップできるようにする
       var entityMap = {};
@@ -276,11 +295,15 @@ function fetchEntitiesPage(type, offset, limit) {
 
 /**
  * 次のページを API から取得し、entities 配列・地図・フィードを更新する。
+ * 取得開始時の type を覚えておき、途中で別 type に切替えられたら結果は破棄する。
  */
 function loadNextPage() {
   if (!hasMore) return Promise.resolve();
-  return fetchEntitiesPage(ENTITY_TYPE, paginationOffset, PAGE_SIZE)
+  var thisType = ENTITY_TYPE;
+  var thisLoadToken = activeLoadToken;
+  return fetchEntitiesPage(thisType, paginationOffset, PAGE_SIZE)
     .then(function(result) {
+      if (activeLoadToken !== thisLoadToken || ENTITY_TYPE !== thisType) return;
       if (!Array.isArray(result) || result.length === 0) {
         hasMore = false;
         return;
@@ -298,34 +321,77 @@ function loadNextPage() {
 /** 残りページを順次自動取得する（100件ずつ）。地図のフィットは初期表示時のみで、追加分では再ズームしない。 */
 function autoLoadAllPages() {
   if (!hasMore) return Promise.resolve();
-  return loadNextPage().then(autoLoadAllPages);
+  var thisType = ENTITY_TYPE;
+  var thisLoadToken = activeLoadToken;
+  return loadNextPage().then(function() {
+    if (activeLoadToken !== thisLoadToken || ENTITY_TYPE !== thisType) return;
+    return autoLoadAllPages();
+  });
 }
 
 // ローディングインジケーター
 var loadingEl = document.getElementById('loading-indicator');
-if (ENTITY_TYPE !== '__none__') loadingEl.classList.add('visible');
 
-// まず Temporal API を試し、時系列データがあればそれを使う。
-// なければ通常の NGSI-LD entities API にページネーションでフォールバックする。
-var dataPromise = (ENTITY_TYPE !== '__none__')
-  ? fetchTemporalEntities(ENTITY_TYPE).then(function(result) {
-      if (result.length > 0) {
-        TEMPORAL = true;
-        ctx.TEMPORAL = true;
-        document.title = ENTITY_TYPE + ' (Temporal) — GeonicDB Pulse';
-        // Temporal データはページネーション対象外（一括取得済み）
-        hasMore = false;
-        return result;
-      }
-      // Temporal データがなければ通常 API の最初のページを取得
-      return fetchEntitiesPage(ENTITY_TYPE, 0, PAGE_SIZE);
-    }).catch(function() {
-      return fetchEntitiesPage(ENTITY_TYPE, 0, PAGE_SIZE);
-    })
-  : null;
+/**
+ * 指定タイプのデータをロードして UI に反映する。
+ * 初回ロード時とプルダウン切替時の両方から呼ばれる（後者は地図は維持したままデータだけ入れ替え）。
+ */
+function loadType(newType) {
+  ENTITY_TYPE = newType;
+  // この loadType に紐づくトークンを発行。以降の async continuation はこのトークン
+  // と activeLoadToken の一致でも判定する（A→B→A race を防ぐ）
+  var thisLoadToken = ++activeLoadToken;
 
-dataPromise && dataPromise
-  .then(function(result) {
+  // 状態リセット
+  document.title = newType + ' — GeonicDB Pulse';
+  TEMPORAL = false;
+  ctx.TEMPORAL = false;
+  entities.length = 0;
+  Object.keys(temporalRaw).forEach(function(k) { delete temporalRaw[k]; });
+  paginationOffset = 0;
+  hasMore = true;
+  totalCount = null;
+
+  // UI リセット（前回 showError で隠していたヘッダー/サイドパネルを復帰）
+  document.getElementById('error-overlay').classList.add('hidden');
+  document.querySelector('.header').style.display = '';
+  document.querySelector('.side-panel').style.display = '';
+  // 旧タイプのエンティティ詳細やマーカーが一瞬残らないよう、開いている詳細 UI を閉じ
+  // 地図ロード前に登録された pendingRender も破棄する
+  mapApi.closeBottomSheet();
+  mapApi.setPendingRender(null);
+  initFeed(feedDeps);
+  if (mapApi.isMapReady()) mapApi.renderEntities([]);
+  if (entityCountEl) {
+    entityCountEl.classList.remove('visible');
+    entityCountEl.classList.remove('done');
+  }
+  loadingEl.classList.add('visible');
+
+  // まず Temporal API を試し、時系列データがあればそれを使う。
+  // なければ通常の NGSI-LD entities API にページネーションでフォールバックする。
+  var dataPromise = fetchTemporalEntities(newType).then(function(result) {
+    // 解決時点で別タイプ／別 load に切替わっていれば、無駄な fallback fetch を回避して即中断
+    if (activeLoadToken !== thisLoadToken || ENTITY_TYPE !== newType) return [];
+    if (result.length > 0) {
+      TEMPORAL = true;
+      ctx.TEMPORAL = true;
+      document.title = newType + ' (Temporal) — GeonicDB Pulse';
+      // Temporal データはページネーション対象外（一括取得済み）
+      hasMore = false;
+      return result;
+    }
+    // Temporal データがなければ通常 API の最初のページを取得
+    return fetchEntitiesPage(newType, 0, PAGE_SIZE);
+  }).catch(function(err) {
+    console.warn('Temporal API 取得エラー、通常 entities API にフォールバックします:', err);
+    if (activeLoadToken !== thisLoadToken || ENTITY_TYPE !== newType) return [];
+    return fetchEntitiesPage(newType, 0, PAGE_SIZE);
+  });
+
+  dataPromise.then(function(result) {
+    // 切替中に別タイプ／別 load へ再切替された場合は古いレスポンスを破棄
+    if (activeLoadToken !== thisLoadToken || ENTITY_TYPE !== newType) return;
     loadingEl.classList.remove('visible');
     if (!Array.isArray(result)) result = [];
     sortByCreatedAt(result);
@@ -336,30 +402,33 @@ dataPromise && dataPromise
     result.forEach(function(e) { entities.push(e); });
     paginationOffset = result.length;
 
+    // 空タイプでも WebSocket 購読は新タイプに切替える（あとで新規作成された
+    // エンティティが届くようにするため、エラー表示時も含めて必ず subscribe する）
+    db.subscribe({ entityTypes: [newType] });
+    if (!db.isConnected()) db.connect();
+
     if (entities.length === 0) {
       mapApi.showError(
-        '"' + ENTITY_TYPE + '" が見つかりません',
+        '"' + newType + '" が見つかりません',
         'このエンティティタイプのデータが存在しないか、タイプ名が正しくありません。'
       );
       return;
     }
-    initFeed(feedDeps);
     appendFeedItems(entities);
     updateEntityCount();
-    db.count({ type: ENTITY_TYPE }).then(function(count) {
+    db.count({ type: newType }).then(function(count) {
+      if (activeLoadToken !== thisLoadToken || ENTITY_TYPE !== newType) return;
       totalCount = count;
       updateEntityCount();
     }).catch(function() {});
     if (mapApi.isMapReady()) { mapApi.renderEntities(entities); }
     else { mapApi.setPendingRender(entities); }
-    // 初期データ取得完了後に WebSocket 接続を開始し、REST スナップショットとの競合を防ぐ
-    db.subscribe({ entityTypes: [ENTITY_TYPE] });
-    db.connect();
     fitBoundsToEntities();
     // 残りのページを 100 件ずつ自動で順次取得する
     autoLoadAllPages().catch(function(err) { console.error('追加データ取得エラー:', err); });
   })
   .catch(function(err) {
+    if (activeLoadToken !== thisLoadToken || ENTITY_TYPE !== newType) return;
     loadingEl.classList.remove('visible');
     console.error('データ取得エラー:', err);
     if (isAuthError(err)) {
@@ -372,6 +441,10 @@ dataPromise && dataPromise
       err.message || '接続エラーが発生しました。API キーやテナント設定を確認してください。'
     );
   });
+}
+
+// 初回ロード（type が指定されていればその type をロード）
+if (ENTITY_TYPE !== '__none__') loadType(ENTITY_TYPE);
 
 // ============================================================
 // WebSocket リアルタイム更新
