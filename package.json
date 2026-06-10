@@ -13,6 +13,6 @@
     "vite-plugin-minify": "^2.1.0"
   },
   "dependencies": {
-    "@geolonia/geonicdb-sdk": "^0.7.1"
+    "@geolonia/geonicdb-sdk": "^0.9.0"
   }
 }
