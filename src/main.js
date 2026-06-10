@@ -2,8 +2,10 @@
  * main.js — エントリポイント
  *
  * 認証フロー:
- *   1. 保存済みトークンがあれば db.setCredentials() で復元
- *   2. なければログインフォームで db.login() を呼び出す
+ *   1. 保存済みトークンが Bearer なら db.setCredentials() で復元
+ *      (DPoP-bound トークンは秘密鍵がページリロードで失われるため復元不可)
+ *   2. なければログインフォームで db.login(..., { dpop: true }) を呼ぶ
+ *      (RFC 9449 DPoP 送信者制約セッション、XSS 漏洩耐性のため)
  *   3. initApp(db, auth) でアプリを起動
  */
 
@@ -53,8 +55,20 @@ function removeLoginForm() {
 // 認証フローを開始
 var auth = getStoredAuth();
 
+// DPoP-bound セッション (RFC 9449) はクライアントの非抽出 ECDSA 秘密鍵に
+// 紐付くトークンを発行する。秘密鍵はメモリ上 (Web Crypto の non-extractable
+// CryptoKey) にしか存在せず、ページリロードで失われる。
+// 残った accessToken / refreshToken も鍵なしでは proof を作れず使用不能
+// なので、潔くクリアしてログイン画面に戻す。これが「鍵を持つセッションだけが
+// 正当」という DPoP の本質に即した挙動。
+if (auth && auth.tokenType === 'DPoP' && auth.accessToken) {
+  clearAuth();
+  auth = getStoredAuth();
+}
+
 if (auth && auth.accessToken && auth.tenant) {
-  // ── 保存済みトークンで復元 ──
+  // ── 保存済み Bearer トークンで復元 ──
+  // (DPoP は上で弾かれているのでここに来るのは Bearer のみ)
   // 環境変数が変更された場合に備え、常に現在の URL を使用する
   auth.url = geonicdbUrl;
 
@@ -105,13 +119,17 @@ if (auth && auth.accessToken && auth.tenant) {
     errorEl.textContent = '';
 
     // SDK の db.login() でログイン
+    // { dpop: true } で /auth/dpop-bind を経由して DPoP 送信者制約セッション
+    // (RFC 9449) に交換する。SDK 0.9.0 以降。トークンが localStorage から
+    // XSS で漏洩しても、SDK インスタンスの非抽出秘密鍵がなければ再利用不可。
     var db = new GeonicDB({ baseUrl: geonicdbUrl, tenant: tenant });
-    db.login(email, password).then(function(data) {
+    db.login(email, password, { dpop: true }).then(function(data) {
       var auth = {
         email: email,
         accessToken: data.accessToken,
         refreshToken: data.refreshToken,
         expiresAt: Date.now() + data.expiresIn * 1000,
+        tokenType: data.tokenType,  // 'DPoP' — 次回ロード時の復元判定に使う
         tenant: tenant,
         url: geonicdbUrl,
       };
@@ -120,6 +138,7 @@ if (auth && auth.accessToken && auth.tenant) {
       // SDK がトークンをリフレッシュした際に localStorage と同期する
       db.on('tokenRefresh', function(creds) {
         auth.accessToken = creds.token;
+        if (creds.tokenType !== undefined) auth.tokenType = creds.tokenType;
         if (creds.refreshToken !== undefined) auth.refreshToken = creds.refreshToken;
         if (creds.expiresIn !== undefined) auth.expiresAt = Date.now() + creds.expiresIn * 1000;
         storeAuth(auth);
