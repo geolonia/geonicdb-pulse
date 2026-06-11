@@ -363,13 +363,21 @@ export function initMap(ctx) {
         }
       });
 
-      // クラスタをクリックしたらズームイン
+      // クラスタをクリックしたら、そのクラスタが分解されるズームレベルまでズームインする
+      // Supercluster の getClusterExpansionZoom() が「このクラスタが解ける最小のズーム」を返す
+      // 参考: https://maplibre.org/maplibre-gl-js/docs/examples/create-and-style-clusters/
       map.on('click', 'entity-clusters', function(e) {
         var features = map.queryRenderedFeatures(e.point, { layers: ['entity-clusters'] });
         var clusterId = features[0].properties.cluster_id;
+        var coords = features[0].geometry.coordinates;
         map.getSource('entities').getClusterExpansionZoom(clusterId, function(err, zoom) {
           if (err) return;
-          map.easeTo({ center: features[0].geometry.coordinates, zoom: zoom });
+          map.easeTo({
+            center: coords,
+            zoom: zoom,
+            duration: 500,
+            padding: { bottom: 0, left: sidebarPadding() }
+          });
         });
       });
       map.on('mouseenter', 'entity-clusters', function() { map.getCanvas().style.cursor = 'pointer'; });
