@@ -68,7 +68,16 @@ var auth = getStoredAuth();
 // false が返るので、ログイン画面へ戻す。
 if (auth && auth.tokenType === 'DPoP' && auth.tenant) {
   var dpopDb = new GeonicDB({ baseUrl: geonicdbUrl, tenant: auth.tenant });
-  if (await dpopDb.restoreSession()) {
+  // restoreSession() は IndexedDB アクセスを伴うため、Safari プライベート
+  // モード・クォータ超過・破損などで reject しうる。例外時はログイン画面へ
+  // フォールバックさせ、未処理 rejection でブートが止まらないようにする。
+  var restored = false;
+  try {
+    restored = await dpopDb.restoreSession();
+  } catch (e) {
+    console.warn('DPoP セッションの復元に失敗しました:', e);
+  }
+  if (restored) {
     // リフレッシュ時に localStorage のメタデータを同期する
     dpopDb.on('tokenRefresh', function(creds) {
       auth.accessToken = creds.token;
