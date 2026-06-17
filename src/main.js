@@ -3,11 +3,11 @@
  *
  * 認証フロー:
  *   1. DPoP セッションは db.restoreSession() で再水和する
- *      (SDK 0.10.0+ が非抽出 CryptoKey ごと IndexedDB に永続化する #1230)
+ *      (SDK 0.11.0+ が非抽出 CryptoKey ごと IndexedDB に永続化する #1230)
  *   2. 保存済みトークンが Bearer なら db.setCredentials() で復元
  *   3. どちらも無ければログインフォームで
- *      db.login(..., { dpop: true, dpopPersist: true }) を呼ぶ
- *      (RFC 9449 DPoP 送信者制約セッション、XSS 漏洩耐性のため)
+ *      db.login(..., { rememberSession: true }) を呼ぶ
+ *      (DPoP 送信者制約は SDK が透過的に適用、XSS 漏洩耐性のため)
  *   4. initApp(db, auth) でアプリを起動
  */
 
@@ -60,7 +60,7 @@ var auth = getStoredAuth();
 (async function boot() {
 
 // DPoP-bound セッション (RFC 9449) はクライアントの非抽出 ECDSA 秘密鍵に
-// 紐付くトークンを発行する。SDK 0.10.0+ では dpopPersist:true でログインすると、
+// 紐付くトークンを発行する。SDK 0.11.0+ では rememberSession:true でログインすると、
 // その鍵が non-extractable CryptoKey のまま IndexedDB に保存される (#1230)。
 // 構造化複製で鍵は extractable:false を保ったままリロードを跨いで生き残るため、
 // restoreSession() で鍵とトークンを再水和できる。
@@ -148,13 +148,13 @@ if (auth && auth.accessToken && auth.tenant) {
     errorEl.textContent = '';
 
     // SDK の db.login() でログイン
-    // { dpop: true } で /auth/dpop-bind を経由して DPoP 送信者制約セッション
-    // (RFC 9449) に交換する。トークンが localStorage から XSS で漏洩しても、
-    // SDK インスタンスの非抽出秘密鍵がなければ再利用不可。
-    // { dpopPersist: true } で鍵とトークンを IndexedDB に永続化し (SDK 0.10.0+)、
+    // DPoP 送信者制約セッション (RFC 9449) は SDK 0.11.0+ が透過的に適用する
+    // (login 時に /auth/dpop-bind を内部で経由)。トークンが localStorage から
+    // XSS で漏洩しても、SDK インスタンスの非抽出秘密鍵がなければ再利用不可。
+    // { rememberSession: true } で鍵とトークンを IndexedDB に永続化し、
     // リロード後も restoreSession() で復元できるようにする (#1230)。
     var db = new GeonicDB({ baseUrl: geonicdbUrl, tenant: tenant });
-    db.login(email, password, { dpop: true, dpopPersist: true }).then(function(data) {
+    db.login(email, password, { rememberSession: true }).then(function(data) {
       var auth = {
         email: email,
         accessToken: data.accessToken,

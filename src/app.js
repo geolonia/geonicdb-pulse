@@ -2,15 +2,17 @@
  * app.js — アプリケーションのオーケストレーション
  *
  * GeonicDB SDK を使ったリアルタイムモニターの実装。
- * SDK の API 呼び出し（db.request(), db.getEntities(), db.on(), db.subscribe(),
- * db.connect()）はすべてこのファイルに集約されており、サンプルコードとして
- * SDK の使い方が一目で分かるようになっている。
+ * SDK の API 呼び出しはすべてこのファイルに集約されており、サンプルコードとして
+ * SDK の使い方が一目で分かるようになっている。生の URL を組み立てる
+ * db.request() ではなく、型付きの高レベルメソッドを優先して使う。
  *
- * 利用している GeonicDB 機能:
- * - NGSI-LD エンティティの取得（REST API）
- * - Temporal API による時系列データの取得
- * - WebSocket によるリアルタイムのエンティティ作成・更新通知
- * - Bearer JWT 認証とトークンの自動リフレッシュ
+ * 利用している SDK メソッド / 機能:
+ * - db.getTypes()            … 登録済みエンティティタイプの一覧
+ * - db.getEntities(params)   … NGSI-LD エンティティの取得（type / limit / offset 等）
+ * - db.getTemporalEntities() … Temporal API による時系列データの取得
+ * - db.count(params)         … 件数の取得（NGSILD-Results-Count）
+ * - db.subscribe() / connect() / on() … WebSocket リアルタイム通知
+ * - Bearer JWT 認証とトークンの自動リフレッシュ（SDK が透過的に処理）
  */
 
 import { AuthenticationError, AuthorizationError } from '@geolonia/geonicdb-sdk';
@@ -37,10 +39,9 @@ if (!ENTITY_TYPE) {
     var val = document.getElementById('type-input').value;
     if (val) location.href = '?type=' + encodeURIComponent(val);
   };
-  // NGSI-LD /types API でエンティティタイプ一覧を取得（SDK経由で認証ヘッダー自動付与）
+  // エンティティタイプ一覧を取得（認証ヘッダーは SDK が自動付与）
   var select = document.getElementById('type-input');
-  // db.request() はパース済み JSON を直接返す（Response オブジェクトではない）
-  db.request('GET', '/ngsi-ld/v1/types')
+  db.getTypes()
   .then(function(types) {
     select.innerHTML = '<option value="" disabled selected>エンティティタイプを選択...</option>';
     types.forEach(function(t) {
@@ -77,9 +78,8 @@ if (ENTITY_TYPE !== '__none__') {
   currentOpt.selected = true;
   appTypeSelect.appendChild(currentOpt);
 
-  // タイプ一覧を非同期で取得してプルダウンに追加（SDK経由で認証ヘッダー自動付与）
-  // db.request() はパース済み JSON を直接返す（Response オブジェクトではない）
-  db.request('GET', '/ngsi-ld/v1/types')
+  // タイプ一覧を非同期で取得してプルダウンに追加（認証ヘッダーは SDK が自動付与）
+  db.getTypes()
   .then(function(types) {
     appTypeSelect.innerHTML = '';
     types.forEach(function(t) {
@@ -133,7 +133,7 @@ var feedDeps = {
 // 認証エラー判定
 // ============================================================
 
-/** エラーが認証エラー（401/403）かどうかを判定する。SDK v0.3.0 の型付きエラークラスを使用。 */
+/** エラーが認証エラー（401/403）かどうかを判定する。SDK の型付きエラークラス（instanceof で判定可能）を使用。 */
 function isAuthError(err) {
   return err instanceof AuthenticationError || err instanceof AuthorizationError;
 }
@@ -173,7 +173,6 @@ document.addEventListener('visibilitychange', function() {
 
 /**
  * NGSI-LD Temporal API からエンティティの時系列データを取得する。
- * SDK の request() を使うことで認証ヘッダーが自動付与される。
  *
  * Temporal API は時系列属性のみ返すため、location や name などの
  * 静的属性は通常の entities API から取得してマージする。
@@ -186,16 +185,15 @@ function fetchTemporalEntities(type) {
   var localTemporalRaw = {};
   var thisLoadToken = activeLoadToken;
 
-  // db.request() はパース済み JSON を直接返す（Response オブジェクトではない）
-  var temporalPromise = db.request('GET', '/ngsi-ld/v1/temporal/entities?type=' + encodeURIComponent(type) + '&limit=1000')
+  var temporalPromise = db.getTemporalEntities({ type: type, limit: 1000 })
     .then(function(rawEntities) {
       if (!Array.isArray(rawEntities)) rawEntities = [];
       rawEntities.forEach(function(te) { localTemporalRaw[te.id] = te; });
       return rawEntities;
     });
 
-  // sysAttrs を指定して createdAt/modifiedAt を取得する
-  var entitiesPromise = db.request('GET', '/ngsi-ld/v1/entities?type=' + encodeURIComponent(type) + '&limit=1000&options=sysAttrs');
+  // options: 'sysAttrs' で createdAt/modifiedAt（システム属性）も取得する
+  var entitiesPromise = db.getEntities({ type: type, limit: 1000, options: 'sysAttrs' });
 
   return Promise.all([temporalPromise, entitiesPromise])
     .then(function(results) {
@@ -287,10 +285,9 @@ function fitBoundsToEntities() {
   }
 }
 
-/** 通常 entities API から1ページ取得する */
+/** 通常 entities API から1ページ取得する（options: 'sysAttrs' で createdAt/modifiedAt も取得） */
 function fetchEntitiesPage(type, offset, limit) {
-  return db.request('GET', '/ngsi-ld/v1/entities?type=' + encodeURIComponent(type)
-    + '&limit=' + limit + '&offset=' + offset + '&options=sysAttrs');
+  return db.getEntities({ type: type, limit: limit, offset: offset, options: 'sysAttrs' });
 }
 
 /**
@@ -458,7 +455,7 @@ wsDot.classList.add('connecting');
 
 /** エンティティの作成・更新イベントを処理し、UI を更新する */
 function handleEntity(msg, isNew) {
-  // SDK v0.3.0: WebSocket イベントに完全な NGSI-LD エンティティが含まれる
+  // WebSocket イベント（EntityEvent）には完全な NGSI-LD エンティティが entity に含まれる
   var entity = msg.entity;
   if (!entity || entity.type !== ENTITY_TYPE) return;
   // エンティティ一覧を更新（新規は追加、既存は上書き）
