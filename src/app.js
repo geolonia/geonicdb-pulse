@@ -42,11 +42,11 @@ if (!ENTITY_TYPE) {
   // エンティティタイプ一覧を取得（認証ヘッダーは SDK が自動付与）
   var select = document.getElementById('type-input');
   db.getTypes()
-  .then(function(types) {
+  .then(function(res) {
     select.innerHTML = '<option value="" disabled selected>エンティティタイプを選択...</option>';
-    types.forEach(function(t) {
-      // typeName があればそれを使い、なければ URN の末尾を短縮名とする
-      var name = t.typeName || t.id.split(':').pop();
+    // GET /types は ETSI 準拠の EntityTypeList オブジェクトを返す。
+    // 型名の配列は typeList に入っている。
+    res.typeList.forEach(function(name) {
       var opt = document.createElement('option');
       opt.value = name;
       opt.textContent = name;
@@ -80,10 +80,9 @@ if (ENTITY_TYPE !== '__none__') {
 
   // タイプ一覧を非同期で取得してプルダウンに追加（認証ヘッダーは SDK が自動付与）
   db.getTypes()
-  .then(function(types) {
+  .then(function(res) {
     appTypeSelect.innerHTML = '';
-    types.forEach(function(t) {
-      var name = t.typeName || t.id.split(':').pop();
+    res.typeList.forEach(function(name) {
       var opt = document.createElement('option');
       opt.value = name;
       opt.textContent = name;
