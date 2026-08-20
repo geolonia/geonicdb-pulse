@@ -233,8 +233,14 @@ function fetchTemporalEntities(type) {
 // 初期表示後に 100 件ずつ自動で順次取得し、画面下のプログレスバーで進捗を示す。
 
 var PAGE_SIZE = 100;
+// NGSI-LD の /entities は offset に上限があり、これを超えると
+// 400 BadRequestData ("Invalid offset: must not exceed 10000") が返る。
+// これ以上ページを進めても取得できないので、上限に達したらページングを打ち切る。
+var MAX_OFFSET = 10000;
 var hasMore = true;
 var paginationOffset = 0; // ページネーション専用の offset（WebSocket 追加分を含まない）
+// offset 上限でページングを打ち切ったか（件数インジケーターの表示に使う）
+var truncatedByOffsetCap = false;
 var totalCount = null;
 var entityCountEl = document.getElementById('entity-count');
 var entityCountTextEl = document.getElementById('entity-count-text');
@@ -247,7 +253,9 @@ function updateEntityCount() {
     entityCountTextEl.textContent = entities.length + '';
     entityCountBarEl.style.width = '0%';
   } else {
-    entityCountTextEl.textContent = entities.length + ' / ' + totalCount;
+    // offset 上限で打ち切った場合は、全件表示ではないことが分かるよう明示する
+    entityCountTextEl.textContent = entities.length + ' / ' + totalCount
+      + (truncatedByOffsetCap ? '（表示上限）' : '');
     var pct = totalCount > 0 ? Math.min(100, (entities.length / totalCount) * 100) : 100;
     entityCountBarEl.style.width = pct + '%';
   }
@@ -295,6 +303,14 @@ function fetchEntitiesPage(type, offset, limit) {
  */
 function loadNextPage() {
   if (!hasMore) return Promise.resolve();
+  // offset 上限を超えるリクエストは 400 になるだけなので、投げる前に打ち切る
+  if (paginationOffset > MAX_OFFSET) {
+    hasMore = false;
+    truncatedByOffsetCap = true;
+    updateEntityCount();
+    showToast('API の取得上限（offset ' + MAX_OFFSET + '）に達したため、以降のエンティティは表示されません');
+    return Promise.resolve();
+  }
   var thisType = ENTITY_TYPE;
   var thisLoadToken = activeLoadToken;
   return fetchEntitiesPage(thisType, paginationOffset, PAGE_SIZE)
@@ -346,6 +362,7 @@ function loadType(newType) {
   Object.keys(temporalRaw).forEach(function(k) { delete temporalRaw[k]; });
   paginationOffset = 0;
   hasMore = true;
+  truncatedByOffsetCap = false;
   totalCount = null;
 
   // UI リセット（前回 showError で隠していたヘッダー/サイドパネルを復帰）
