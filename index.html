@@ -90,8 +90,10 @@
         <select id="type-input" class="login-field type-form-select" required>
           <option value="" disabled selected>読み込み中...</option>
         </select>
+        <input id="type-input-manual" class="login-field type-form-manual hidden" type="text" placeholder="例: PointOfInterest" autocomplete="off" spellcheck="false">
         <button type="submit" class="type-form-submit">Open</button>
       </form>
+      <p class="type-form-note hidden" id="type-form-note"></p>
       <div>
         <a href="#" class="overlay-logout" onclick="handleLogout();return false">ログアウト</a>
       </div>

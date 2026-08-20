@@ -32,16 +32,61 @@ export function initApp(db, auth) {
 var params = new URLSearchParams(location.search);
 var ENTITY_TYPE = params.get('type') || null;
 
+/**
+ * Promise を返す処理を最大 attempts 回試す汎用リトライ。
+ *
+ * @param {function(): Promise} operation 実行する処理（呼び出しごとに新しい Promise を返す）
+ * @param {object} options
+ * @param {number} options.attempts     最大試行回数（1 なら再試行しない）
+ * @param {number} options.baseDelayMs  待ち時間の基準。n 回目の失敗後に baseDelayMs * n 待つ
+ * @param {function(Error): boolean} [options.shouldRetry] false を返したエラーは即座に reject する
+ * @param {string} [options.label]      リトライ時のログに出す処理名
+ */
+function retryAsync(operation, options) {
+  var attempts = options.attempts;
+  var baseDelayMs = options.baseDelayMs;
+  var shouldRetry = options.shouldRetry || function() { return true; };
+  var label = options.label || 'リクエスト';
+
+  function attempt(tryIndex) {
+    return operation().catch(function(err) {
+      if (!shouldRetry(err) || tryIndex >= attempts) throw err;
+      var waitMs = baseDelayMs * tryIndex;
+      console.warn(label + 'に失敗、リトライします (' + tryIndex + '/' + (attempts - 1) + ')', err);
+      return new Promise(function(resolve) { setTimeout(resolve, waitMs); })
+        .then(function() { return attempt(tryIndex + 1); });
+    });
+  }
+  return attempt(1);
+}
+
+// GET /types はテナント内の全エンティティを走査するため、エンティティ数が多い
+// テナントではサーバ側のクエリタイムアウト（503）に間欠的に当たる。1回の失敗で
+// タイプ選択が詰まないよう、認証エラー以外はバックオフしながらリトライする。
+// 認証エラーはリトライしても回復せず、呼び出し側でログイン画面に戻す必要がある。
+var GET_TYPES_RETRY = {
+  attempts: 3,
+  baseDelayMs: 800,
+  shouldRetry: function(err) { return !isAuthError(err); },
+  label: 'タイプ一覧の取得'
+};
+
 if (!ENTITY_TYPE) {
   document.getElementById('type-overlay').classList.remove('hidden');
+  var select = document.getElementById('type-input');
+  var manualInput = document.getElementById('type-input-manual');
+  var formNote = document.getElementById('type-form-note');
+
   document.getElementById('type-form').onsubmit = function(e) {
     e.preventDefault();
-    var val = document.getElementById('type-input').value;
+    // 手入力にフォールバックしている場合はそちらの値を使う
+    var active = manualInput.classList.contains('hidden') ? select : manualInput;
+    var val = active.value.trim();
     if (val) location.href = '?type=' + encodeURIComponent(val);
   };
+
   // エンティティタイプ一覧を取得（認証ヘッダーは SDK が自動付与）
-  var select = document.getElementById('type-input');
-  db.getTypes()
+  retryAsync(function() { return db.getTypes(); }, GET_TYPES_RETRY)
   .then(function(res) {
     select.innerHTML = '<option value="" disabled selected>エンティティタイプを選択...</option>';
     // GET /types は ETSI 準拠の EntityTypeList オブジェクトを返す。
@@ -56,7 +101,15 @@ if (!ENTITY_TYPE) {
   .catch(function(err) {
     // 認証エラーの場合はログイン画面に戻す
     if (isAuthError(err)) { clearAuth(); location.href = location.pathname; return; }
-    select.innerHTML = '<option value="" disabled selected>取得に失敗しました</option>';
+    // リトライしても取得できなかった場合は、プルダウンを手入力に差し替えて
+    // タイプ名が分かっているユーザーが先に進めるようにする（?type= と同じ導線）。
+    select.classList.add('hidden');
+    select.required = false;
+    manualInput.classList.remove('hidden');
+    manualInput.required = true;
+    formNote.textContent = 'タイプ一覧の取得に失敗しました。エンティティタイプ名を直接入力してください。';
+    formNote.classList.remove('hidden');
+    manualInput.focus();
   });
 }
 
@@ -79,7 +132,7 @@ if (ENTITY_TYPE !== '__none__') {
   appTypeSelect.appendChild(currentOpt);
 
   // タイプ一覧を非同期で取得してプルダウンに追加（認証ヘッダーは SDK が自動付与）
-  db.getTypes()
+  retryAsync(function() { return db.getTypes(); }, GET_TYPES_RETRY)
   .then(function(res) {
     appTypeSelect.innerHTML = '';
     res.typeList.forEach(function(name) {
