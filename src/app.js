@@ -233,8 +233,16 @@ function fetchTemporalEntities(type) {
 // 初期表示後に 100 件ずつ自動で順次取得し、画面下のプログレスバーで進捗を示す。
 
 var PAGE_SIZE = 100;
+// NGSI-LD の /entities は offset に上限があり、これを超えると
+// 400 BadRequestData ("Invalid offset: must not exceed 10000") が返る。
+// これ以上ページを進めても取得できないので、上限に達したらページングを打ち切る。
+var MAX_OFFSET = 10000;
 var hasMore = true;
 var paginationOffset = 0; // ページネーション専用の offset（WebSocket 追加分を含まない）
+// offset 上限でページングを打ち切ったか（件数インジケーターの表示に使う）
+var truncatedByOffsetCap = false;
+// db.count() が失敗して総件数が得られないか（打ち切り判定のフォールバックに使う）
+var countUnavailable = false;
 var totalCount = null;
 var entityCountEl = document.getElementById('entity-count');
 var entityCountTextEl = document.getElementById('entity-count-text');
@@ -247,7 +255,9 @@ function updateEntityCount() {
     entityCountTextEl.textContent = entities.length + '';
     entityCountBarEl.style.width = '0%';
   } else {
-    entityCountTextEl.textContent = entities.length + ' / ' + totalCount;
+    // offset 上限で打ち切った場合は、全件表示ではないことが分かるよう明示する
+    entityCountTextEl.textContent = entities.length + ' / ' + totalCount
+      + (truncatedByOffsetCap ? '（表示上限）' : '');
     var pct = totalCount > 0 ? Math.min(100, (entities.length / totalCount) * 100) : 100;
     entityCountBarEl.style.width = pct + '%';
   }
@@ -290,11 +300,43 @@ function fetchEntitiesPage(type, offset, limit) {
 }
 
 /**
+ * offset 上限でページングを打ち切ったとき、取り残しが実在するかを判定する。
+ *
+ * 総件数がちょうど MAX_OFFSET + PAGE_SIZE 件（= 上限内で読み切れる最大件数）の場合、
+ * offset は上限を超えるが取り残しは無いので「表示上限」ではない。
+ * db.count() はページングと並行して走るため、上限に達した時点で totalCount が
+ * まだ無いことがある。その場合は判定を保留し、count の解決/失敗時に再評価する。
+ *
+ * 比較対象を entities.length ではなく paginationOffset にしているのは、entities に
+ * WebSocket 由来の追加分が混ざり、ページングで読めた件数と一致しないため。
+ */
+function evaluateOffsetCapTruncation() {
+  if (hasMore || paginationOffset <= MAX_OFFSET) return;
+  // 総件数が未確定のうちは判定できないので保留する（count 完了時に再評価される）
+  if (totalCount === null && !countUnavailable) return;
+  // count が取れなかった場合は判定材料が無いので、API が続きを返せない事実に合わせる
+  var truncated = countUnavailable || paginationOffset < totalCount;
+  if (truncated === truncatedByOffsetCap) return;
+  truncatedByOffsetCap = truncated;
+  updateEntityCount();
+  if (truncated) {
+    showToast('API の取得上限（offset ' + MAX_OFFSET + '）に達したため、以降のエンティティは表示されません');
+  }
+}
+
+/**
  * 次のページを API から取得し、entities 配列・地図・フィードを更新する。
  * 取得開始時の type を覚えておき、途中で別 type に切替えられたら結果は破棄する。
  */
 function loadNextPage() {
   if (!hasMore) return Promise.resolve();
+  // offset 上限を超えるリクエストは 400 になるだけなので、投げる前に打ち切る
+  if (paginationOffset > MAX_OFFSET) {
+    hasMore = false;
+    updateEntityCount();
+    evaluateOffsetCapTruncation();
+    return Promise.resolve();
+  }
   var thisType = ENTITY_TYPE;
   var thisLoadToken = activeLoadToken;
   return fetchEntitiesPage(thisType, paginationOffset, PAGE_SIZE)
@@ -346,6 +388,8 @@ function loadType(newType) {
   Object.keys(temporalRaw).forEach(function(k) { delete temporalRaw[k]; });
   paginationOffset = 0;
   hasMore = true;
+  truncatedByOffsetCap = false;
+  countUnavailable = false;
   totalCount = null;
 
   // UI リセット（前回 showError で隠していたヘッダー/サイドパネルを復帰）
@@ -416,7 +460,13 @@ function loadType(newType) {
       if (activeLoadToken !== thisLoadToken || ENTITY_TYPE !== newType) return;
       totalCount = count;
       updateEntityCount();
-    }).catch(function() {});
+      // 上限ガードが count より先に走っていた場合、ここで打ち切り判定をやり直す
+      evaluateOffsetCapTruncation();
+    }).catch(function() {
+      if (activeLoadToken !== thisLoadToken || ENTITY_TYPE !== newType) return;
+      countUnavailable = true;
+      evaluateOffsetCapTruncation();
+    });
     if (mapApi.isMapReady()) { mapApi.renderEntities(entities); }
     else { mapApi.setPendingRender(entities); }
     fitBoundsToEntities();
