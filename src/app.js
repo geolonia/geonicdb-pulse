@@ -306,9 +306,18 @@ function loadNextPage() {
   // offset 上限を超えるリクエストは 400 になるだけなので、投げる前に打ち切る
   if (paginationOffset > MAX_OFFSET) {
     hasMore = false;
-    truncatedByOffsetCap = true;
+    // 総件数がちょうど MAX_OFFSET + PAGE_SIZE 件（= 上限内で読み切れる最大件数）の場合、
+    // offset は上限を超えるが取り残しは無い。db.count() の結果と突き合わせ、
+    // 未取得分が実在するときだけ「表示上限」として扱う。
+    // entities ではなく paginationOffset と比較するのは、entities に WebSocket 由来の
+    // 追加分が混ざり、ページングで読めた件数と一致しないため。
+    // totalCount が未取得（count 失敗）のときは判定できないので、
+    // API が続きを返せない事実に合わせて打ち切りとして扱う。
+    truncatedByOffsetCap = totalCount === null || paginationOffset < totalCount;
     updateEntityCount();
-    showToast('API の取得上限（offset ' + MAX_OFFSET + '）に達したため、以降のエンティティは表示されません');
+    if (truncatedByOffsetCap) {
+      showToast('API の取得上限（offset ' + MAX_OFFSET + '）に達したため、以降のエンティティは表示されません');
+    }
     return Promise.resolve();
   }
   var thisType = ENTITY_TYPE;
