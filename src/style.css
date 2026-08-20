@@ -583,6 +583,24 @@ body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; back
   white-space: nowrap;
 }
 .type-form-submit:hover { background: rgba(255,255,255,0.18); }
+/* タイプ一覧の取得に失敗した場合のフォールバック（タイプ名の手入力） */
+.type-form-manual {
+  flex: 1;
+  min-width: 0;
+}
+.type-form-manual.hidden,
+.type-form-select.hidden {
+  display: none;
+}
+.type-form-note {
+  margin: 8px 8px 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: rgba(255,255,255,0.55);
+}
+.type-form-note.hidden {
+  display: none;
+}
 
 /* ── エラー画面 ── */
 .error-icon {
